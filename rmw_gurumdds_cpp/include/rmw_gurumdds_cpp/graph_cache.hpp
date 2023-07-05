@@ -112,6 +112,7 @@ graph_add_remote_entity(
   const dds_GUID_t * const dp_guid,
   const char * const topic_name,
   const char * const type_name,
+  const rosidl_type_hash_t & type_hash,
   const dds_ReliabilityQosPolicy * const reliability,
   const dds_DurabilityQosPolicy * const durability,
   const dds_DeadlineQosPolicy * const deadline,

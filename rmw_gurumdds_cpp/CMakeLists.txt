@@ -90,6 +90,7 @@ add_library(rmw_gurumdds_cpp
   src/graph_cache.cpp
   src/serialization_format.cpp
   src/types.cpp
+  src/rmw_dynamic_message_type_support.cpp
 )
 
 ament_target_dependencies(rmw_gurumdds_cpp
