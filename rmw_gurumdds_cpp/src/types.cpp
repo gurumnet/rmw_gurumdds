@@ -65,6 +65,19 @@ rmw_ret_t GurumddsPublisherInfo::get_status(
     rmw_status->total_count = status.total_count;
     rmw_status->total_count_change = status.total_count_change;
     rmw_status->last_policy_kind = convert_qos_policy(status.last_policy_id);
+  } else if (mask == dds_INCONSISTENT_TOPIC_STATUS) {
+    dds_InconsistentTopicStatus status;
+    dds_Topic* topic = dds_DataWriter_get_topic(this->topic_writer);
+    dds_ReturnCode_t dds_ret =
+      dds_Topic_get_inconsistent_topic_status(topic, &status);
+    rmw_ret_t rmw_ret = check_dds_ret_code(dds_ret);
+    if (rmw_ret != RMW_RET_OK) {
+      return rmw_ret;
+    }
+
+    auto rmw_status = static_cast<rmw_incompatible_type_status_t *>(event);
+    rmw_status->total_count = status.total_count;
+    rmw_status->total_count_change = status.total_count_change;
   } else {
     return RMW_RET_UNSUPPORTED;
   }
@@ -136,6 +149,19 @@ rmw_ret_t GurumddsSubscriberInfo::get_status(
     }
 
     auto rmw_status = static_cast<rmw_message_lost_status_t *>(event);
+    rmw_status->total_count = status.total_count;
+    rmw_status->total_count_change = status.total_count_change;
+  } else if (mask == dds_INCONSISTENT_TOPIC_STATUS) {
+    dds_InconsistentTopicStatus status;
+    dds_Topic* topic = (dds_Topic*)dds_DataReader_get_topicdescription(this->topic_reader);
+    dds_ReturnCode_t dds_ret =
+      dds_Topic_get_inconsistent_topic_status(topic, &status);
+    rmw_ret_t rmw_ret = check_dds_ret_code(dds_ret);
+    if (rmw_ret != RMW_RET_OK) {
+      return rmw_ret;
+    }
+
+    auto rmw_status = static_cast<rmw_incompatible_type_status_t *>(event);
     rmw_status->total_count = status.total_count;
     rmw_status->total_count_change = status.total_count_change;
   } else {
