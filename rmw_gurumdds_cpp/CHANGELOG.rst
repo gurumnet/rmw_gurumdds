@@ -2,6 +2,11 @@
 Changelog for package rmw_gurumdds_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.4.3 (2024-02-01)
+------------------
+* Remove error handling on dds waitset
+* Contributors: Jaemin Jo
+
 3.4.2 (2023-09-18)
 ------------------
 * Update packages to use gurumdds-3.0 & Update README
