@@ -116,20 +116,6 @@ __handle_active_event_conditions(rmw_events_t * events)
   return RMW_RET_OK;
 }
 
-rmw_ret_t __detach_condition(
-  dds_WaitSet * dds_wait_set,
-  dds_Condition * condition)
-{
-  dds_ReturnCode_t dds_return_code = dds_WaitSet_detach_condition(dds_wait_set, condition);
-  rmw_ret_t from_dds = check_dds_ret_code(dds_return_code);
-  if (from_dds != RMW_RET_OK) {
-    RMW_SET_ERROR_MSG("failed to detach condition from wait set");
-    return from_dds;
-  }
-
-  return RMW_RET_OK;
-}
-
 template<typename SubscriberInfo, typename ServiceInfo, typename ClientInfo>
 rmw_ret_t
 __rmw_wait(
@@ -239,9 +225,8 @@ __rmw_wait(
         return RMW_RET_ERROR;
       }
 
-      dds_ReturnCode_t ret = dds_WaitSet_attach_condition(
+      dds_WaitSet_attach_condition(
         dds_wait_set, reinterpret_cast<dds_Condition *>(read_condition));
-      CHECK_ATTACH(ret);
     }
   }
 
@@ -253,10 +238,9 @@ __rmw_wait(
   }
 
   for (auto status_condition : status_conditions) {
-    dds_ReturnCode_t ret = dds_WaitSet_attach_condition(
+    dds_WaitSet_attach_condition(
       dds_wait_set,
       reinterpret_cast<dds_Condition *>(status_condition));
-    CHECK_ATTACH(ret);
   }
 
   if (guard_conditions != nullptr) {
@@ -268,9 +252,8 @@ __rmw_wait(
         return RMW_RET_ERROR;
       }
 
-      dds_ReturnCode_t ret = dds_WaitSet_attach_condition(
+      dds_WaitSet_attach_condition(
         dds_wait_set, reinterpret_cast<dds_Condition *>(guard_condition));
-      CHECK_ATTACH(ret);
     }
   }
 
@@ -288,9 +271,8 @@ __rmw_wait(
         return RMW_RET_ERROR;
       }
 
-      dds_ReturnCode_t ret = dds_WaitSet_attach_condition(
+      dds_WaitSet_attach_condition(
         dds_wait_set, reinterpret_cast<dds_Condition *>(read_condition));
-      CHECK_ATTACH(ret);
     }
   }
 
@@ -308,9 +290,8 @@ __rmw_wait(
         return RMW_RET_ERROR;
       }
 
-      dds_ReturnCode_t ret = dds_WaitSet_attach_condition(
+      dds_WaitSet_attach_condition(
         dds_wait_set, reinterpret_cast<dds_Condition *>(read_condition));
-      CHECK_ATTACH(ret);
     }
   }
 
@@ -430,11 +411,7 @@ __rmw_wait(
         subscriptions->subscribers[i] = 0;
       }
 
-      rmw_ret_t rmw_ret_code = __detach_condition(
-        dds_wait_set, reinterpret_cast<dds_Condition *>(read_condition));
-      if (rmw_ret_code != RMW_RET_OK) {
-        return rmw_ret_code;
-      }
+      dds_WaitSet_detach_condition(dds_wait_set, reinterpret_cast<dds_Condition *>(read_condition));
     }
   }
 
@@ -464,10 +441,7 @@ __rmw_wait(
         guard_conditions->guard_conditions[i] = 0;
       }
 
-      rmw_ret_t rmw_ret_code = __detach_condition(dds_wait_set, condition);
-      if (rmw_ret_code != RMW_RET_OK) {
-        return rmw_ret_code;
-      }
+      dds_WaitSet_detach_condition(dds_wait_set, condition);
     }
   }
 
@@ -499,11 +473,7 @@ __rmw_wait(
         services->services[i] = 0;
       }
 
-      rmw_ret_t rmw_ret_code = __detach_condition(
-        dds_wait_set, reinterpret_cast<dds_Condition *>(read_condition));
-      if (rmw_ret_code != RMW_RET_OK) {
-        return rmw_ret_code;
-      }
+      dds_WaitSet_detach_condition(dds_wait_set, reinterpret_cast<dds_Condition *>(read_condition));
     }
   }
 
@@ -535,11 +505,7 @@ __rmw_wait(
         clients->clients[i] = 0;
       }
 
-      rmw_ret_t rmw_ret_code = __detach_condition(
-        dds_wait_set, reinterpret_cast<dds_Condition *>(read_condition));
-      if (rmw_ret_code != RMW_RET_OK) {
-        return rmw_ret_code;
-      }
+      dds_WaitSet_detach_condition(dds_wait_set, reinterpret_cast<dds_Condition *>(read_condition));
     }
   }
 
