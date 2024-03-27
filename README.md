@@ -7,6 +7,7 @@ Required version of GurumDDS depends on the version of this project.
 
 | rmw_gurumdds             | GurumDDS                    |
 |--------------------------|-----------------------------|
+| 3.6.0  or higher         | higher than 3.1.0           |
 | 3.4.2  or higher         | higher than 3.0.0           |
 | 3.3.0  or higher         | higher than 2.8.3165        |
 | 3.2.0  or higher         | 2.8.3140 or higher          |
