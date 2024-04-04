@@ -2,6 +2,11 @@
 Changelog for package gurumdds_cmake_module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.6.0 (2024-04-04)
+------------------
+* Use gurumdds-3.1
+* Contributors: hyeonwoo
+
 3.5.1 (2024-01-30)
 ------------------
 

@@ -2,6 +2,13 @@
 Changelog for package rmw_gurumdds_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.6.0 (2024-04-04)
+------------------
+* Use gurumdds-3.1
+* Revert "Support zero copy API"
+  This reverts commit fc3807d20aa0603f78293e11635e90ececd0d1fa.
+* Contributors: hyeonwoo
+
 3.5.1 (2024-01-30)
 ------------------
 * Fix struct array deserialization
