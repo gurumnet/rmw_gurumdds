@@ -2,6 +2,11 @@
 Changelog for package rmw_gurumdds_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.6.1 (2024-04-19)
+------------------
+* Increase `ros_discovery_info` history depth
+* Contributors: Donghyeon Lee
+
 3.6.0 (2024-04-04)
 ------------------
 * Use gurumdds-3.1
