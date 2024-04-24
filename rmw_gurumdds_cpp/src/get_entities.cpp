@@ -46,7 +46,7 @@ get_publisher(rmw_publisher_t * publisher)
   }
 
   GurumddsPublisherInfo * impl = static_cast<GurumddsPublisherInfo *>(publisher->data);
-  return impl->publisher;
+  return dds_DataWriter_get_publisher(impl->topic_writer);
 }
 
 dds_DataWriter *

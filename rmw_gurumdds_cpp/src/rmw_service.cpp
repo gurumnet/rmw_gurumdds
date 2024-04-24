@@ -74,6 +74,12 @@ rmw_create_service(
     return nullptr;
   }
 
+  dds_Publisher * dds_publisher = node_info->publisher;
+  if (dds_publisher == nullptr) {
+    RMW_SET_ERROR_MSG("publisher handle is null");
+    return nullptr;
+  }
+
   const rosidl_service_type_support_t * type_support =
     get_service_typesupport_handle(type_supports, rosidl_typesupport_introspection_c__identifier);
   if (type_support == nullptr) {
@@ -91,12 +97,10 @@ rmw_create_service(
   rmw_service_t * rmw_service = nullptr;
 
   dds_SubscriberQos subscriber_qos;
-  dds_PublisherQos publisher_qos;
   dds_DataReaderQos datareader_qos;
   dds_DataWriterQos datawriter_qos;
 
   dds_Subscriber * dds_subscriber = nullptr;
-  dds_Publisher * dds_publisher = nullptr;
   dds_DataReader * request_reader = nullptr;
   dds_DataWriter * response_writer = nullptr;
   dds_ReadCondition * read_condition = nullptr;
@@ -171,6 +175,7 @@ rmw_create_service(
   }
 
   service_info->participant = participant;
+  service_info->dds_publisher = dds_publisher;
   service_info->implementation_identifier = gurum_gurumdds_identifier;
   service_info->service_typesupport = type_support;
 
@@ -325,31 +330,10 @@ rmw_create_service(
   service_info->read_condition = read_condition;
 
   // Create datawriter for response
-  ret = dds_DomainParticipant_get_default_publisher_qos(participant, &publisher_qos);
-  if (ret != dds_RETCODE_OK) {
-    RMW_SET_ERROR_MSG("failed to get default publisher qos");
-    goto fail;
-  }
-
-  dds_publisher = dds_DomainParticipant_create_publisher(participant, &publisher_qos, nullptr, 0);
-  if (dds_publisher == nullptr) {
-    RMW_SET_ERROR_MSG("failed to create subscriber");
-    dds_PublisherQos_finalize(&publisher_qos);
-    goto fail;
-  }
-  service_info->dds_publisher = dds_publisher;
-
-  ret = dds_PublisherQos_finalize(&publisher_qos);
-  if (ret != dds_RETCODE_OK) {
-    RMW_SET_ERROR_MSG("failed to finalize publisher qos");
-    goto fail;
-  }
-
   if (!get_datawriter_qos(dds_publisher, qos_policies, &datawriter_qos)) {
     // Error message already set
     goto fail;
   }
-
   response_writer = dds_Publisher_create_datawriter_w_props(
     dds_publisher, response_topic, &datawriter_qos, nullptr, 0, props);
   if (response_writer == nullptr) {

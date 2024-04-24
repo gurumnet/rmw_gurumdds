@@ -95,7 +95,6 @@ shared__rmw_create_node(
   rmw_guard_condition_t * graph_guard_condition = nullptr;
   GurumddsPublisherListener * publisher_listener = nullptr;
   GurumddsSubscriberListener * subscriber_listener = nullptr;
-  std::list<dds_Publisher *> publisher_list;
   std::list<dds_Subscriber *> subscription_list;
   dds_Subscriber * builtin_subscriber = nullptr;
   dds_DataReader * builtin_participant_datareader = nullptr;
@@ -128,6 +127,9 @@ shared__rmw_create_node(
     participant = dds_DomainParticipantFactory_create_participant_w_props(
       factory, domain_id, &participant_qos, nullptr, 0, props);
   }
+
+  dds_Publisher * publisher = dds_DomainParticipant_create_publisher(participant, &dds_PUBLISHER_QOS_DEFAULT, nullptr, 0);
+
   graph_guard_condition = shared__rmw_create_guard_condition(implementation_identifier);
   if (graph_guard_condition == nullptr) {
     RMW_SET_ERROR_MSG("failed to create graph guard condition");
@@ -176,10 +178,10 @@ shared__rmw_create_node(
   }
 
   node_info->participant = participant;
+  node_info->publisher = publisher;
   node_info->graph_guard_condition = graph_guard_condition;
   node_info->pub_listener = publisher_listener;
   node_info->sub_listener = subscriber_listener;
-  node_info->pub_list = publisher_list;
   node_info->sub_list = subscription_list;
 
   node_handle->implementation_identifier = implementation_identifier;
@@ -308,42 +310,39 @@ shared__rmw_destroy_node(const char * implementation_identifier, rmw_node_t * no
   }
 
   dds_ReturnCode_t ret;
-  while (!node_info->pub_list.empty()) {
-    dds_Publisher * pub = node_info->pub_list.front();
-    dds_InstanceHandleSeq * dw_seq = dds_InstanceHandleSeq_create(1);
-    if (dw_seq == nullptr) {
-      RMW_SET_ERROR_MSG("failed to create datawriter sequence");
-      return RMW_RET_ERROR;
-    }
-
-    ret = dds_Publisher_get_contained_entities(pub, dw_seq);
-    if (ret != dds_RETCODE_OK) {
-      RMW_SET_ERROR_MSG("failed to get contained entities of the publisher");
-      dds_InstanceHandleSeq_delete(dw_seq);
-      return RMW_RET_ERROR;
-    }
-
-    for (uint32_t j = 0; j < dds_InstanceHandleSeq_length(dw_seq); j++) {
-      dds_DataWriter * dw =
-        reinterpret_cast<dds_DataWriter *>(dds_InstanceHandleSeq_get(dw_seq, j));
-      ret = dds_Publisher_delete_datawriter(pub, dw);
-      if (ret != dds_RETCODE_OK) {
-        RMW_SET_ERROR_MSG("failed to delete datawriter");
-        dds_InstanceHandleSeq_delete(dw_seq);
-        return RMW_RET_ERROR;
-      }
-    }
-
-    ret = dds_DomainParticipant_delete_publisher(participant, pub);
-    if (ret != dds_RETCODE_OK) {
-      RMW_SET_ERROR_MSG("failed to delete Publisher");
-      dds_InstanceHandleSeq_delete(dw_seq);
-      return RMW_RET_ERROR;
-    }
-
-    dds_InstanceHandleSeq_delete(dw_seq);
-    node_info->pub_list.pop_front();
+  dds_Publisher * pub = node_info->publisher;
+  dds_InstanceHandleSeq * dw_seq = dds_InstanceHandleSeq_create(1);
+  if (dw_seq == nullptr) {
+    RMW_SET_ERROR_MSG("failed to create datawriter sequence");
+    return RMW_RET_ERROR;
   }
+
+  ret = dds_Publisher_get_contained_entities(pub, dw_seq);
+  if (ret != dds_RETCODE_OK) {
+    RMW_SET_ERROR_MSG("failed to get contained entities of the publisher");
+    dds_InstanceHandleSeq_delete(dw_seq);
+    return RMW_RET_ERROR;
+  }
+
+  for (uint32_t j = 0; j < dds_InstanceHandleSeq_length(dw_seq); j++) {
+    dds_DataWriter * dw =
+      reinterpret_cast<dds_DataWriter *>(dds_InstanceHandleSeq_get(dw_seq, j));
+    ret = dds_Publisher_delete_datawriter(pub, dw);
+    if (ret != dds_RETCODE_OK) {
+      RMW_SET_ERROR_MSG("failed to delete datawriter");
+      dds_InstanceHandleSeq_delete(dw_seq);
+      return RMW_RET_ERROR;
+    }
+  }
+
+  ret = dds_DomainParticipant_delete_publisher(participant, pub);
+  if (ret != dds_RETCODE_OK) {
+    RMW_SET_ERROR_MSG("failed to delete Publisher");
+    dds_InstanceHandleSeq_delete(dw_seq);
+    return RMW_RET_ERROR;
+  }
+
+  dds_InstanceHandleSeq_delete(dw_seq);
 
   while (!node_info->sub_list.empty()) {
     dds_Subscriber * sub = node_info->sub_list.front();

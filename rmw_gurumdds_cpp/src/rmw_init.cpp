@@ -154,7 +154,6 @@ rmw_init(const rmw_init_options_t * options, rmw_context_t * context)
     RMW_SET_ERROR_MSG("failed to allocate rmw context impl");
     goto fail;
   }
-  context->impl->is_shutdown = false;
 
   ret = rmw_init_options_copy(options, &context->options);
   if (ret != RMW_RET_OK) {

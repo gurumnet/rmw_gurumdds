@@ -323,10 +323,10 @@ public:
 typedef struct _GurumddsNodeInfo
 {
   dds_DomainParticipant * participant;
+  dds_Publisher * publisher;
   rmw_guard_condition_t * graph_guard_condition;
   GurumddsPublisherListener * pub_listener;
   GurumddsSubscriberListener * sub_listener;
-  std::list<dds_Publisher *> pub_list;
   std::list<dds_Subscriber *> sub_list;
 } GurumddsNodeInfo;
 

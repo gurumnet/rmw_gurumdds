@@ -30,6 +30,7 @@
 #include "rmw_gurumdds_shared_cpp/types.hpp"
 #include "rmw_gurumdds_shared_cpp/qos.hpp"
 #include "rmw_gurumdds_shared_cpp/namespace_prefix.hpp"
+#include "rmw_gurumdds_cpp/get_entities.hpp"
 #include "rmw_gurumdds_cpp/identifier.hpp"
 #include "rmw_gurumdds_cpp/types.hpp"
 
@@ -67,7 +68,8 @@ rmw_publisher_t *
 rmw_create_publisher(
   const rmw_node_t * node,
   const rosidl_message_type_support_t * type_supports,
-  const char * topic_name, const rmw_qos_profile_t * qos_policies,
+  const char * topic_name,
+  const rmw_qos_profile_t * qos_policies,
   const rmw_publisher_options_t * publisher_options)
 {
   if (node == nullptr) {
@@ -115,6 +117,12 @@ rmw_create_publisher(
     return nullptr;
   }
 
+  dds_Publisher * dds_publisher = node_info->publisher;
+  if (dds_publisher == nullptr) {
+    RMW_SET_ERROR_MSG("publisher handle is null");
+    return nullptr;
+  }
+
   const rosidl_message_type_support_t * type_support =
     get_message_typesupport_handle(type_supports, rosidl_typesupport_introspection_c__identifier);
   if (type_support == nullptr) {
@@ -130,8 +138,6 @@ rmw_create_publisher(
 
   rmw_publisher_t * rmw_publisher = nullptr;
   GurumddsPublisherInfo * publisher_info = nullptr;
-  dds_Publisher * dds_publisher = nullptr;
-  dds_PublisherQos publisher_qos;
   dds_DataWriter * topic_writer = nullptr;
   dds_DataWriterQos datawriter_qos;
   dds_Topic * topic = nullptr;
@@ -180,25 +186,6 @@ rmw_create_publisher(
   ret = dds_TypeSupport_register_type(dds_typesupport, participant, type_name.c_str());
   if (ret != dds_RETCODE_OK) {
     RMW_SET_ERROR_MSG("failed to register type to domain participant");
-    goto fail;
-  }
-
-  ret = dds_DomainParticipant_get_default_publisher_qos(participant, &publisher_qos);
-  if (ret != dds_RETCODE_OK) {
-    RMW_SET_ERROR_MSG("failed to get default publisher qos");
-    goto fail;
-  }
-
-  dds_publisher = dds_DomainParticipant_create_publisher(participant, &publisher_qos, nullptr, 0);
-  if (dds_publisher == nullptr) {
-    RMW_SET_ERROR_MSG("failed to create publisher");
-    dds_PublisherQos_finalize(&publisher_qos);
-    goto fail;
-  }
-
-  ret = dds_PublisherQos_finalize(&publisher_qos);
-  if (ret != dds_RETCODE_OK) {
-    RMW_SET_ERROR_MSG("failed to finalize publisher qos");
     goto fail;
   }
 
@@ -255,8 +242,6 @@ rmw_create_publisher(
     goto fail;
   }
 
-  node_info->pub_list.push_back(dds_publisher);
-
   publisher_info = new(std::nothrow) GurumddsPublisherInfo();
   if (publisher_info == nullptr) {
     RMW_SET_ERROR_MSG("failed to allocate GurumddsPublisherInfo");
@@ -264,7 +249,6 @@ rmw_create_publisher(
   }
 
   publisher_info->implementation_identifier = gurum_gurumdds_identifier;
-  publisher_info->publisher = dds_publisher;
   publisher_info->topic_writer = topic_writer;
   publisher_info->rosidl_message_typesupport = type_support;
   publisher_info->publisher_gid.implementation_identifier = gurum_gurumdds_identifier;
@@ -332,8 +316,6 @@ fail:
     if (topic_writer != nullptr) {
       dds_Publisher_delete_datawriter(dds_publisher, topic_writer);
     }
-    node_info->pub_list.remove(dds_publisher);
-    dds_DomainParticipant_delete_publisher(participant, dds_publisher);
   }
 
   if (dds_typesupport != nullptr) {
@@ -365,12 +347,6 @@ rmw_publisher_count_matched_subscriptions(
   auto info = static_cast<GurumddsPublisherInfo *>(publisher->data);
   if (info == nullptr) {
     RMW_SET_ERROR_MSG("publisher internal data is invalid");
-    return RMW_RET_ERROR;
-  }
-
-  dds_Publisher * dds_publisher = info->publisher;
-  if (dds_publisher == nullptr) {
-    RMW_SET_ERROR_MSG("dds publisher is null");
     return RMW_RET_ERROR;
   }
 
@@ -446,7 +422,7 @@ rmw_destroy_publisher(rmw_node_t * node, rmw_publisher_t * publisher)
   GurumddsPublisherInfo * publisher_info = static_cast<GurumddsPublisherInfo *>(publisher->data);
   dds_ReturnCode_t ret;
   if (publisher_info) {
-    dds_Publisher * dds_publisher = publisher_info->publisher;
+    dds_Publisher * dds_publisher = rmw_gurumdds_cpp::get_publisher(publisher);
 
     if (dds_publisher != nullptr) {
       if (publisher_info->topic_writer != nullptr) {
@@ -457,14 +433,6 @@ rmw_destroy_publisher(rmw_node_t * node, rmw_publisher_t * publisher)
         }
         publisher_info->topic_writer = nullptr;
       }
-
-      node_info->pub_list.remove(dds_publisher);
-      ret = dds_DomainParticipant_delete_publisher(participant, dds_publisher);
-      if (ret != dds_RETCODE_OK) {
-        RMW_SET_ERROR_MSG("failed to delete publisher");
-        return RMW_RET_ERROR;
-      }
-      publisher_info->publisher = nullptr;
     } else if (publisher_info->topic_writer != nullptr) {
       RMW_SET_ERROR_MSG("cannot delete datawriter because the publisher is null");
       return RMW_RET_ERROR;
