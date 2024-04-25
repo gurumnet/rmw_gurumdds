@@ -182,17 +182,16 @@ shared__rmw_wait(
         return;
       }
 
-      for (uint32_t i = 0; i < dds_ConditionSeq_length(attached_conditions); ++i) {
+      const uint32_t seq_length = dds_ConditionSeq_length(attached_conditions);
+      for (uint32_t i = seq_length; i-- > 0;) {
         ret = dds_WaitSet_detach_condition(
           dds_wait_set, dds_ConditionSeq_get(attached_conditions, i));
         if (ret != dds_RETCODE_OK) {
           RMW_SET_ERROR_MSG("failed to detach condition from wait set");
         }
+        dds_ConditionSeq_remove(attached_conditions, i);
       }
-
-      while (dds_ConditionSeq_length(attached_conditions) > 0) {
-        dds_ConditionSeq_remove(attached_conditions, 0);
-      }
+      assert(dds_ConditionSeq_length(attached_conditions) == 0);
     }
     rmw_wait_set_t * wait_set = nullptr;
     const char * implementation_identifier = nullptr;
@@ -360,26 +359,29 @@ shared__rmw_wait(
     auto t = std::chrono::steady_clock::now() +
       std::chrono::nanoseconds(sec * 1000000000ULL + nsec);
     bool triggered = false;
-
-    while (dds_ConditionSeq_length(active_conditions) > 0) {
-      dds_ConditionSeq_remove(active_conditions, 0);
+    {
+      const uint32_t seq_length = dds_ConditionSeq_length(active_conditions);
+      for (uint32_t i = seq_length; i-- > 0;) {
+        dds_ConditionSeq_remove(active_conditions, i);
+      }
+      assert(dds_ConditionSeq_length(active_conditions) == 0);
     }
-
     dds_ConditionSeq * conds = dds_ConditionSeq_create(8);
     dds_WaitSet_get_conditions(dds_wait_set, conds);
+    {
+      const uint32_t seq_length = dds_ConditionSeq_length(conds);
+      for (uint32_t i = 0; i < seq_length; ++i) {
+        dds_Condition * cond = dds_ConditionSeq_get(conds, i);
+        if (cond == NULL) {
+          continue;
+        }
 
-    for (uint32_t i = 0; i < dds_ConditionSeq_length(conds); ++i) {
-      dds_Condition * cond = dds_ConditionSeq_get(conds, i);
-      if (cond == NULL) {
-        continue;
-      }
-
-      if (dds_Condition_get_trigger_value(cond) == true) {
-        dds_ConditionSeq_add(active_conditions, cond);
-        triggered = true;
+        if (dds_Condition_get_trigger_value(cond) == true) {
+          dds_ConditionSeq_add(active_conditions, cond);
+          triggered = true;
+        }
       }
     }
-
     for (uint32_t i = 0; (inf || std::chrono::steady_clock::now() <= t) && !triggered; ++i) {
       if (i >= dds_ConditionSeq_length(conds)) {
         i = 0;
@@ -418,7 +420,8 @@ shared__rmw_wait(
       }
 
       uint32_t j = 0;
-      for (; j < dds_ConditionSeq_length(active_conditions); ++j) {
+      const uint32_t seq_length = dds_ConditionSeq_length(active_conditions);
+      for (; j < seq_length; ++j) {
         if (
           dds_ConditionSeq_get(active_conditions, j) ==
           reinterpret_cast<dds_Condition *>(read_condition))
@@ -428,7 +431,7 @@ shared__rmw_wait(
       }
 
       if (j >= dds_ConditionSeq_length(active_conditions)) {
-        subscriptions->subscribers[i] = 0;
+        subscriptions->subscribers[i] = nullptr;
       }
 
       rmw_ret_t rmw_ret_code = __detach_condition(
@@ -449,7 +452,8 @@ shared__rmw_wait(
       }
 
       uint32_t j = 0;
-      for (; j < dds_ConditionSeq_length(active_conditions); ++j) {
+      const uint32_t seq_length = dds_ConditionSeq_length(active_conditions);
+      for (; j < seq_length; ++j) {
         if (dds_ConditionSeq_get(active_conditions, j) == condition) {
           dds_GuardCondition * guard = reinterpret_cast<dds_GuardCondition *>(condition);
           dds_ReturnCode_t ret = dds_GuardCondition_set_trigger_value(guard, false);
@@ -462,7 +466,7 @@ shared__rmw_wait(
       }
 
       if (j >= dds_ConditionSeq_length(active_conditions)) {
-        guard_conditions->guard_conditions[i] = 0;
+        guard_conditions->guard_conditions[i] = nullptr;
       }
 
       rmw_ret_t rmw_ret_code = __detach_condition(dds_wait_set, condition);
@@ -487,7 +491,8 @@ shared__rmw_wait(
       }
 
       uint32_t j = 0;
-      for (; j < dds_ConditionSeq_length(active_conditions); ++j) {
+      const uint32_t seq_length = dds_ConditionSeq_length(active_conditions);
+      for (; j < seq_length; ++j) {
         if (
           dds_ConditionSeq_get(active_conditions, j) ==
           reinterpret_cast<dds_Condition *>(read_condition))
@@ -497,7 +502,7 @@ shared__rmw_wait(
       }
 
       if (j >= dds_ConditionSeq_length(active_conditions)) {
-        services->services[i] = 0;
+        services->services[i] = nullptr;
       }
 
       rmw_ret_t rmw_ret_code = __detach_condition(
@@ -523,7 +528,8 @@ shared__rmw_wait(
       }
 
       uint32_t j = 0;
-      for (; j < dds_ConditionSeq_length(active_conditions); ++j) {
+      const uint32_t seq_length = dds_ConditionSeq_length(active_conditions);
+      for (; j < seq_length; ++j) {
         if (
           dds_ConditionSeq_get(active_conditions, j) ==
           reinterpret_cast<dds_Condition *>(read_condition))

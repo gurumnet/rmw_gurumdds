@@ -134,7 +134,8 @@ _get_endpoint_info_by_topic(
 
         std::string node_name = "_NODE_NAME_UNKNOWN_";
         std::string node_namespace = "_NODE_NAMESPACE_UNKNOWN_";
-        for (uint32_t i = 0; i < dds_InstanceHandleSeq_length(handle_seq); i++) {
+        const uint32_t seq_length = dds_InstanceHandleSeq_length(handle_seq);
+        for (uint32_t i = 0; i < seq_length; i++) {
           dds_ParticipantBuiltinTopicData pbtd;
           dds_InstanceHandle_t handle = dds_InstanceHandleSeq_get(handle_seq, i);
           dds_ret =

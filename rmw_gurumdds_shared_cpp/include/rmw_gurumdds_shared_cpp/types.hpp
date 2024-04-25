@@ -88,7 +88,8 @@ static void pub_on_data_available(const dds_DataReader * a_reader)
     return;
   }
 
-  for (dds_UnsignedLong i = 0; i < dds_DataSeq_length(samples); ++i) {
+  const uint32_t seq_length = dds_DataSeq_length(samples);
+  for (dds_UnsignedLong i = 0; i < seq_length; ++i) {
     std::string topic_name, type_name;
     GuidPrefix_t guid, participant_guid;
     dds_PublicationBuiltinTopicData * pbtd =
@@ -176,7 +177,8 @@ static void sub_on_data_available(const dds_DataReader * a_reader)
     return;
   }
 
-  for (dds_UnsignedLong i = 0; i < dds_DataSeq_length(samples); ++i) {
+  const uint32_t seq_length = dds_DataSeq_length(samples);
+  for (dds_UnsignedLong i = 0; i < seq_length; ++i) {
     std::string topic_name, type_name;
     GuidPrefix_t guid, participant_guid;
     dds_SubscriptionBuiltinTopicData * sbtd =

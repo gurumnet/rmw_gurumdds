@@ -324,7 +324,8 @@ shared__rmw_destroy_node(const char * implementation_identifier, rmw_node_t * no
     return RMW_RET_ERROR;
   }
 
-  for (uint32_t j = 0; j < dds_InstanceHandleSeq_length(dw_seq); j++) {
+  const uint32_t seq_length = dds_InstanceHandleSeq_length(dw_seq);
+  for (uint32_t j = 0; j < seq_length; j++) {
     dds_DataWriter * dw =
       reinterpret_cast<dds_DataWriter *>(dds_InstanceHandleSeq_get(dw_seq, j));
     ret = dds_Publisher_delete_datawriter(pub, dw);
@@ -359,7 +360,8 @@ shared__rmw_destroy_node(const char * implementation_identifier, rmw_node_t * no
       return RMW_RET_ERROR;
     }
 
-    for (uint32_t j = 0; j < dds_InstanceHandleSeq_length(dr_seq); j++) {
+    const uint32_t seq_length = dds_InstanceHandleSeq_length(dr_seq);
+    for (uint32_t j = 0; j < seq_length; j++) {
       dds_DataReader * dr =
         reinterpret_cast<dds_DataReader *>(dds_InstanceHandleSeq_get(dr_seq, j));
       ret = dds_Subscriber_delete_datareader(sub, dr);
