@@ -176,7 +176,6 @@ rmw_create_client(
   }
 
   client_info->participant = participant;
-  client_info->dds_publisher = dds_publisher;
   client_info->implementation_identifier = gurum_gurumdds_identifier;
   client_info->service_typesupport = type_support;
   client_info->sequence_number = 0;
@@ -397,13 +396,6 @@ fail:
     rmw_client_free(rmw_client);
   }
 
-  if (dds_publisher != nullptr) {
-    if (request_writer != nullptr) {
-      dds_Publisher_delete_datawriter(dds_publisher, request_writer);
-    }
-    dds_DomainParticipant_delete_publisher(participant, dds_publisher);
-  }
-
   if (dds_subscriber != nullptr) {
     if (response_reader != nullptr) {
       if (read_condition != nullptr) {
@@ -464,20 +456,14 @@ rmw_destroy_client(rmw_node_t * node, rmw_client_t * client)
 
   if (client_info != nullptr) {
     if (client_info->participant != nullptr) {
-      if (client_info->dds_publisher != nullptr) {
+      if (node_info->publisher != nullptr) {
         if (client_info->request_writer != nullptr) {
           ret = dds_Publisher_delete_datawriter(
-            client_info->dds_publisher, client_info->request_writer);
+            node_info->publisher, client_info->request_writer);
           if (ret != dds_RETCODE_OK) {
             RMW_SET_ERROR_MSG("failed to delete datawriter");
             return RMW_RET_ERROR;
           }
-        }
-        ret = dds_DomainParticipant_delete_publisher(
-          client_info->participant, client_info->dds_publisher);
-        if (ret != dds_RETCODE_OK) {
-          RMW_SET_ERROR_MSG("failed to delete publisher");
-          return RMW_RET_ERROR;
         }
       } else if (client_info->request_writer != nullptr) {
         RMW_SET_ERROR_MSG("cannot delete datawriter because the publisher is null");
@@ -515,9 +501,9 @@ rmw_destroy_client(rmw_node_t * node, rmw_client_t * client)
         return RMW_RET_ERROR;
       }
 
-    } else if (client_info->dds_publisher != nullptr || client_info->dds_subscriber != nullptr) {
+    } else if (client_info->dds_subscriber != nullptr) {
       RMW_SET_ERROR_MSG(
-        "cannot delete publisher and subscriber because the domain participant is null");
+        "cannot delete subscriber because the domain participant is null");
       return RMW_RET_ERROR;
     }
 

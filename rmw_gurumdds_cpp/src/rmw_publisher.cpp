@@ -30,7 +30,6 @@
 #include "rmw_gurumdds_shared_cpp/types.hpp"
 #include "rmw_gurumdds_shared_cpp/qos.hpp"
 #include "rmw_gurumdds_shared_cpp/namespace_prefix.hpp"
-#include "rmw_gurumdds_cpp/get_entities.hpp"
 #include "rmw_gurumdds_cpp/identifier.hpp"
 #include "rmw_gurumdds_cpp/types.hpp"
 
@@ -422,7 +421,7 @@ rmw_destroy_publisher(rmw_node_t * node, rmw_publisher_t * publisher)
   GurumddsPublisherInfo * publisher_info = static_cast<GurumddsPublisherInfo *>(publisher->data);
   dds_ReturnCode_t ret;
   if (publisher_info) {
-    dds_Publisher * dds_publisher = rmw_gurumdds_cpp::get_publisher(publisher);
+    dds_Publisher * dds_publisher = node_info->publisher;
 
     if (dds_publisher != nullptr) {
       if (publisher_info->topic_writer != nullptr) {

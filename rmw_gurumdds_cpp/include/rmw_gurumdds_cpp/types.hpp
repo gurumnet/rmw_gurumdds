@@ -55,7 +55,6 @@ typedef struct _GurumddsServiceInfo
   dds_Subscriber * dds_subscriber;
   dds_DataReader * request_reader;
 
-  dds_Publisher * dds_publisher;
   dds_DataWriter * response_writer;
 
   dds_ReadCondition * read_condition;
@@ -67,7 +66,6 @@ typedef struct _GurumddsClientInfo
 {
   const rosidl_service_type_support_t * service_typesupport;
 
-  dds_Publisher * dds_publisher;
   dds_DataWriter * request_writer;
 
   dds_Subscriber * dds_subscriber;
