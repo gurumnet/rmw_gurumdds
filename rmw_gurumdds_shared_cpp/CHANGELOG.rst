@@ -11,6 +11,14 @@ Changelog for package rmw_gurumdds_shared_cpp
 2.3.3 (2023-09-12)
 ------------------
 
+2.5.1 (2024-04-26)
+------------------
+* Call `*Seq_length` once before enter loop
+* Change publisher entity maching
+  * rmw pub matches dds dw instead of dds pub
+  * TODO: destroying sequence is buggy
+* Contributors: Donghyeon Lee
+
 2.5.0 (2024-03-27)
 ------------------
 * Use gurumdds-3.1

@@ -12,6 +12,17 @@ Changelog for package rmw_gurumdds_cpp
 * Fix interoperability errors: Remove buffer roundup at the end of messeage deserialize function
 * Contributors: Jaemin Jo
 
+2.5.1 (2024-04-26)
+------------------
+* Fix dds publisher destruction
+  * now dds publisher is destroyed at node detruction, not publisher,
+  service and client destruction
+* Fix compile error
+* Change publisher entity maching
+  * rmw pub matches dds dw instead of dds pub
+  * TODO: destroying sequence is buggy
+* Contributors: Donghyeon Lee
+
 2.5.0 (2024-03-27)
 ------------------
 * Update zero copy implementation
