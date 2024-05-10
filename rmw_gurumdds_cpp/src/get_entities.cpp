@@ -50,6 +50,8 @@ get_publisher(rmw_publisher_t * publisher)
 
 dds_DataWriter *
 get_data_writer(rmw_publisher_t * publisher)
+
+
 {
   if (publisher == nullptr) {
     return nullptr;

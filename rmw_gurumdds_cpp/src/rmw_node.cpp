@@ -24,6 +24,8 @@
 #include "rcutils/filesystem.h"
 #include "rcutils/logging_macros.h"
 #include "rcutils/strdup.h"
+#include "rcutils/allocator.h"
+
 
 #include "rcpputils/scope_exit.hpp"
 
