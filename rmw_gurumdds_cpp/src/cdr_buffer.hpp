@@ -352,15 +352,15 @@ public:
     if (offset + str_size * 2 > size) {
       throw std::runtime_error("Out of buffer");
     }
-    if (*(reinterpret_cast<uint16_t *>(buf + offset) + (str_size - 1)) != '\0') {
-      throw std::runtime_error("Wstring is not null terminated");
-    }
-    dst.reserve(str_size + 1);
+
+    std::u16string temp(str_size, u'\0');
     for (uint32_t i = 0; i < str_size; i++) {
-      auto data = *(reinterpret_cast<uint16_t *>(buf + offset) + i);
+      auto data = *(reinterpret_cast<const uint16_t *>(buf + offset) + i);
       data = swap ? bswap16(data) : data;
-      dst.push_back(data);
+      temp[i] = data;
     }
+
+    dst = std::move(temp);
     advance(str_size * 2);
   }
 
