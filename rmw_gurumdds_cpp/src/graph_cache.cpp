@@ -445,7 +445,6 @@ graph_on_node_created(
   rmw_context_impl_t * const ctx,
   const rmw_node_t * const node)
 {
-  std::lock_guard<std::mutex> guard(ctx->common_ctx.node_update_mutex);
 
   RCUTILS_LOG_DEBUG_NAMED(
     RMW_GURUMDDS_ID,
@@ -476,7 +475,6 @@ graph_on_node_deleted(
   rmw_context_impl_t * const ctx,
   const rmw_node_t * const node)
 {
-  std::lock_guard<std::mutex> guard(ctx->common_ctx.node_update_mutex);
 
   rmw_dds_common::msg::ParticipantEntitiesInfo msg =
     ctx->common_ctx.graph_cache.remove_node(ctx->common_ctx.gid, node->name, node->namespace_);
@@ -494,7 +492,6 @@ graph_on_publisher_created(
   const rmw_node_t * const node,
   GurumddsPublisherInfo * const pub)
 {
-  std::lock_guard<std::mutex> guard(ctx->common_ctx.node_update_mutex);
 
   if (__add_local_publisher(ctx, node, pub->topic_writer, pub->publisher_gid) != RMW_RET_OK) {
     return RMW_RET_ERROR;
@@ -527,7 +524,6 @@ graph_on_publisher_deleted(
   GurumddsPublisherInfo * const pub)
 {
   bool failed = false;
-  std::lock_guard<std::mutex> guard(ctx->common_ctx.node_update_mutex);
 
   if (__remove_entity(ctx, pub->publisher_gid, false) != RMW_RET_OK) {
     RMW_SET_ERROR_MSG("failed to remove publisher from graph_cache");
@@ -554,7 +550,6 @@ graph_on_subscriber_created(
   const rmw_node_t * const node,
   GurumddsSubscriberInfo * const sub)
 {
-  std::lock_guard<std::mutex> guard(ctx->common_ctx.node_update_mutex);
 
   if (__add_local_subscriber(ctx, node, sub->topic_reader, sub->subscriber_gid) != RMW_RET_OK) {
     return RMW_RET_ERROR;
@@ -587,7 +582,6 @@ graph_on_subscriber_deleted(
   GurumddsSubscriberInfo * const sub)
 {
   bool failed = false;
-  std::lock_guard<std::mutex> guard(ctx->common_ctx.node_update_mutex);
 
   if (__remove_entity(ctx, sub->subscriber_gid, true) != RMW_RET_OK) {
     RMW_SET_ERROR_MSG("failed to remove subscriber from graph_cache");
@@ -614,7 +608,6 @@ graph_on_service_created(
   const rmw_node_t * const node,
   GurumddsServiceInfo * const svc)
 {
-  std::lock_guard<std::mutex> guard(ctx->common_ctx.node_update_mutex);
 
   const rmw_gid_t pub_gid = svc->publisher_gid;
   const rmw_gid_t sub_gid = svc->subscriber_gid;
@@ -680,7 +673,6 @@ graph_on_service_deleted(
   const rmw_node_t * const node,
   GurumddsServiceInfo * const svc)
 {
-  std::lock_guard<std::mutex> guard(ctx->common_ctx.node_update_mutex);
   bool failed = false;
 
   rmw_ret_t rc = __remove_entity(
@@ -720,7 +712,6 @@ graph_on_client_created(
   const rmw_node_t * const node,
   GurumddsClientInfo * const client)
 {
-  std::lock_guard<std::mutex> guard(ctx->common_ctx.node_update_mutex);
   const rmw_gid_t pub_gid = client->publisher_gid;
   const rmw_gid_t sub_gid = client->subscriber_gid;
   bool add_pub = false;
@@ -784,7 +775,6 @@ graph_on_client_deleted(
   const rmw_node_t * const node,
   GurumddsClientInfo * const client)
 {
-  std::lock_guard<std::mutex> guard(ctx->common_ctx.node_update_mutex);
   bool failed = false;
 
   rmw_ret_t rc = __remove_entity(
@@ -843,7 +833,6 @@ graph_on_participant_info(rmw_context_impl_t * ctx)
         reinterpret_cast<const uint32_t *>(&msg.gid.data)[2],
         reinterpret_cast<const uint32_t *>(&msg.gid.data)[3]);
 
-      std::lock_guard<std::mutex> guard(ctx->common_ctx.node_update_mutex);
       ctx->common_ctx.graph_cache.update_participant_entities(msg);
     }
   } while (taken);
@@ -870,7 +859,6 @@ graph_add_participant(
     enclave_str = enclave;
   }
 
-  std::lock_guard<std::mutex> guard(ctx->common_ctx.node_update_mutex);
   ctx->common_ctx.graph_cache.add_participant(gid, enclave_str);
 
   return RMW_RET_OK;
@@ -889,7 +877,6 @@ graph_remove_participant(
     return RMW_RET_OK;
   }
 
-  std::lock_guard<std::mutex> guard(ctx->common_ctx.node_update_mutex);
   ctx->common_ctx.graph_cache.remove_participant(gid);
 
   return RMW_RET_OK;
@@ -909,7 +896,6 @@ graph_add_remote_entity(
   const dds_LifespanQosPolicy * const lifespan,
   const bool is_reader)
 {
-  std::lock_guard<std::mutex> guard(ctx->common_ctx.node_update_mutex);
 
   rmw_gid_t endp_gid, dp_gid;
   guid_to_gid(*endp_guid, endp_gid);
@@ -955,6 +941,5 @@ graph_remove_entity(
     return RMW_RET_OK;
   }
 
-  std::lock_guard<std::mutex> guard(ctx->common_ctx.node_update_mutex);
   return __remove_entity(ctx, gid, is_reader);
 }

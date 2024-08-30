@@ -54,7 +54,7 @@ rmw_create_client(
     node,
     node->implementation_identifier,
     RMW_GURUMDDS_ID,
-    return nullptr)
+    return nullptr);
   RMW_CHECK_ARGUMENT_FOR_NULL(type_supports, nullptr);
   RMW_CHECK_ARGUMENT_FOR_NULL(service_name, nullptr);
   if (strlen(service_name) == 0) {
@@ -750,8 +750,8 @@ rmw_send_request(
     memset(&sampleinfo_ex, 0, sizeof(dds_SampleInfoEx));
     ros_sn_to_dds_sn(++client_info->sequence_number, &sampleinfo_ex.seq);
     ros_guid_to_dds_guid(
-      reinterpret_cast<int8_t *>(client_info->writer_guid),
-      reinterpret_cast<int8_t *>(&sampleinfo_ex.src_guid));
+      reinterpret_cast<const uint8_t *>(client_info->writer_guid),
+      reinterpret_cast<uint8_t *>(&sampleinfo_ex.src_guid));
 
     if (dds_DataWriter_raw_write_w_sampleinfoex(
         request_writer, dds_request, size, &sampleinfo_ex) != dds_RETCODE_OK)
