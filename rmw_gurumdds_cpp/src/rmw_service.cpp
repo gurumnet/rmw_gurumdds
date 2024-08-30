@@ -51,7 +51,7 @@ rmw_create_service(
     node,
     node->implementation_identifier,
     RMW_GURUMDDS_ID,
-    return nullptr)
+    return nullptr);
   RMW_CHECK_ARGUMENT_FOR_NULL(type_supports, nullptr);
   RMW_CHECK_ARGUMENT_FOR_NULL(service_name, nullptr);
   if (strlen(service_name) == 0) {
@@ -858,7 +858,7 @@ rmw_send_response(
     ros_sn_to_dds_sn(request_header->sequence_number, &sampleinfo_ex.seq);
     ros_guid_to_dds_guid(
       request_header->writer_guid,
-      reinterpret_cast<int8_t *>(&sampleinfo_ex.src_guid));
+      reinterpret_cast<uint8_t *>(&sampleinfo_ex.src_guid));
 
     if (dds_DataWriter_raw_write_w_sampleinfoex(
         response_writer, dds_response, size, &sampleinfo_ex) != dds_RETCODE_OK)
