@@ -120,6 +120,8 @@ rmw_create_service(
   std::string request_metastring;
   std::string response_metastring;
 
+  const rosidl_type_hash_t* type_hash;
+
   // Create topic and type name strings
   service_type_name =
     create_service_type_name(type_support->data, type_support->typesupport_identifier);
@@ -257,7 +259,8 @@ rmw_create_service(
     }
   }
 
-  if (!get_datareader_qos(subscriber, qos_policies, &datareader_qos)) {
+  type_hash = type_support->request_typesupport->get_type_hash_func(type_support->request_typesupport);
+  if (!get_datareader_qos(subscriber, qos_policies, *type_hash, &datareader_qos)) {
     // Error message already set
     goto fail;
   }
@@ -285,7 +288,8 @@ rmw_create_service(
   }
   service_info->read_condition = read_condition;
 
-  if (!get_datawriter_qos(publisher, qos_policies, &datawriter_qos)) {
+  type_hash = type_support->response_typesupport->get_type_hash_func(type_support->response_typesupport);
+  if (!get_datawriter_qos(publisher, qos_policies, *type_hash, &datawriter_qos)) {
     // Error message already set
     goto fail;
   }
