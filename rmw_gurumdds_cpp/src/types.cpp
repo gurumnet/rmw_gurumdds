@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <cstdint>
+
 #include "rmw/impl/cpp/key_value.hpp"
 
 #include "rmw_gurumdds_cpp/event_converter.hpp"
