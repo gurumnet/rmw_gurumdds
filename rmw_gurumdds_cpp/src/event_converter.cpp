@@ -43,13 +43,14 @@ bool is_event_supported(const rmw_event_type_t event_t)
 
 rmw_ret_t check_dds_ret_code(const dds_ReturnCode_t dds_return_code)
 {
-  if (dds_return_code == dds_RETCODE_OK) {
-    return RMW_RET_OK;
-  } else if (dds_return_code == dds_RETCODE_ERROR) {
-    return RMW_RET_ERROR;
-  } else if (dds_return_code == dds_RETCODE_TIMEOUT) {
-    return RMW_RET_TIMEOUT;
-  } else {
-    return RMW_RET_ERROR;
+  switch(dds_return_code) {
+    case dds_RETCODE_OK:
+      return RMW_RET_OK;
+    case dds_RETCODE_ERROR:
+      return RMW_RET_ERROR;
+    case dds_RETCODE_TIMEOUT:
+      return RMW_RET_TIMEOUT;
+    default:
+      return RMW_RET_ERROR;
   }
 }
