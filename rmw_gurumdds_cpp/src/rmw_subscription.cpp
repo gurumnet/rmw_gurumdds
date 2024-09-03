@@ -139,7 +139,8 @@ __rmw_create_subscription(
     }
   }
 
-  if (!get_datareader_qos(sub, qos_policies, &datareader_qos)) {
+  const rosidl_type_hash_t& type_hash = *type_support->get_type_hash_func(type_support);
+  if (!get_datareader_qos(sub, qos_policies, type_hash, &datareader_qos)) {
     // Error message already set
     return nullptr;
   }

@@ -123,6 +123,7 @@ rmw_create_client(
   std::string response_type_name;
   std::string request_metastring;
   std::string response_metastring;
+  const rosidl_type_hash_t* type_hash;
 
   // Create topic and type name strings
   service_type_name =
@@ -262,7 +263,8 @@ rmw_create_client(
   }
 
   // Create datawriter for request
-  if (!get_datawriter_qos(publisher, qos_policies, &datawriter_qos)) {
+  type_hash = type_support->request_typesupport->get_type_hash_func(type_support->request_typesupport);
+  if (!get_datawriter_qos(publisher, qos_policies, *type_hash, &datawriter_qos)) {
     // Error message already set
     goto fail;
   }
@@ -282,7 +284,8 @@ rmw_create_client(
     goto fail;
   }
 
-  if (!get_datareader_qos(subscriber, qos_policies, &datareader_qos)) {
+  type_hash = type_support->response_typesupport->get_type_hash_func(type_support->response_typesupport);
+  if (!get_datareader_qos(subscriber, qos_policies, *type_hash, &datareader_qos)) {
     // error message already set
     goto fail;
   }
