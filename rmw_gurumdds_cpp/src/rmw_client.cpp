@@ -556,6 +556,29 @@ rmw_service_server_is_available(
 }
 
 rmw_ret_t
+rmw_get_gid_for_client(const rmw_client_t * client, rmw_gid_t * gid)
+{
+  RMW_CHECK_ARGUMENT_FOR_NULL(client, RMW_RET_INVALID_ARGUMENT);
+  RMW_CHECK_ARGUMENT_FOR_NULL(gid, RMW_RET_INVALID_ARGUMENT);
+  RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
+    client,
+    client->implementation_identifier,
+    RMW_GURUMDDS_ID,
+    return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
+    
+  GurumddsClientInfo * client_info = static_cast<GurumddsClientInfo *>(client->data);
+  if (client_info == nullptr) {
+    RMW_SET_ERROR_MSG("client info is null");
+    return RMW_RET_ERROR;
+  }
+
+  *gid = client_info->publisher_gid;
+  gid->implementation_identifier = RMW_GURUMDDS_ID;
+
+  return RMW_RET_OK;
+}
+
+rmw_ret_t
 rmw_client_request_publisher_get_actual_qos(
   const rmw_client_t * client,
   rmw_qos_profile_t * qos)
