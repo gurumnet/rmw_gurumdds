@@ -138,7 +138,8 @@ __rmw_create_publisher(
     }
   }
 
-  if (!get_datawriter_qos(pub, qos_policies, &datawriter_qos)) {
+  const rosidl_type_hash_t& type_hash = *type_support->get_type_hash_func(type_support);
+  if (!get_datawriter_qos(pub, qos_policies, type_hash, &datawriter_qos)) {
     // Error message already set
     return nullptr;
   }

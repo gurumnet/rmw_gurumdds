@@ -14,7 +14,13 @@
 
 #include <limits>
 
+#include <string>
+
+#include "rosidl_runtime_c/type_hash.h"
+
 #include "rmw_dds_common/time_utils.hpp"
+
+#include "rmw_dds_common/qos.hpp"
 
 #include "rmw_gurumdds_cpp/qos.hpp"
 
@@ -141,8 +147,8 @@ bool
 get_datawriter_qos(
   dds_Publisher * publisher,
   const rmw_qos_profile_t * qos_profile,
-  dds_DataWriterQos * datawriter_qos)
-{
+  const rosidl_type_hash_t & type_hash,
+  dds_DataWriterQos * datawriter_qos) {
   dds_ReturnCode_t ret = dds_Publisher_get_default_datawriter_qos(publisher, datawriter_qos);
   if (ret != dds_RETCODE_OK) {
     RMW_SET_ERROR_MSG("failed to get default datawriter qos");
@@ -155,12 +161,23 @@ get_datawriter_qos(
 
   set_entity_qos_from_profile_generic(qos_profile, datawriter_qos);
 
+  std::string user_data_str;
+  if (RMW_RET_OK != rmw_dds_common::encode_type_hash_for_user_data_qos(type_hash, user_data_str)) {
+    user_data_str.clear();
+    // Since we are going to go on without a hash, we clear the error so other
+    // code won't overwrite it.
+    rmw_reset_error();
+  }
+
+  memcpy(datawriter_qos->user_data.value, user_data_str.data(), user_data_str.size());
+
   return true;
 }
 
 bool get_datareader_qos(
   dds_Subscriber * subscriber,
   const rmw_qos_profile_t * qos_profile,
+  const rosidl_type_hash_t & type_hash,
   dds_DataReaderQos * datareader_qos)
 {
   dds_ReturnCode_t ret = dds_Subscriber_get_default_datareader_qos(subscriber, datareader_qos);
@@ -170,6 +187,17 @@ bool get_datareader_qos(
   }
 
   set_entity_qos_from_profile_generic(qos_profile, datareader_qos);
+
+
+  std::string user_data_str;
+  if (RMW_RET_OK != rmw_dds_common::encode_type_hash_for_user_data_qos(type_hash, user_data_str)) {
+    user_data_str.clear();
+    // Since we are going to go on without a hash, we clear the error so other
+    // code won't overwrite it.
+    rmw_reset_error();
+  }
+
+  memcpy(datareader_qos->user_data.value, user_data_str.data(), user_data_str.size());
 
   return true;
 }

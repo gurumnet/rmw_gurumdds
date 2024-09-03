@@ -27,9 +27,9 @@
 
 RMW_GURUMDDS_CPP_PUBLIC
 bool
-get_datawriter_qos(
-  dds_Publisher * publisher,
+get_datawriter_qos(dds_Publisher * publisher,
   const rmw_qos_profile_t * qos_profile,
+  const rosidl_type_hash_t & type_hash,
   dds_DataWriterQos * datawriter_qos);
 
 RMW_GURUMDDS_CPP_PUBLIC
@@ -37,6 +37,7 @@ bool
 get_datareader_qos(
   dds_Subscriber * subscriber,
   const rmw_qos_profile_t * qos_profile,
+  const rosidl_type_hash_t & type_hash,
   dds_DataReaderQos * datareader_qos);
 
 RMW_GURUMDDS_CPP_PUBLIC
