@@ -122,7 +122,7 @@ rmw_ret_t __detach_condition(
 {
   dds_ReturnCode_t dds_return_code = dds_WaitSet_detach_condition(dds_wait_set, condition);
   rmw_ret_t from_dds = check_dds_ret_code(dds_return_code);
-  if (from_dds != RMW_RET_OK) {
+  if (dds_return_code != dds_RETCODE_PRECONDITION_NOT_MET && from_dds != RMW_RET_OK) {
     RMW_SET_ERROR_MSG("failed to detach condition from wait set");
     return from_dds;
   }
