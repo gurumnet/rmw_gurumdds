@@ -106,4 +106,13 @@ rmw_return_loaned_message_from_publisher(
   void * loaned_message);
 }  // extern "C"
 
+namespace rmw_gurumdds {
+rmw_ret_t
+publish(
+  const char * identifier,
+  const rmw_publisher_t * publisher,
+  const void * ros_message,
+  rmw_publisher_allocation_t * allocation);
+}
+
 #endif  // RMW_GURUMDDS_CPP__RMW_PUBLISHER_HPP_

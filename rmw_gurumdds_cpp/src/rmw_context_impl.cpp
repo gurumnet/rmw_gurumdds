@@ -27,10 +27,27 @@
 
 #include "rmw_gurumdds_cpp/graph_cache.hpp"
 #include "rmw_gurumdds_cpp/rmw_context_impl.hpp"
+#include "rmw_gurumdds_cpp/rmw_publisher.hpp"
 
 #include "rosidl_typesupport_cpp/message_type_support.hpp"
 
 using rmw_dds_common::msg::ParticipantEntitiesInfo;
+
+rmw_context_impl_s::rmw_context_impl_s(rmw_context_t* const base)
+  : common_ctx(),
+  base(base),
+  domain_id(base->actual_domain_id),
+  participant(nullptr),
+  publisher(nullptr),
+  subscriber(nullptr),
+  localhost_only(base->options.localhost_only == RMW_LOCALHOST_ONLY_ENABLED)
+{
+  /* destructor relies on these being initialized properly */
+  common_ctx.thread_is_running.store(false);
+  common_ctx.graph_guard_condition = nullptr;
+  common_ctx.pub = nullptr;
+  common_ctx.sub = nullptr;
+}
 
 rmw_ret_t
 rmw_context_impl_t::initialize_node(
