@@ -52,11 +52,13 @@ rmw_count_publishers(
   if (RMW_RET_OK != ret) {
     return ret;
   }
+
   if (RMW_TOPIC_VALID != validation_result) {
     const char * reason = rmw_full_topic_name_validation_result_string(validation_result);
     RMW_SET_ERROR_MSG_WITH_FORMAT_STRING("topic_name argument is invalid: %s", reason);
     return RMW_RET_INVALID_ARGUMENT;
   }
+  
   RMW_CHECK_ARGUMENT_FOR_NULL(count, RMW_RET_INVALID_ARGUMENT);
 
   auto common_ctx = &node->context->impl->common_ctx;
@@ -84,11 +86,13 @@ rmw_count_subscribers(
   if (RMW_RET_OK != ret) {
     return ret;
   }
+
   if (RMW_TOPIC_VALID != validation_result) {
     const char * reason = rmw_full_topic_name_validation_result_string(validation_result);
     RMW_SET_ERROR_MSG_WITH_FORMAT_STRING("topic_name argument is invalid: %s", reason);
     return RMW_RET_INVALID_ARGUMENT;
   }
+  
   RMW_CHECK_ARGUMENT_FOR_NULL(count, RMW_RET_INVALID_ARGUMENT);
 
   auto common_ctx = &node->context->impl->common_ctx;
@@ -117,6 +121,7 @@ rmw_count_clients(
   if (RMW_RET_OK != ret) {
     return ret;
   }
+
   if (RMW_TOPIC_VALID != validation_result) {
     const char * reason = rmw_full_topic_name_validation_result_string(validation_result);
     RMW_SET_ERROR_MSG_WITH_FORMAT_STRING("service_name argument is invalid: %s", reason);
@@ -149,6 +154,7 @@ rmw_count_services(
   if (RMW_RET_OK != ret) {
     return ret;
   }
+
   if (RMW_TOPIC_VALID != validation_result) {
     const char * reason = rmw_full_topic_name_validation_result_string(validation_result);
     RMW_SET_ERROR_MSG_WITH_FORMAT_STRING("service_name argument is invalid: %s", reason);
