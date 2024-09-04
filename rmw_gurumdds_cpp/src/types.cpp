@@ -67,6 +67,37 @@ rmw_ret_t GurumddsPublisherInfo::get_status(
     rmw_status->total_count = status.total_count;
     rmw_status->total_count_change = status.total_count_change;
     rmw_status->last_policy_kind = convert_qos_policy(status.last_policy_id);
+  } else if (mask == dds_INCONSISTENT_TOPIC_STATUS) {
+    dds_Topic* const topic = dds_DataWriter_get_topic(this->topic_writer);
+
+    if(topic == nullptr) {
+      return RMW_RET_ERROR;
+    }
+
+    dds_InconsistentTopicStatus status{};
+    auto dds_ret = dds_Topic_get_inconsistent_topic_status(topic, &status);
+
+    if(dds_ret != dds_RETCODE_OK) {
+      return check_dds_ret_code(dds_ret);
+    }
+
+    auto const rmw_status = static_cast<rmw_incompatible_type_status_t *>(event);
+    rmw_status->total_count = status.total_count;
+    rmw_status->total_count_change = status.total_count_change;
+  } else if (mask == dds_PUBLICATION_MATCHED_STATUS) {
+    dds_PublicationMatchedStatus status{};
+    dds_ReturnCode_t dds_ret =
+      dds_DataWriter_get_publication_matched_status(this->topic_writer, &status);
+
+    if(dds_ret != dds_RETCODE_OK) {
+      return check_dds_ret_code(dds_ret);
+    }
+
+    auto const rmw_status = static_cast<rmw_matched_status_t *>(event);
+    rmw_status->current_count = status.current_count;
+    rmw_status->current_count_change = status.current_count_change;
+    rmw_status->total_count = status.total_count;
+    rmw_status->total_count_change = status.total_count_change;
   } else {
     return RMW_RET_UNSUPPORTED;
   }
@@ -138,6 +169,37 @@ rmw_ret_t GurumddsSubscriberInfo::get_status(
     }
 
     auto rmw_status = static_cast<rmw_message_lost_status_t *>(event);
+    rmw_status->total_count = status.total_count;
+    rmw_status->total_count_change = status.total_count_change;
+  } else if (mask == dds_INCONSISTENT_TOPIC_STATUS) {
+  dds_Topic* const topic = reinterpret_cast<dds_Topic*>(dds_DataReader_get_topicdescription(this->topic_reader));
+
+  if(topic == nullptr) {
+    return RMW_RET_ERROR;
+  }
+
+  dds_InconsistentTopicStatus status{};
+  auto dds_ret = dds_Topic_get_inconsistent_topic_status(topic, &status);
+
+  if(dds_ret != dds_RETCODE_OK) {
+    return check_dds_ret_code(dds_ret);
+  }
+
+  auto const rmw_status = static_cast<rmw_incompatible_type_status_t *>(event);
+  rmw_status->total_count = status.total_count;
+  rmw_status->total_count_change = status.total_count_change;
+} else if (mask == dds_SUBSCRIPTION_MATCHED_STATUS) {
+    dds_SubscriptionMatchedStatus status{};
+    dds_ReturnCode_t dds_ret =
+      dds_DataReader_get_subscription_matched_status(this->topic_reader, &status);
+
+    if(dds_ret != dds_RETCODE_OK) {
+      return check_dds_ret_code(dds_ret);
+    }
+
+    auto const rmw_status = static_cast<rmw_matched_status_t *>(event);
+    rmw_status->current_count = status.current_count;
+    rmw_status->current_count_change = status.current_count_change;
     rmw_status->total_count = status.total_count;
     rmw_status->total_count_change = status.total_count_change;
   } else {
