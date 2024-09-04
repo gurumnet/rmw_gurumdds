@@ -391,9 +391,8 @@ fail:
     dds_TypeSupport_delete(response_typesupport);
   }
 
-  if (service_info != nullptr) {
-    delete service_info;
-  }
+  delete service_info;
+
   return nullptr;
 }
 

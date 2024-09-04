@@ -169,7 +169,7 @@ __parse_map(uint8_t * const data, const uint32_t data_len)
 static rmw_ret_t
 __get_user_data_key(
   dds_ParticipantBuiltinTopicData * data,
-  const std::string key,
+  const std::string& key,
   std::string & value,
   bool & found)
 {
@@ -177,7 +177,7 @@ __get_user_data_key(
   uint8_t * user_data =
     static_cast<uint8_t *>(data->user_data.value);
   const uint32_t user_data_len = data->user_data.size;
-  if (nullptr == user_data || user_data_len == 0) {
+  if (user_data_len == 0) {
     return RMW_RET_OK;
   }
 
@@ -211,7 +211,7 @@ void on_participant_changed(
   memcpy(dp_guid.prefix, dp_guid_prefix.value, sizeof(dp_guid.prefix));
   dp_guid.entityId = ENTITYID_PARTICIPANT;
 
-  if (reinterpret_cast<void *>(handle) == NULL) {
+  if (handle == dds_HANDLE_NIL) {
     graph_remove_participant(ctx, &dp_guid);
   } else {
     std::string enclave_str;
@@ -256,7 +256,7 @@ void on_publication_changed(
   dds_BuiltinTopicKey_to_GUID(&endp_guid_prefix, data->key);
   memcpy(&endp_guid.entityId, endp_guid_prefix.value, sizeof(endp_guid.entityId));
 
-  if (reinterpret_cast<void *>(handle) == NULL) {
+  if (handle == dds_HANDLE_NIL) {
     RCUTILS_LOG_DEBUG_NAMED(
       "pub on data available",
       "[ud] endp_gid=0x%08X.0x%08X.0x%08X.0x%08X ",
@@ -320,7 +320,7 @@ void on_subscription_changed(
   dds_BuiltinTopicKey_to_GUID(&endp_guid_prefix, data->key);
   memcpy(&endp_guid.entityId, endp_guid_prefix.value, sizeof(endp_guid.entityId));
 
-  if (reinterpret_cast<void *>(handle) == NULL) {
+  if (handle == dds_HANDLE_NIL) {
     RCUTILS_LOG_DEBUG_NAMED(
       "sub on data available",
       "[ud] endp_gid=0x%08X.0x%08X.0x%08X.0x%08X ",

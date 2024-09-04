@@ -680,8 +680,7 @@ rmw_publish_serialized_message(
   dds_DataWriter * topic_writer = publisher_info->topic_writer;
   RCUTILS_CHECK_ARGUMENT_FOR_NULL(topic_writer, RMW_RET_ERROR);
 
-  dds_SampleInfoEx sampleinfo_ex;
-  memset(&sampleinfo_ex, 0, sizeof(dds_SampleInfoEx));
+  dds_SampleInfoEx sampleinfo_ex{};
   ros_sn_to_dds_sn(++publisher_info->sequence_number, &sampleinfo_ex.seq);
   ros_guid_to_dds_guid(
     reinterpret_cast<const uint8_t *>(publisher_info->publisher_gid.data),
@@ -694,20 +693,9 @@ rmw_publish_serialized_message(
     &sampleinfo_ex
   );
 
-  const char * errstr;
-  if (ret == dds_RETCODE_OK) {
-    errstr = "dds_RETCODE_OK";
-  } else if (ret == dds_RETCODE_TIMEOUT) {
-    errstr = "dds_RETCODE_TIMEOUT";
-  } else if (ret == dds_RETCODE_OUT_OF_RESOURCES) {
-    errstr = "dds_RETCODE_OUT_OF_RESOURCES";
-  } else {
-    errstr = "dds_RETCODE_ERROR";
-  }
-
   if (ret != dds_RETCODE_OK) {
     std::stringstream errmsg;
-    errmsg << "failed to publish data: " << errstr << ", " << ret;
+    errmsg << "failed to publish data: " << dds_ReturnCode_to_string(ret) << ", " << ret;
     RMW_SET_ERROR_MSG(errmsg.str().c_str());
     return RMW_RET_ERROR;
   }
