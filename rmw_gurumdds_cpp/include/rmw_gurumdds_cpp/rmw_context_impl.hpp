@@ -68,21 +68,7 @@ struct rmw_context_impl_s
 
   std::mutex endpoint_mutex;
 
-  explicit rmw_context_impl_s(rmw_context_t * const base)
-  : common_ctx(),
-    base(base),
-    domain_id(base->actual_domain_id),
-    participant(nullptr),
-    publisher(nullptr),
-    subscriber(nullptr),
-    localhost_only(base->options.localhost_only == RMW_LOCALHOST_ONLY_ENABLED)
-  {
-    /* destructor relies on these being initialized properly */
-    common_ctx.thread_is_running.store(false);
-    common_ctx.graph_guard_condition = nullptr;
-    common_ctx.pub = nullptr;
-    common_ctx.sub = nullptr;
-  }
+  explicit rmw_context_impl_s(rmw_context_t * const base);
 
   ~rmw_context_impl_s()
   {
