@@ -72,7 +72,7 @@ create_type_name(const void * untyped_members, const char * identifier)
   }
 
   RMW_SET_ERROR_MSG("Unknown typesupport identifier");
-  return std::string("");
+  return {};
 }
 
 template<typename MessageMembersT>
@@ -228,7 +228,7 @@ create_metastring(const void * untyped_members, const char * identifier)
   }
 
   RMW_SET_ERROR_MSG("Unknown typesupport identifier");
-  return std::string("");
+  return {};
 }
 
 template<typename MessageMembersT>
