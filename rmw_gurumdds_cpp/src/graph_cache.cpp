@@ -350,6 +350,14 @@ graph_cache_initialize(rmw_context_impl_t * const ctx)
       }
     });
 
+  ctx->common_ctx.publish_callback = [](const rmw_publisher_t * pub, const void * msg) {
+    return rmw_gurumdds::publish(
+      RMW_GURUMDDS_ID,
+      pub,
+      msg,
+      nullptr);
+  };
+
   entity_get_gid(reinterpret_cast<dds_Entity *>(ctx->participant), ctx->common_ctx.gid);
   std::string dp_enclave = ctx->base->options.enclave;
   ctx->common_ctx.graph_cache.add_participant(ctx->common_ctx.gid, dp_enclave);
@@ -447,15 +455,6 @@ graph_on_node_created(
     reinterpret_cast<const uint32_t *>(ctx->common_ctx.gid.data)[2],
     reinterpret_cast<const uint32_t *>(ctx->common_ctx.gid.data)[3]);
 
-  rmw_dds_common::msg::ParticipantEntitiesInfo msg =
-    ctx->common_ctx.graph_cache.add_node(ctx->common_ctx.gid, node->name, node->namespace_);
-
-  if (graph_publish_update(ctx, reinterpret_cast<void *>(&msg)) != RMW_RET_OK) {
-    static_cast<void>(ctx->common_ctx.graph_cache.remove_node(
-      ctx->common_ctx.gid, node->name, node->namespace_));
-    return RMW_RET_ERROR;
-  }
-
   return RMW_RET_OK;
 }
 
@@ -467,10 +466,6 @@ graph_on_node_deleted(
 
   rmw_dds_common::msg::ParticipantEntitiesInfo msg =
     ctx->common_ctx.graph_cache.remove_node(ctx->common_ctx.gid, node->name, node->namespace_);
-
-  if (graph_publish_update(ctx, reinterpret_cast<void *>(&msg)) != RMW_RET_OK) {
-    return RMW_RET_ERROR;
-  }
 
   return RMW_RET_OK;
 }
@@ -484,23 +479,6 @@ graph_on_publisher_created(
 
   const rosidl_type_hash_s& type_hash = *pub->rosidl_message_typesupport->get_type_hash_func(pub->rosidl_message_typesupport);
   if (rmw_gurumdds::graph::add_local_publisher(ctx, node, pub->topic_writer, type_hash, pub->publisher_gid) != RMW_RET_OK) {
-    return RMW_RET_ERROR;
-  }
-
-  rmw_dds_common::msg::ParticipantEntitiesInfo msg =
-    ctx->common_ctx.graph_cache.associate_writer(
-    pub->publisher_gid,
-    ctx->common_ctx.gid,
-    node->name,
-    node->namespace_);
-
-  if (graph_publish_update(ctx, reinterpret_cast<void *>(&msg)) != RMW_RET_OK) {
-    rmw_gurumdds::graph::remove_entity(ctx, pub->publisher_gid, false);
-    static_cast<void>(ctx->common_ctx.graph_cache.dissociate_writer(
-      pub->publisher_gid,
-      ctx->common_ctx.gid,
-      node->name,
-      node->namespace_));
     return RMW_RET_ERROR;
   }
 
@@ -527,10 +505,6 @@ graph_on_publisher_deleted(
     node->name,
     node->namespace_);
 
-  if (graph_publish_update(ctx, reinterpret_cast<void *>(&msg)) != RMW_RET_OK) {
-    return RMW_RET_ERROR;
-  }
-
   return failed ? RMW_RET_ERROR : RMW_RET_OK;
 }
 
@@ -546,23 +520,6 @@ graph_on_subscriber_created(
     return RMW_RET_ERROR;
   }
 
-  rmw_dds_common::msg::ParticipantEntitiesInfo msg =
-    ctx->common_ctx.graph_cache.associate_reader(
-    sub->subscriber_gid,
-    ctx->common_ctx.gid,
-    node->name,
-    node->namespace_);
-
-  if (graph_publish_update(ctx, reinterpret_cast<void *>(&msg)) != RMW_RET_OK) {
-    rmw_gurumdds::graph::remove_entity(ctx, sub->subscriber_gid, true);
-    static_cast<void>(ctx->common_ctx.graph_cache.dissociate_reader(
-      sub->subscriber_gid,
-      ctx->common_ctx.gid,
-      node->name,
-      node->namespace_));
-    return RMW_RET_ERROR;
-  }
-
   return RMW_RET_OK;
 }
 
@@ -572,22 +529,12 @@ graph_on_subscriber_deleted(
   const rmw_node_t * const node,
   GurumddsSubscriberInfo * const sub)
 {
+  RCUTILS_UNUSED(node);
   bool failed = false;
 
   if (rmw_gurumdds::graph::remove_entity(ctx, sub->subscriber_gid, true) != RMW_RET_OK) {
     RMW_SET_ERROR_MSG("failed to remove subscriber from graph_cache");
     failed = true;
-  }
-
-  rmw_dds_common::msg::ParticipantEntitiesInfo msg =
-    ctx->common_ctx.graph_cache.dissociate_reader(
-    sub->subscriber_gid,
-    ctx->common_ctx.gid,
-    node->name,
-    node->namespace_);
-
-  if (graph_publish_update(ctx, reinterpret_cast<void *>(&msg)) != RMW_RET_OK) {
-    return RMW_RET_ERROR;
   }
 
   return failed ? RMW_RET_ERROR : RMW_RET_OK;
@@ -636,29 +583,6 @@ graph_on_service_created(
     node->name,
     node->namespace_);
 
-  rmw_dds_common::msg::ParticipantEntitiesInfo msg =
-    ctx->common_ctx.graph_cache.associate_reader(
-    sub_gid,
-    ctx->common_ctx.gid,
-    node->name,
-    node->namespace_);
-
-  if (graph_publish_update(ctx, reinterpret_cast<void *>(&msg)) != RMW_RET_OK) {
-    ctx->common_ctx.graph_cache.dissociate_writer(
-      pub_gid,
-      ctx->common_ctx.gid,
-      node->name,
-      node->namespace_);
-
-    ctx->common_ctx.graph_cache.dissociate_reader(
-      sub_gid,
-      ctx->common_ctx.gid,
-      node->name,
-      node->namespace_);
-
-    return RMW_RET_ERROR;
-  }
-
   scope_exit_entities_reset.cancel();
 
   return RMW_RET_OK;
@@ -689,16 +613,6 @@ graph_on_service_deleted(
     ctx->common_ctx.gid,
     node->name,
     node->namespace_);
-
-  rmw_dds_common::msg::ParticipantEntitiesInfo msg =
-    ctx->common_ctx.graph_cache.dissociate_reader(
-    svc->subscriber_gid,
-    ctx->common_ctx.gid,
-    node->name,
-    node->namespace_);
-
-  rc = graph_publish_update(ctx, reinterpret_cast<void *>(&msg));
-  failed = failed && (RMW_RET_OK == rc);
 
   return failed ? RMW_RET_ERROR : RMW_RET_OK;
 }
@@ -746,28 +660,6 @@ graph_on_client_created(
     node->name,
     node->namespace_);
 
-  rmw_dds_common::msg::ParticipantEntitiesInfo msg =
-    ctx->common_ctx.graph_cache.associate_reader(
-    sub_gid,
-    ctx->common_ctx.gid,
-    node->name,
-    node->namespace_);
-
-  if (graph_publish_update(ctx, reinterpret_cast<void *>(&msg)) != RMW_RET_OK) {
-    ctx->common_ctx.graph_cache.dissociate_writer(
-      pub_gid,
-      ctx->common_ctx.gid,
-      node->name,
-      node->namespace_);
-
-    ctx->common_ctx.graph_cache.dissociate_reader(
-      sub_gid,
-      ctx->common_ctx.gid,
-      node->name,
-      node->namespace_);
-    return RMW_RET_ERROR;
-  }
-
   scope_exit_entities_reset.cancel();
 
   return RMW_RET_OK;
@@ -798,16 +690,6 @@ graph_on_client_deleted(
     ctx->common_ctx.gid,
     node->name,
     node->namespace_);
-
-  rmw_dds_common::msg::ParticipantEntitiesInfo msg =
-    ctx->common_ctx.graph_cache.dissociate_reader(
-    client->subscriber_gid,
-    ctx->common_ctx.gid,
-    node->name,
-    node->namespace_);
-
-  rc = graph_publish_update(ctx, reinterpret_cast<void *>(&msg));
-  failed = failed && (RMW_RET_OK == rc);
 
   return failed ? RMW_RET_ERROR : RMW_RET_OK;
 }
