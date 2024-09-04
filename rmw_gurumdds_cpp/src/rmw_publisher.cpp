@@ -29,6 +29,8 @@
 #include "rmw/types.h"
 #include "rmw/validate_full_topic_name.h"
 
+#include "rmw_dds_common/qos.hpp"
+
 #include "rmw_gurumdds_cpp/gid.hpp"
 #include "rmw_gurumdds_cpp/graph_cache.hpp"
 #include "rmw_gurumdds_cpp/identifier.hpp"
@@ -303,9 +305,17 @@ rmw_create_publisher(
   RMW_CHECK_ARGUMENT_FOR_NULL(qos_policies, nullptr);
   RMW_CHECK_ARGUMENT_FOR_NULL(publisher_options, nullptr);
 
-  if (!qos_policies->avoid_ros_namespace_conventions) {
+  // Adapt any 'best available' QoS options
+  rmw_qos_profile_t adapted_qos_policies = *qos_policies;
+  rmw_ret_t ret = rmw_dds_common::qos_profile_get_best_available_for_topic_publisher(
+    node, topic_name, &adapted_qos_policies, rmw_get_subscriptions_info_by_topic);
+  if (ret != RMW_RET_OK) {
+    return nullptr;
+  }
+  
+  if (!adapted_qos_policies.avoid_ros_namespace_conventions) {
     int validation_result = RMW_TOPIC_VALID;
-    rmw_ret_t ret = rmw_validate_full_topic_name(topic_name, &validation_result, nullptr);
+    ret = rmw_validate_full_topic_name(topic_name, &validation_result, nullptr);
     if (ret != RMW_RET_OK) {
       return nullptr;
     }
@@ -334,7 +344,7 @@ rmw_create_publisher(
     ctx->publisher,
     type_supports,
     topic_name,
-    qos_policies,
+    &adapted_qos_policies,
     publisher_options,
     ctx->localhost_only);
 
