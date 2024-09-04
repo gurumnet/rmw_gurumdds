@@ -68,9 +68,9 @@ __gather_event_conditions(
     }
 
     if (is_event_supported(now->event_type)) {
-      auto map_pair = status_map.insert(std::make_pair(status_condition, 0));
+      auto map_pair = status_map.emplace(status_condition, 0);
       auto it = map_pair.first;
-      status_map[status_condition] = get_status_kind_from_rmw(now->event_type) | it->second;
+      it->second |= get_status_kind_from_rmw(now->event_type);
     } else {
       RMW_SET_ERROR_MSG_WITH_FORMAT_STRING("unsupported event: %d", now->event_type);
     }
@@ -142,7 +142,7 @@ __rmw_wait(
   rmw_wait_set_t * wait_set,
   const rmw_time_t * wait_timeout)
 {
-  (void)events;
+  RCUTILS_UNUSED(events);
   struct atexit_t
   {
     ~atexit_t()
@@ -369,7 +369,7 @@ __rmw_wait(
 
     for (uint32_t i = 0; i < dds_ConditionSeq_length(conds); ++i) {
       dds_Condition * cond = dds_ConditionSeq_get(conds, i);
-      if (cond == NULL) {
+      if (cond == nullptr) {
         continue;
       }
 
@@ -385,7 +385,7 @@ __rmw_wait(
       }
 
       dds_Condition * cond = dds_ConditionSeq_get(conds, i);
-      if (cond == NULL) {
+      if (cond == nullptr) {
         continue;
       }
 
@@ -427,7 +427,7 @@ __rmw_wait(
       }
 
       if (j >= dds_ConditionSeq_length(active_conditions)) {
-        subscriptions->subscribers[i] = 0;
+        subscriptions->subscribers[i] = nullptr;
       }
 
       rmw_ret_t rmw_ret_code = __detach_condition(
@@ -496,7 +496,7 @@ __rmw_wait(
       }
 
       if (j >= dds_ConditionSeq_length(active_conditions)) {
-        services->services[i] = 0;
+        services->services[i] = nullptr;
       }
 
       rmw_ret_t rmw_ret_code = __detach_condition(
@@ -532,7 +532,7 @@ __rmw_wait(
       }
 
       if (j >= dds_ConditionSeq_length(active_conditions)) {
-        clients->clients[i] = 0;
+        clients->clients[i] = nullptr;
       }
 
       rmw_ret_t rmw_ret_code = __detach_condition(

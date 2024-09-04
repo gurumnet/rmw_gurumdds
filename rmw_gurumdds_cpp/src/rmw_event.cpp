@@ -102,7 +102,7 @@ rmw_take_event(
     RMW_SET_ERROR_MSG_WITH_FORMAT_STRING("event %d not supported", event_handle->event_type);
   }
 
-  *taken = (ret_code == RMW_RET_OK);
+  *taken = ret_code == RMW_RET_OK;
   return ret_code;
 }
 
@@ -112,9 +112,9 @@ rmw_event_set_callback(
   rmw_event_callback_t callback,
   const void * user_data)
 {
-  (void)rmw_event;
-  (void)callback;
-  (void)user_data;
+  RCUTILS_UNUSED(rmw_event);
+  RCUTILS_UNUSED(callback);
+  RCUTILS_UNUSED(user_data);
 
   RMW_SET_ERROR_MSG("rmw_event_set_callback not implemented");
   return RMW_RET_UNSUPPORTED;
