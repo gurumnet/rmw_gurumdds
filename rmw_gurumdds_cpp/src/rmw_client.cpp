@@ -29,6 +29,8 @@
 #include "rmw/types.h"
 #include "rmw/validate_full_topic_name.h"
 
+#include "rmw_dds_common/qos.hpp"
+
 #include "rmw_gurumdds_cpp/gid.hpp"
 #include "rmw_gurumdds_cpp/graph_cache.hpp"
 #include "rmw_gurumdds_cpp/identifier.hpp"
@@ -63,7 +65,11 @@ rmw_create_client(
   }
   RMW_CHECK_ARGUMENT_FOR_NULL(qos_policies, nullptr);
 
-  if (!qos_policies->avoid_ros_namespace_conventions) {
+   // Adapt any 'best available' QoS options
+  rmw_qos_profile_t adapted_qos_policies =
+    rmw_dds_common::qos_profile_update_best_available_for_services(*qos_policies);
+
+  if (!adapted_qos_policies.avoid_ros_namespace_conventions) {
     int validation_result = RMW_TOPIC_VALID;
     rmw_ret_t ret = rmw_validate_full_topic_name(service_name, &validation_result, nullptr);
     if (ret != RMW_RET_OK) {
@@ -138,9 +144,9 @@ rmw_create_client(
   request_topic_name.reserve(256);
   response_topic_name.reserve(256);
   request_topic_name = create_topic_name(
-    ros_service_requester_prefix, service_name, "Request", qos_policies);
+    ros_service_requester_prefix, service_name, "Request", &adapted_qos_policies);
   response_topic_name = create_topic_name(
-    ros_service_response_prefix, service_name, "Reply", qos_policies);
+    ros_service_response_prefix, service_name, "Reply", &adapted_qos_policies);
 
   service_metastring =
     create_service_metastring(type_support->data, type_support->typesupport_identifier);
@@ -264,7 +270,7 @@ rmw_create_client(
 
   // Create datawriter for request
   type_hash = type_support->request_typesupport->get_type_hash_func(type_support->request_typesupport);
-  if (!get_datawriter_qos(publisher, qos_policies, *type_hash, &datawriter_qos)) {
+  if (!get_datawriter_qos(publisher, &adapted_qos_policies, *type_hash, &datawriter_qos)) {
     // Error message already set
     goto fail;
   }
@@ -285,7 +291,7 @@ rmw_create_client(
   }
 
   type_hash = type_support->response_typesupport->get_type_hash_func(type_support->response_typesupport);
-  if (!get_datareader_qos(subscriber, qos_policies, *type_hash, &datareader_qos)) {
+  if (!get_datareader_qos(subscriber, &adapted_qos_policies, *type_hash, &datareader_qos)) {
     // error message already set
     goto fail;
   }
