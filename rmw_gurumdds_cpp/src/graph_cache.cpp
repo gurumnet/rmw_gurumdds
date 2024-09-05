@@ -442,6 +442,12 @@ graph_on_node_created(
   rmw_context_impl_t * const ctx,
   const rmw_node_t * const node)
 {
+  rmw_ret_t rc = ctx->common_ctx.add_node_graph(
+    node->name, node->namespace_);
+  if (RMW_RET_OK != rc) {
+    RMW_SET_ERROR_MSG("failed to add node graph");
+    return RMW_RET_ERROR;
+  }
 
   RCUTILS_LOG_DEBUG_NAMED(
     RMW_GURUMDDS_ID,
@@ -463,9 +469,12 @@ graph_on_node_deleted(
   rmw_context_impl_t * const ctx,
   const rmw_node_t * const node)
 {
-
-  rmw_dds_common::msg::ParticipantEntitiesInfo msg =
-    ctx->common_ctx.graph_cache.remove_node(ctx->common_ctx.gid, node->name, node->namespace_);
+  rmw_ret_t rc = ctx->common_ctx.remove_node_graph(
+    node->name, node->namespace_);
+  if (RMW_RET_OK != rc) {
+    RMW_SET_ERROR_MSG("failed to remove node graph");
+    return RMW_RET_ERROR;
+  }
 
   return RMW_RET_OK;
 }
@@ -476,9 +485,18 @@ graph_on_publisher_created(
   const rmw_node_t * const node,
   GurumddsPublisherInfo * const pub)
 {
-
   const rosidl_type_hash_s& type_hash = *pub->rosidl_message_typesupport->get_type_hash_func(pub->rosidl_message_typesupport);
-  if (rmw_gurumdds::graph::add_local_publisher(ctx, node, pub->topic_writer, type_hash, pub->publisher_gid) != RMW_RET_OK) {
+  rmw_ret_t rc = rmw_gurumdds::graph::add_local_publisher(ctx, node, pub->topic_writer, type_hash, pub->publisher_gid);
+  if (RMW_RET_OK != rc) {
+    RMW_SET_ERROR_MSG("failed to add local publisher");
+    return RMW_RET_ERROR;
+  }
+
+  rc = ctx->common_ctx.add_publisher_graph(
+    pub->publisher_gid, node->name, node->namespace_);
+  if (RMW_RET_OK != rc) {
+    RMW_SET_ERROR_MSG("failed to add publisher graph");
+    rmw_gurumdds::graph::remove_entity(ctx, pub->publisher_gid, false);
     return RMW_RET_ERROR;
   }
 
@@ -491,21 +509,20 @@ graph_on_publisher_deleted(
   const rmw_node_t * const node,
   GurumddsPublisherInfo * const pub)
 {
-  bool failed = false;
-
-  if (rmw_gurumdds::graph::remove_entity(ctx, pub->publisher_gid, false) != RMW_RET_OK) {
-    RMW_SET_ERROR_MSG("failed to remove publisher from graph_cache");
-    failed = true;
+  rmw_ret_t rc = rmw_gurumdds::graph::remove_entity(ctx, pub->publisher_gid, false);
+  if (RMW_RET_OK != rc) {
+    RMW_SET_ERROR_MSG("failed to remove entity of publisher");
+    return RMW_RET_ERROR;
   }
 
-  rmw_dds_common::msg::ParticipantEntitiesInfo msg =
-    ctx->common_ctx.graph_cache.dissociate_writer(
-    pub->publisher_gid,
-    ctx->common_ctx.gid,
-    node->name,
-    node->namespace_);
+  rc = ctx->common_ctx.remove_publisher_graph(
+    pub->publisher_gid, node->name, node->namespace_);
+  if (RMW_RET_OK != rc) {
+    RMW_SET_ERROR_MSG("failed to remove remove publisher graph");
+    return RMW_RET_ERROR;
+  }
 
-  return failed ? RMW_RET_ERROR : RMW_RET_OK;
+  return RMW_RET_OK;
 }
 
 rmw_ret_t
@@ -514,12 +531,22 @@ graph_on_subscriber_created(
   const rmw_node_t * const node,
   GurumddsSubscriberInfo * const sub)
 {
-
   const rosidl_type_hash_s& type_hash = *sub->rosidl_message_typesupport->get_type_hash_func(sub->rosidl_message_typesupport);
-  if (rmw_gurumdds::graph::add_local_subscriber(ctx, node, sub->topic_reader, type_hash, sub->subscriber_gid) != RMW_RET_OK) {
+  rmw_ret_t rc = rmw_gurumdds::graph::add_local_subscriber(ctx, node, sub->topic_reader, type_hash, sub->subscriber_gid);
+  if (RMW_RET_OK != rc) {
+    RMW_SET_ERROR_MSG("failed to add local subscriber");
+    rmw_gurumdds::graph::remove_entity(ctx, sub->subscriber_gid, true);
     return RMW_RET_ERROR;
   }
 
+  rc = ctx->common_ctx.add_subscriber_graph(
+    sub->subscriber_gid, node->name, node->namespace_);
+  if (RMW_RET_OK != rc) {
+    RMW_SET_ERROR_MSG("failed to add subscriber graph");
+    rmw_gurumdds::graph::remove_entity(ctx, sub->subscriber_gid, false);
+    return RMW_RET_ERROR;
+  }
+  
   return RMW_RET_OK;
 }
 
@@ -529,15 +556,20 @@ graph_on_subscriber_deleted(
   const rmw_node_t * const node,
   GurumddsSubscriberInfo * const sub)
 {
-  RCUTILS_UNUSED(node);
-  bool failed = false;
-
-  if (rmw_gurumdds::graph::remove_entity(ctx, sub->subscriber_gid, true) != RMW_RET_OK) {
-    RMW_SET_ERROR_MSG("failed to remove subscriber from graph_cache");
-    failed = true;
+  rmw_ret_t rc = rmw_gurumdds::graph::remove_entity(ctx, sub->subscriber_gid, true);
+  if (RMW_RET_OK != rc) {
+    RMW_SET_ERROR_MSG("failed to remove entity of subscriber");
+    return RMW_RET_ERROR;
   }
 
-  return failed ? RMW_RET_ERROR : RMW_RET_OK;
+  rc = ctx->common_ctx.remove_subscriber_graph(
+    sub->subscriber_gid, node->name, node->namespace_);
+  if (RMW_RET_OK != rc) {
+    RMW_SET_ERROR_MSG("failed to remove remove subscriber graph");
+    return RMW_RET_ERROR;
+  }
+
+  return RMW_RET_OK;
 }
 
 rmw_ret_t
@@ -546,7 +578,6 @@ graph_on_service_created(
   const rmw_node_t * const node,
   GurumddsServiceInfo * const svc)
 {
-
   const rmw_gid_t pub_gid = svc->publisher_gid;
   const rmw_gid_t sub_gid = svc->subscriber_gid;
   bool add_pub = false;
@@ -567,24 +598,27 @@ graph_on_service_created(
   const rosidl_type_hash_s* type_hash;
   type_support = svc->service_typesupport->request_typesupport;
   type_hash = type_support->get_type_hash_func(type_support);
-  if (rmw_gurumdds::graph::add_local_subscriber(ctx, node, svc->request_reader, *type_hash,  sub_gid) != RMW_RET_OK) {
+  if (RMW_RET_OK != rmw_gurumdds::graph::add_local_subscriber(ctx, node, svc->request_reader, *type_hash,  sub_gid)) {
+    RMW_SET_ERROR_MSG("failed to add local subscriber");
     return RMW_RET_ERROR;
   }
+  add_sub = true;
 
   type_support = svc->service_typesupport->response_typesupport;
   type_hash = type_support->get_type_hash_func(type_support);
-  if (rmw_gurumdds::graph::add_local_publisher(ctx, node, svc->response_writer, *type_hash, pub_gid) != RMW_RET_OK) {
+  if (RMW_RET_OK != rmw_gurumdds::graph::add_local_publisher(ctx, node, svc->response_writer, *type_hash, pub_gid)) {
+    RMW_SET_ERROR_MSG("failed to add local publisher");
+    return RMW_RET_ERROR;
+  }
+  add_pub = true;
+
+  if(RMW_RET_OK != ctx->common_ctx.add_service_graph(
+    sub_gid, pub_gid, node->name, node->namespace_)) {
+    RMW_SET_ERROR_MSG("failed to add service graph");
     return RMW_RET_ERROR;
   }
 
-  ctx->common_ctx.graph_cache.associate_writer(
-    pub_gid,
-    ctx->common_ctx.gid,
-    node->name,
-    node->namespace_);
-
   scope_exit_entities_reset.cancel();
-
   return RMW_RET_OK;
 }
 
@@ -595,24 +629,16 @@ graph_on_service_deleted(
   GurumddsServiceInfo * const svc)
 {
   bool failed = false;
-
-  rmw_ret_t rc = rmw_gurumdds::graph::remove_entity(
-    ctx,
-    svc->subscriber_gid,
-    true);
+  rmw_ret_t rc = rmw_gurumdds::graph::remove_entity(ctx, svc->subscriber_gid, true);
+  failed = failed && (RMW_RET_OK == rc);
+ 
+  rc = rmw_gurumdds::graph::remove_entity(ctx, svc->publisher_gid, false);
   failed = failed && (RMW_RET_OK == rc);
 
-  rc = rmw_gurumdds::graph::remove_entity(
-    ctx,
-    svc->publisher_gid,
-    false);
+  rc = ctx->common_ctx.remove_service_graph(
+    svc->subscriber_gid, svc->publisher_gid, node->name, node->namespace_
+  );
   failed = failed && (RMW_RET_OK == rc);
-
-  ctx->common_ctx.graph_cache.dissociate_writer(
-    svc->publisher_gid,
-    ctx->common_ctx.gid,
-    node->name,
-    node->namespace_);
 
   return failed ? RMW_RET_ERROR : RMW_RET_OK;
 }
@@ -639,29 +665,30 @@ graph_on_client_created(
       }
     });
 
-
   const rosidl_message_type_support_t* type_support;
   const rosidl_type_hash_s* type_hash;
   type_support = client->service_typesupport->response_typesupport;
   type_hash = type_support->get_type_hash_func(type_support);
-  if (rmw_gurumdds::graph::add_local_subscriber(ctx, node, client->response_reader, *type_hash, sub_gid) != RMW_RET_OK) {
+  if (RMW_RET_OK != rmw_gurumdds::graph::add_local_subscriber(ctx, node, client->response_reader, *type_hash, sub_gid)) {
+    RMW_SET_ERROR_MSG("failed to add local subscriber");
     return RMW_RET_ERROR;
   }
+  add_sub = true;
 
   type_support = client->service_typesupport->request_typesupport;
   type_hash = type_support->get_type_hash_func(type_support);
-  if (rmw_gurumdds::graph::add_local_publisher(ctx, node, client->request_writer, *type_hash, pub_gid) != RMW_RET_OK) {
+  if (RMW_RET_OK != rmw_gurumdds::graph::add_local_publisher(ctx, node, client->request_writer, *type_hash, pub_gid)) {
+    RMW_SET_ERROR_MSG("failed to add local publisher");
+    return RMW_RET_ERROR;
+  }
+  add_pub = true;
+
+  if(RMW_RET_OK != ctx->common_ctx.add_client_graph(pub_gid, sub_gid, node->name, node->namespace_)) {
+    RMW_SET_ERROR_MSG("failed to add client graph");
     return RMW_RET_ERROR;
   }
 
-  ctx->common_ctx.graph_cache.associate_writer(
-    pub_gid,
-    ctx->common_ctx.gid,
-    node->name,
-    node->namespace_);
-
   scope_exit_entities_reset.cancel();
-
   return RMW_RET_OK;
 }
 
@@ -672,24 +699,16 @@ graph_on_client_deleted(
   GurumddsClientInfo * const client)
 {
   bool failed = false;
-
-  rmw_ret_t rc = rmw_gurumdds::graph::remove_entity(
-    ctx,
-    client->subscriber_gid,
-    true);
+  rmw_ret_t rc = rmw_gurumdds::graph::remove_entity(ctx, client->subscriber_gid, true);
+  failed = failed && (RMW_RET_OK == rc);
+ 
+  rc = rmw_gurumdds::graph::remove_entity(ctx, client->publisher_gid, false);
   failed = failed && (RMW_RET_OK == rc);
 
-  rc = rmw_gurumdds::graph::remove_entity(
-    ctx,
-    client->publisher_gid,
-    false);
+  rc = ctx->common_ctx.remove_service_graph(
+    client->subscriber_gid, client->publisher_gid, node->name, node->namespace_
+  );
   failed = failed && (RMW_RET_OK == rc);
-
-  ctx->common_ctx.graph_cache.dissociate_writer(
-    client->publisher_gid,
-    ctx->common_ctx.gid,
-    node->name,
-    node->namespace_);
 
   return failed ? RMW_RET_ERROR : RMW_RET_OK;
 }
@@ -701,7 +720,7 @@ graph_on_participant_info(rmw_context_impl_t * ctx)
   rmw_dds_common::msg::ParticipantEntitiesInfo msg;
 
   do {
-    if (rmw_take(ctx->common_ctx.sub, &msg, &taken, nullptr) != RMW_RET_OK) {
+    if (RMW_RET_OK != rmw_take(ctx->common_ctx.sub, &msg, &taken, nullptr)) {
       RMW_SET_ERROR_MSG("failed to take discovery sample");
       return RMW_RET_ERROR;
     }
@@ -735,8 +754,8 @@ graph_add_participant(
   rmw_gid_t gid;
   guid_to_gid(*dp_guid, gid);
 
-  if (memcmp(gid.data, ctx->common_ctx.gid.data, RMW_GID_STORAGE_SIZE) == 0) {
-    /* Ignore own announcements */
+  if (0 == memcmp(gid.data, ctx->common_ctx.gid.data, RMW_GID_STORAGE_SIZE)) {
+    // Ignore own announcements
     return RMW_RET_OK;
   }
 
@@ -758,8 +777,8 @@ graph_remove_participant(
   rmw_gid_t gid;
   guid_to_gid(*dp_guid, gid);
 
-  if (memcmp(gid.data, ctx->common_ctx.gid.data, RMW_GID_STORAGE_SIZE) == 0) {
-    /* Ignore own announcements */
+  if (0 == memcmp(gid.data, ctx->common_ctx.gid.data, RMW_GID_STORAGE_SIZE)) {
+    // Ignore own announcements
     return RMW_RET_OK;
   }
 
@@ -783,16 +802,14 @@ graph_add_remote_entity(
   const dds_LifespanQosPolicy * const lifespan,
   const bool is_reader)
 {
-
   rmw_gid_t endp_gid, dp_gid;
   guid_to_gid(*endp_guid, endp_gid);
   guid_to_gid(*dp_guid, dp_gid);
 
-  if (memcmp(dp_gid.data, ctx->common_ctx.gid.data, RMW_GID_STORAGE_SIZE) == 0) {
-    /* Ignore own announcements */
+  if (0 == memcmp(dp_gid.data, ctx->common_ctx.gid.data, RMW_GID_STORAGE_SIZE)) {
+    // Ignore own announcements
     return RMW_RET_OK;
   }
-
 
   rosidl_type_hash_s type_hash;
   if(RMW_RET_OK != rmw_dds_common::parse_type_hash_from_user_data(
@@ -832,8 +849,10 @@ graph_remove_entity(
   rmw_gid_t gid;
   guid_to_gid(*guid, gid);
 
-  if (memcmp(gid.data, ctx->common_ctx.gid.data, 12) == 0) {
-    /* Ignore own announcements */
+  if (0 == memcmp(gid.data, ctx->common_ctx.gid.data, 12)) { 
+    // compare entities' GUID prefixes to determine whether they belong to the same participat
+    // (hence 12 instead of 16 bytes)
+    // Ignore own announcements
     return RMW_RET_OK;
   }
 
