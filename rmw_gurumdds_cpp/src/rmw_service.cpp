@@ -28,6 +28,7 @@
 
 #include "rmw_dds_common/qos.hpp"
 
+#include "rmw_gurumdds_cpp/event_converter.hpp"
 #include "rmw_gurumdds_cpp/gid.hpp"
 #include "rmw_gurumdds_cpp/graph_cache.hpp"
 #include "rmw_gurumdds_cpp/identifier.hpp"
@@ -106,6 +107,10 @@ rmw_create_service(
   dds_DataWriterQos datawriter_qos;
 
   dds_DataReader * request_reader = nullptr;
+  dds_DataReaderListener request_listener;
+  dds_DataSeq* data_seq = nullptr;
+  dds_SampleInfoSeq* info_seq = nullptr;
+  dds_UnsignedLongSeq* raw_data_sizes = nullptr;
   dds_DataWriter * response_writer = nullptr;
   dds_ReadCondition * read_condition = nullptr;
   dds_TypeSupport * request_typesupport = nullptr;
@@ -153,17 +158,6 @@ rmw_create_service(
     RMW_SET_ERROR_MSG("failed to create metastring");
     return nullptr;
   }
-
-  // Set infos for this service(server)
-  service_info = new(std::nothrow) GurumddsServiceInfo();
-  if (service_info == nullptr) {
-    RMW_SET_ERROR_MSG("failed to allocate GurumddsServiceInfo");
-    goto fail;
-  }
-
-  service_info->implementation_identifier = RMW_GURUMDDS_ID;
-  service_info->service_typesupport = type_support;
-  service_info->ctx = ctx;
 
   request_typesupport = dds_TypeSupport_create(request_metastring.c_str());
   if (request_typesupport == nullptr) {
@@ -278,7 +272,6 @@ rmw_create_service(
     dds_DataReaderQos_finalize(&datareader_qos);
     goto fail;
   }
-  service_info->request_reader = request_reader;
 
   ret = dds_DataReaderQos_finalize(&datareader_qos);
   if (ret != dds_RETCODE_OK) {
@@ -292,7 +285,6 @@ rmw_create_service(
     RMW_SET_ERROR_MSG("failed to create read condition");
     goto fail;
   }
-  service_info->read_condition = read_condition;
 
   type_hash = type_support->response_typesupport->get_type_hash_func(type_support->response_typesupport);
   if (!get_datawriter_qos(publisher, &adapted_qos_policies, *type_hash, &datawriter_qos)) {
@@ -307,13 +299,55 @@ rmw_create_service(
     dds_DataWriterQos_finalize(&datawriter_qos);
     goto fail;
   }
-  service_info->response_writer = response_writer;
 
   ret = dds_DataWriterQos_finalize(&datawriter_qos);
   if (ret != dds_RETCODE_OK) {
     RMW_SET_ERROR_MSG("failed to finalize datawriter qos");
     goto fail;
   }
+
+  service_info = new(std::nothrow) GurumddsServiceInfo();
+  if (service_info == nullptr) {
+    RMW_SET_ERROR_MSG("failed to allocate GurumddsServiceInfo");
+    goto fail;
+  }
+
+  data_seq = dds_DataSeq_create(1);
+  if (nullptr == data_seq) {
+    RMW_SET_ERROR_MSG("failed to allocate data_seq");
+    return nullptr;
+  }
+  info_seq = dds_SampleInfoSeq_create(1);
+  if (nullptr == info_seq) {
+    RMW_SET_ERROR_MSG("failed to allocate info_seq");
+    return nullptr;
+  }
+  raw_data_sizes = dds_UnsignedLongSeq_create(1);
+  if (nullptr == raw_data_sizes) {
+    RMW_SET_ERROR_MSG("failed to allocate raw_data_sizes");
+    return nullptr;
+  }
+
+  dds_DataReader_set_listener_context(request_reader, service_info);
+  request_listener.on_data_available = [](const dds_DataReader * request_reader){
+    dds_DataReader* reader = const_cast<dds_DataReader*>(request_reader);
+    GurumddsServiceInfo* info = static_cast<GurumddsServiceInfo*>(dds_DataReader_get_listener_context(reader));
+    std::lock_guard<std::mutex> guard(info->event_callback_data.mutex);
+    if(info->event_callback_data.callback) {
+      info->event_callback_data.callback(info->event_callback_data.user_data, info->count_unread());
+    }
+  };
+
+  service_info->response_writer = response_writer;
+  service_info->request_reader = request_reader;
+  service_info->read_condition = read_condition;
+  service_info->request_listener = request_listener;
+  service_info->data_seq = data_seq;
+  service_info->info_seq = info_seq;
+  service_info->raw_data_sizes = raw_data_sizes;
+  service_info->implementation_identifier = RMW_GURUMDDS_ID;
+  service_info->service_typesupport = type_support;
+  service_info->ctx = ctx;
 
   entity_get_gid(
     reinterpret_cast<dds_Entity *>(service_info->response_writer),
@@ -426,6 +460,10 @@ rmw_destroy_service(rmw_node_t * node, rmw_service_t * service)
         return RMW_RET_ERROR;
       }
     }
+
+    dds_DataSeq_delete(service_info->data_seq);
+    dds_SampleInfoSeq_delete(service_info->info_seq);
+    dds_UnsignedLongSeq_delete(service_info->raw_data_sizes);
 
     if (service_info->request_reader != nullptr) {
       if (service_info->read_condition != nullptr) {
@@ -888,11 +926,39 @@ rmw_service_set_on_new_request_callback(
   rmw_event_callback_t callback,
   const void * user_data)
 {
-  (void)rmw_service;
-  (void)callback;
-  (void)user_data;
+  RMW_CHECK_ARGUMENT_FOR_NULL(rmw_service, RMW_RET_INVALID_ARGUMENT);
+  RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
+    rmw_service,
+    rmw_service->implementation_identifier,
+    RMW_GURUMDDS_ID,
+    return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
+  auto service_info = static_cast<GurumddsServiceInfo *>(rmw_service->data);
+  if (service_info == nullptr) {
+    RMW_SET_ERROR_MSG("invalid service data");
+    return RMW_RET_ERROR;
+  }
 
-  RMW_SET_ERROR_MSG("rmw_service_set_on_new_request_callback not implemented");
-  return RMW_RET_UNSUPPORTED;
+  std::lock_guard<std::mutex> guard(service_info->event_callback_data.mutex);
+  dds_StatusMask mask = dds_DataReader_get_status_changes(service_info->request_reader);
+  dds_ReturnCode_t dds_rc = dds_RETCODE_ERROR;
+
+  if (callback) {
+    size_t unread_count = service_info->count_unread();
+    if (0 < unread_count) {
+      callback(user_data, unread_count);
+    }
+
+    service_info->event_callback_data.callback = callback;
+    service_info->event_callback_data.user_data = user_data;
+    mask |= dds_DATA_AVAILABLE_STATUS;
+    dds_rc = dds_DataReader_set_listener(service_info->request_reader, &service_info->request_listener, mask);
+  } else {
+    service_info->event_callback_data.callback = nullptr;
+    service_info->event_callback_data.user_data = nullptr;
+    mask &= ~dds_DATA_AVAILABLE_STATUS;
+    dds_rc = dds_DataReader_set_listener(service_info->request_reader, &service_info->request_listener, mask);
+  }
+
+  return check_dds_ret_code(dds_rc);
 }
 }  // extern "C"
