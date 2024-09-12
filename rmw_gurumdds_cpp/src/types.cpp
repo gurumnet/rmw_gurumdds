@@ -26,198 +26,6 @@
 
 #define ENTITYID_PARTICIPANT 0x000001C1
 
-rmw_ret_t GurumddsPublisherInfo::get_status(
-  dds_StatusMask mask,
-  void * event)
-{
-  if (mask == dds_LIVELINESS_LOST_STATUS) {
-    dds_LivelinessLostStatus status;
-    dds_ReturnCode_t dds_ret =
-      dds_DataWriter_get_liveliness_lost_status(this->topic_writer, &status);
-    rmw_ret_t rmw_ret = check_dds_ret_code(dds_ret);
-    if (rmw_ret != RMW_RET_OK) {
-      return rmw_ret;
-    }
-
-    auto rmw_status = static_cast<rmw_liveliness_lost_status_t *>(event);
-    rmw_status->total_count = status.total_count;
-    rmw_status->total_count_change = status.total_count_change;
-  } else if (mask == dds_OFFERED_DEADLINE_MISSED_STATUS) {
-    dds_OfferedDeadlineMissedStatus status;
-    dds_ReturnCode_t dds_ret =
-      dds_DataWriter_get_offered_deadline_missed_status(this->topic_writer, &status);
-    rmw_ret_t rmw_ret = check_dds_ret_code(dds_ret);
-    if (rmw_ret != RMW_RET_OK) {
-      return rmw_ret;
-    }
-
-    auto rmw_status = static_cast<rmw_offered_deadline_missed_status_t *>(event);
-    rmw_status->total_count = status.total_count;
-    rmw_status->total_count_change = status.total_count_change;
-  } else if (mask == dds_OFFERED_INCOMPATIBLE_QOS_STATUS) {
-    dds_OfferedIncompatibleQosStatus status;
-    dds_ReturnCode_t dds_ret =
-      dds_DataWriter_get_offered_incompatible_qos_status(this->topic_writer, &status);
-    rmw_ret_t rmw_ret = check_dds_ret_code(dds_ret);
-    if (rmw_ret != RMW_RET_OK) {
-      return rmw_ret;
-    }
-
-    auto rmw_status = static_cast<rmw_offered_qos_incompatible_event_status_t *>(event);
-    rmw_status->total_count = status.total_count;
-    rmw_status->total_count_change = status.total_count_change;
-    rmw_status->last_policy_kind = convert_qos_policy(status.last_policy_id);
-  } else if (mask == dds_INCONSISTENT_TOPIC_STATUS) {
-    dds_Topic* const topic = dds_DataWriter_get_topic(this->topic_writer);
-
-    if(topic == nullptr) {
-      return RMW_RET_ERROR;
-    }
-
-    dds_InconsistentTopicStatus status{};
-    auto dds_ret = dds_Topic_get_inconsistent_topic_status(topic, &status);
-
-    if(dds_ret != dds_RETCODE_OK) {
-      return check_dds_ret_code(dds_ret);
-    }
-
-    auto const rmw_status = static_cast<rmw_incompatible_type_status_t *>(event);
-    rmw_status->total_count = status.total_count;
-    rmw_status->total_count_change = status.total_count_change;
-  } else if (mask == dds_PUBLICATION_MATCHED_STATUS) {
-    dds_PublicationMatchedStatus status{};
-    dds_ReturnCode_t dds_ret =
-      dds_DataWriter_get_publication_matched_status(this->topic_writer, &status);
-
-    if(dds_ret != dds_RETCODE_OK) {
-      return check_dds_ret_code(dds_ret);
-    }
-
-    auto const rmw_status = static_cast<rmw_matched_status_t *>(event);
-    rmw_status->current_count = status.current_count;
-    rmw_status->current_count_change = status.current_count_change;
-    rmw_status->total_count = status.total_count;
-    rmw_status->total_count_change = status.total_count_change;
-  } else {
-    return RMW_RET_UNSUPPORTED;
-  }
-  return RMW_RET_OK;
-}
-
-dds_StatusCondition * GurumddsPublisherInfo::get_statuscondition()
-{
-  return dds_DataWriter_get_statuscondition(this->topic_writer);
-}
-
-dds_StatusMask GurumddsPublisherInfo::get_status_changes()
-{
-  return dds_DataWriter_get_status_changes(this->topic_writer);
-}
-
-rmw_ret_t GurumddsSubscriberInfo::get_status(
-  dds_StatusMask mask,
-  void * event)
-{
-  if (mask == dds_LIVELINESS_CHANGED_STATUS) {
-    dds_LivelinessChangedStatus status;
-    dds_ReturnCode_t dds_ret =
-      dds_DataReader_get_liveliness_changed_status(this->topic_reader, &status);
-    rmw_ret_t rmw_ret = check_dds_ret_code(dds_ret);
-    if (rmw_ret != RMW_RET_OK) {
-      return rmw_ret;
-    }
-
-    auto rmw_status = static_cast<rmw_liveliness_changed_status_t *>(event);
-    rmw_status->alive_count = status.alive_count;
-    rmw_status->not_alive_count = status.not_alive_count;
-    rmw_status->alive_count_change = status.alive_count_change;
-    rmw_status->not_alive_count_change =
-      status.not_alive_count_change;
-  } else if (mask == dds_REQUESTED_DEADLINE_MISSED_STATUS) {
-    dds_RequestedDeadlineMissedStatus status;
-    dds_ReturnCode_t dds_ret =
-      dds_DataReader_get_requested_deadline_missed_status(this->topic_reader, &status);
-    rmw_ret_t rmw_ret = check_dds_ret_code(dds_ret);
-    if (rmw_ret != RMW_RET_OK) {
-      return rmw_ret;
-    }
-
-    auto rmw_status =
-      static_cast<rmw_requested_deadline_missed_status_t *>(event);
-    rmw_status->total_count = status.total_count;
-    rmw_status->total_count_change = status.total_count_change;
-  } else if (mask == dds_REQUESTED_INCOMPATIBLE_QOS_STATUS) {
-    dds_RequestedIncompatibleQosStatus status;
-    dds_ReturnCode_t dds_ret =
-      dds_DataReader_get_requested_incompatible_qos_status(this->topic_reader, &status);
-    rmw_ret_t rmw_ret = check_dds_ret_code(dds_ret);
-    if (rmw_ret != RMW_RET_OK) {
-      return rmw_ret;
-    }
-
-    auto rmw_status = static_cast<rmw_requested_qos_incompatible_event_status_t *>(event);
-    rmw_status->total_count = status.total_count;
-    rmw_status->total_count_change = status.total_count_change;
-    rmw_status->last_policy_kind = convert_qos_policy(status.last_policy_id);
-  } else if (mask == dds_SAMPLE_LOST_STATUS) {
-    dds_SampleLostStatus status;
-    dds_ReturnCode_t dds_ret =
-      dds_DataReader_get_sample_lost_status(this->topic_reader, &status);
-    rmw_ret_t rmw_ret = check_dds_ret_code(dds_ret);
-    if (rmw_ret != RMW_RET_OK) {
-      return rmw_ret;
-    }
-
-    auto rmw_status = static_cast<rmw_message_lost_status_t *>(event);
-    rmw_status->total_count = status.total_count;
-    rmw_status->total_count_change = status.total_count_change;
-  } else if (mask == dds_INCONSISTENT_TOPIC_STATUS) {
-  dds_Topic* const topic = reinterpret_cast<dds_Topic*>(dds_DataReader_get_topicdescription(this->topic_reader));
-
-  if(topic == nullptr) {
-    return RMW_RET_ERROR;
-  }
-
-  dds_InconsistentTopicStatus status{};
-  auto dds_ret = dds_Topic_get_inconsistent_topic_status(topic, &status);
-
-  if(dds_ret != dds_RETCODE_OK) {
-    return check_dds_ret_code(dds_ret);
-  }
-
-  auto const rmw_status = static_cast<rmw_incompatible_type_status_t *>(event);
-  rmw_status->total_count = status.total_count;
-  rmw_status->total_count_change = status.total_count_change;
-} else if (mask == dds_SUBSCRIPTION_MATCHED_STATUS) {
-    dds_SubscriptionMatchedStatus status{};
-    dds_ReturnCode_t dds_ret =
-      dds_DataReader_get_subscription_matched_status(this->topic_reader, &status);
-
-    if(dds_ret != dds_RETCODE_OK) {
-      return check_dds_ret_code(dds_ret);
-    }
-
-    auto const rmw_status = static_cast<rmw_matched_status_t *>(event);
-    rmw_status->current_count = status.current_count;
-    rmw_status->current_count_change = status.current_count_change;
-    rmw_status->total_count = status.total_count;
-    rmw_status->total_count_change = status.total_count_change;
-  } else {
-    return RMW_RET_UNSUPPORTED;
-  }
-  return RMW_RET_OK;
-}
-
-dds_StatusCondition * GurumddsSubscriberInfo::get_statuscondition()
-{
-  return dds_DataReader_get_statuscondition(this->topic_reader);
-}
-
-dds_StatusMask GurumddsSubscriberInfo::get_status_changes()
-{
-  return dds_DataReader_get_status_changes(this->topic_reader);
-}
-
 static std::map<std::string, std::vector<uint8_t>>
 __parse_map(uint8_t * const data, const uint32_t data_len)
 {
@@ -423,4 +231,247 @@ void on_subscription_changed(
       reinterpret_cast<const uint32_t *>(endp_guid.prefix)[2],
       endp_guid.entityId);
   }
+}
+
+rmw_ret_t GurumddsPublisherInfo::get_status(
+  dds_StatusMask mask,
+  void * event)
+{
+  if (mask == dds_LIVELINESS_LOST_STATUS) {
+    dds_LivelinessLostStatus status;
+    dds_ReturnCode_t dds_ret =
+      dds_DataWriter_get_liveliness_lost_status(this->topic_writer, &status);
+    rmw_ret_t rmw_ret = check_dds_ret_code(dds_ret);
+    if (rmw_ret != RMW_RET_OK) {
+      return rmw_ret;
+    }
+
+    auto rmw_status = static_cast<rmw_liveliness_lost_status_t *>(event);
+    rmw_status->total_count = status.total_count;
+    rmw_status->total_count_change = status.total_count_change;
+  } else if (mask == dds_OFFERED_DEADLINE_MISSED_STATUS) {
+    dds_OfferedDeadlineMissedStatus status;
+    dds_ReturnCode_t dds_ret =
+      dds_DataWriter_get_offered_deadline_missed_status(this->topic_writer, &status);
+    rmw_ret_t rmw_ret = check_dds_ret_code(dds_ret);
+    if (rmw_ret != RMW_RET_OK) {
+      return rmw_ret;
+    }
+
+    auto rmw_status = static_cast<rmw_offered_deadline_missed_status_t *>(event);
+    rmw_status->total_count = status.total_count;
+    rmw_status->total_count_change = status.total_count_change;
+  } else if (mask == dds_OFFERED_INCOMPATIBLE_QOS_STATUS) {
+    dds_OfferedIncompatibleQosStatus status;
+    dds_ReturnCode_t dds_ret =
+      dds_DataWriter_get_offered_incompatible_qos_status(this->topic_writer, &status);
+    rmw_ret_t rmw_ret = check_dds_ret_code(dds_ret);
+    if (rmw_ret != RMW_RET_OK) {
+      return rmw_ret;
+    }
+
+    auto rmw_status = static_cast<rmw_offered_qos_incompatible_event_status_t *>(event);
+    rmw_status->total_count = status.total_count;
+    rmw_status->total_count_change = status.total_count_change;
+    rmw_status->last_policy_kind = convert_qos_policy(status.last_policy_id);
+  } else if (mask == dds_INCONSISTENT_TOPIC_STATUS) {
+    dds_Topic* const topic = dds_DataWriter_get_topic(this->topic_writer);
+
+    if(topic == nullptr) {
+      return RMW_RET_ERROR;
+    }
+
+    dds_InconsistentTopicStatus status{};
+    auto dds_ret = dds_Topic_get_inconsistent_topic_status(topic, &status);
+
+    if(dds_ret != dds_RETCODE_OK) {
+      return check_dds_ret_code(dds_ret);
+    }
+
+    auto const rmw_status = static_cast<rmw_incompatible_type_status_t *>(event);
+    rmw_status->total_count = status.total_count;
+    rmw_status->total_count_change = status.total_count_change;
+  } else if (mask == dds_PUBLICATION_MATCHED_STATUS) {
+    dds_PublicationMatchedStatus status{};
+    dds_ReturnCode_t dds_ret =
+      dds_DataWriter_get_publication_matched_status(this->topic_writer, &status);
+
+    if(dds_ret != dds_RETCODE_OK) {
+      return check_dds_ret_code(dds_ret);
+    }
+
+    auto const rmw_status = static_cast<rmw_matched_status_t *>(event);
+    rmw_status->current_count = status.current_count;
+    rmw_status->current_count_change = status.current_count_change;
+    rmw_status->total_count = status.total_count;
+    rmw_status->total_count_change = status.total_count_change;
+  } else {
+    return RMW_RET_UNSUPPORTED;
+  }
+  return RMW_RET_OK;
+}
+
+dds_StatusCondition * GurumddsPublisherInfo::get_statuscondition()
+{
+  return dds_DataWriter_get_statuscondition(this->topic_writer);
+}
+
+dds_StatusMask GurumddsPublisherInfo::get_status_changes()
+{
+  return dds_DataWriter_get_status_changes(this->topic_writer);
+}
+
+rmw_ret_t GurumddsSubscriberInfo::get_status(
+  dds_StatusMask mask,
+  void * event)
+{
+  if (mask == dds_LIVELINESS_CHANGED_STATUS) {
+    dds_LivelinessChangedStatus status;
+    dds_ReturnCode_t dds_ret =
+      dds_DataReader_get_liveliness_changed_status(this->topic_reader, &status);
+    rmw_ret_t rmw_ret = check_dds_ret_code(dds_ret);
+    if (rmw_ret != RMW_RET_OK) {
+      return rmw_ret;
+    }
+
+    auto rmw_status = static_cast<rmw_liveliness_changed_status_t *>(event);
+    rmw_status->alive_count = status.alive_count;
+    rmw_status->not_alive_count = status.not_alive_count;
+    rmw_status->alive_count_change = status.alive_count_change;
+    rmw_status->not_alive_count_change =
+      status.not_alive_count_change;
+  } else if (mask == dds_REQUESTED_DEADLINE_MISSED_STATUS) {
+    dds_RequestedDeadlineMissedStatus status;
+    dds_ReturnCode_t dds_ret =
+      dds_DataReader_get_requested_deadline_missed_status(this->topic_reader, &status);
+    rmw_ret_t rmw_ret = check_dds_ret_code(dds_ret);
+    if (rmw_ret != RMW_RET_OK) {
+      return rmw_ret;
+    }
+
+    auto rmw_status =
+      static_cast<rmw_requested_deadline_missed_status_t *>(event);
+    rmw_status->total_count = status.total_count;
+    rmw_status->total_count_change = status.total_count_change;
+  } else if (mask == dds_REQUESTED_INCOMPATIBLE_QOS_STATUS) {
+    dds_RequestedIncompatibleQosStatus status;
+    dds_ReturnCode_t dds_ret =
+      dds_DataReader_get_requested_incompatible_qos_status(this->topic_reader, &status);
+    rmw_ret_t rmw_ret = check_dds_ret_code(dds_ret);
+    if (rmw_ret != RMW_RET_OK) {
+      return rmw_ret;
+    }
+
+    auto rmw_status = static_cast<rmw_requested_qos_incompatible_event_status_t *>(event);
+    rmw_status->total_count = status.total_count;
+    rmw_status->total_count_change = status.total_count_change;
+    rmw_status->last_policy_kind = convert_qos_policy(status.last_policy_id);
+  } else if (mask == dds_SAMPLE_LOST_STATUS) {
+    dds_SampleLostStatus status;
+    dds_ReturnCode_t dds_ret =
+      dds_DataReader_get_sample_lost_status(this->topic_reader, &status);
+    rmw_ret_t rmw_ret = check_dds_ret_code(dds_ret);
+    if (rmw_ret != RMW_RET_OK) {
+      return rmw_ret;
+    }
+
+    auto rmw_status = static_cast<rmw_message_lost_status_t *>(event);
+    rmw_status->total_count = status.total_count;
+    rmw_status->total_count_change = status.total_count_change;
+  } else if (mask == dds_INCONSISTENT_TOPIC_STATUS) {
+  dds_Topic* const topic = reinterpret_cast<dds_Topic*>(dds_DataReader_get_topicdescription(this->topic_reader));
+
+  if(topic == nullptr) {
+    return RMW_RET_ERROR;
+  }
+
+  dds_InconsistentTopicStatus status{};
+  auto dds_ret = dds_Topic_get_inconsistent_topic_status(topic, &status);
+
+  if(dds_ret != dds_RETCODE_OK) {
+    return check_dds_ret_code(dds_ret);
+  }
+
+  auto const rmw_status = static_cast<rmw_incompatible_type_status_t *>(event);
+  rmw_status->total_count = status.total_count;
+  rmw_status->total_count_change = status.total_count_change;
+} else if (mask == dds_SUBSCRIPTION_MATCHED_STATUS) {
+    dds_SubscriptionMatchedStatus status{};
+    dds_ReturnCode_t dds_ret =
+      dds_DataReader_get_subscription_matched_status(this->topic_reader, &status);
+
+    if(dds_ret != dds_RETCODE_OK) {
+      return check_dds_ret_code(dds_ret);
+    }
+
+    auto const rmw_status = static_cast<rmw_matched_status_t *>(event);
+    rmw_status->current_count = status.current_count;
+    rmw_status->current_count_change = status.current_count_change;
+    rmw_status->total_count = status.total_count;
+    rmw_status->total_count_change = status.total_count_change;
+  } else {
+    return RMW_RET_UNSUPPORTED;
+  }
+  return RMW_RET_OK;
+}
+
+dds_StatusCondition * GurumddsSubscriberInfo::get_statuscondition()
+{
+  return dds_DataReader_get_statuscondition(this->topic_reader);
+}
+
+dds_StatusMask GurumddsSubscriberInfo::get_status_changes()
+{
+  return dds_DataReader_get_status_changes(this->topic_reader);
+}
+
+inline size_t count_unread_(
+  dds_DataReader * reader,
+  dds_DataSeq * data_seq,
+  dds_SampleInfoSeq * info_seq,
+  dds_UnsignedLongSeq * raw_data_sizes)
+{
+  dds_ReturnCode_t rc = dds_DataReader_raw_read(
+    reader,
+    dds_HANDLE_NIL,
+    data_seq,
+    info_seq,
+    raw_data_sizes,
+    dds_LENGTH_UNLIMITED,
+    dds_NOT_READ_SAMPLE_STATE,
+    dds_ANY_VIEW_STATE,
+    dds_ANY_INSTANCE_STATE
+  );
+
+  size_t count = 0;
+
+  if (dds_RETCODE_OK != rc && dds_RETCODE_NO_DATA != rc) {
+    RMW_SET_ERROR_MSG("failed to read raw data from DDS reader");
+    return count;
+  } else if(dds_RETCODE_OK == rc) {
+    count = dds_SampleInfoSeq_length(info_seq);
+  }
+
+  rc = dds_DataReader_raw_return_loan(reader, data_seq, info_seq, raw_data_sizes);
+  if (dds_RETCODE_OK != rc && dds_RETCODE_NO_DATA != rc) {
+    RMW_SET_ERROR_MSG("failed to read raw data from DDS reader");
+    return count;
+  }
+
+  return count;
+}
+
+size_t GurumddsSubscriberInfo::count_unread()
+{
+  return count_unread_(topic_reader, data_seq, info_seq, raw_data_sizes);
+}
+
+size_t GurumddsClientInfo::count_unread()
+{
+  return count_unread_(response_reader, data_seq, info_seq, raw_data_sizes);
+}
+
+size_t GurumddsServiceInfo::count_unread()
+{
+  return count_unread_(request_reader, data_seq, info_seq, raw_data_sizes);
 }
