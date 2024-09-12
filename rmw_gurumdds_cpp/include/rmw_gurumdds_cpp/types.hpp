@@ -56,6 +56,17 @@ typedef struct _GurumddsWaitSetInfo
   dds_ConditionSeq * attached_conditions;
 } GurumddsWaitSetInfo;
 
+typedef struct
+{
+  std::mutex mutex;
+  rmw_event_callback_t callback {nullptr};
+  const void * user_data {nullptr};
+  // TODO: Consier putting this into GurumddsEventInfo
+  // rmw_event_callback_t event_callback[RMW_EVENT_INVALID] = {nullptr};
+  // const void * event_data[RMW_EVENT_INVALID] = {nullptr};
+  // size_t event_unread_count[RMW_EVENT_INVALID] = {0};
+} event_callback_data_t;
+
 typedef struct _GurumddsEventInfo
 {
   virtual ~_GurumddsEventInfo() = default;
@@ -66,12 +77,13 @@ typedef struct _GurumddsEventInfo
 
 typedef struct _GurumddsPublisherInfo : GurumddsEventInfo
 {
-  rmw_gid_t publisher_gid;
-  dds_DataWriter * topic_writer;
   const rosidl_message_type_support_t * rosidl_message_typesupport;
   const char * implementation_identifier;
-  int64_t sequence_number;
   rmw_context_impl_t * ctx;
+  int64_t sequence_number;
+
+  rmw_gid_t publisher_gid;
+  dds_DataWriter * topic_writer;
 
   rmw_ret_t get_status(dds_StatusMask mask, void * event) override;
   dds_StatusCondition * get_statuscondition() override;
@@ -85,21 +97,33 @@ typedef struct _GurumddsPublisherGID
 
 typedef struct _GurumddsSubscriberInfo : GurumddsEventInfo
 {
-  rmw_gid_t subscriber_gid;
-  dds_DataReader * topic_reader;
-  dds_ReadCondition * read_condition;
   const rosidl_message_type_support_t * rosidl_message_typesupport;
   const char * implementation_identifier;
   rmw_context_impl_t * ctx;
 
+  rmw_gid_t subscriber_gid;
+  dds_DataReader * topic_reader;
+  dds_ReadCondition * read_condition;
+
+  dds_DataReaderListener topic_listener;
+  dds_DataSeq * data_seq;
+  dds_SampleInfoSeq * info_seq;
+  dds_UnsignedLongSeq * raw_data_sizes;
+  event_callback_data_t event_callback_data;
+
   rmw_ret_t get_status(dds_StatusMask mask, void * event) override;
   dds_StatusCondition * get_statuscondition() override;
   dds_StatusMask get_status_changes() override;
+  size_t count_unread();
 } GurumddsSubscriberInfo;
 
 typedef struct _GurumddsClientInfo
 {
   const rosidl_service_type_support_t * service_typesupport;
+  const char * implementation_identifier;
+  rmw_context_impl_t * ctx;
+  int64_t sequence_number;
+  uint8_t writer_guid[16];
 
   rmw_gid_t publisher_gid;
   rmw_gid_t subscriber_gid;
@@ -107,16 +131,20 @@ typedef struct _GurumddsClientInfo
   dds_DataReader * response_reader;
   dds_ReadCondition * read_condition;
 
-  const char * implementation_identifier;
-  rmw_context_impl_t * ctx;
+  dds_DataReaderListener response_listener;
+  dds_DataSeq * data_seq;
+  dds_SampleInfoSeq * info_seq;
+  dds_UnsignedLongSeq * raw_data_sizes;
+  event_callback_data_t event_callback_data;
 
-  int64_t sequence_number;
-  uint8_t writer_guid[16];
+  size_t count_unread();
 } GurumddsClientInfo;
 
 typedef struct _GurumddsServiceInfo
 {
   const rosidl_service_type_support_t * service_typesupport;
+  const char * implementation_identifier;
+  rmw_context_impl_t * ctx;
 
   rmw_gid_t publisher_gid;
   rmw_gid_t subscriber_gid;
@@ -124,8 +152,13 @@ typedef struct _GurumddsServiceInfo
   dds_DataReader * request_reader;
   dds_ReadCondition * read_condition;
 
-  const char * implementation_identifier;
-  rmw_context_impl_t * ctx;
+  dds_DataReaderListener request_listener;
+  dds_DataSeq * data_seq;
+  dds_SampleInfoSeq * info_seq;
+  dds_UnsignedLongSeq * raw_data_sizes;
+  event_callback_data_t event_callback_data;
+
+  size_t count_unread();
 } GurumddsServiceInfo;
 
 #endif  // RMW_GURUMDDS_CPP__TYPES_HPP_

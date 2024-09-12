@@ -30,6 +30,7 @@
 
 #include "rmw_dds_common/qos.hpp"
 
+#include "rmw_gurumdds_cpp/event_converter.hpp"
 #include "rmw_gurumdds_cpp/gid.hpp"
 #include "rmw_gurumdds_cpp/graph_cache.hpp"
 #include "rmw_gurumdds_cpp/identifier.hpp"
@@ -72,6 +73,10 @@ __rmw_create_subscription(
   GurumddsSubscriberInfo * subscriber_info = nullptr;
   dds_DataReader * topic_reader = nullptr;
   dds_DataReaderQos datareader_qos;
+  dds_DataReaderListener topic_listener;
+  dds_DataSeq* data_seq = nullptr;
+  dds_SampleInfoSeq* info_seq = nullptr;
+  dds_UnsignedLongSeq* raw_data_sizes = nullptr;
   dds_Topic * topic = nullptr;
   dds_TopicDescription * topic_desc = nullptr;
   dds_ReadCondition * read_condition = nullptr;
@@ -173,8 +178,38 @@ __rmw_create_subscription(
     return nullptr;
   }
 
+  data_seq = dds_DataSeq_create(1);
+  if (nullptr == data_seq) {
+    RMW_SET_ERROR_MSG("failed to allocate data_seq");
+    return nullptr;
+  }
+  info_seq = dds_SampleInfoSeq_create(1);
+  if (nullptr == info_seq) {
+    RMW_SET_ERROR_MSG("failed to allocate info_seq");
+    return nullptr;
+  }
+  raw_data_sizes = dds_UnsignedLongSeq_create(1);
+  if (nullptr == raw_data_sizes) {
+    RMW_SET_ERROR_MSG("failed to allocate raw_data_sizes");
+    return nullptr;
+  }
+
+  dds_DataReader_set_listener_context(topic_reader, subscriber_info);
+  topic_listener.on_data_available = [](const dds_DataReader * topic_reader){
+    dds_DataReader* reader = const_cast<dds_DataReader*>(topic_reader);
+    GurumddsSubscriberInfo* info = static_cast<GurumddsSubscriberInfo*>(dds_DataReader_get_listener_context(reader));
+    std::lock_guard<std::mutex> guard(info->event_callback_data.mutex);
+    if(info->event_callback_data.callback) {
+      info->event_callback_data.callback(info->event_callback_data.user_data, info->count_unread());
+    }
+  };
+
   subscriber_info->topic_reader = topic_reader;
   subscriber_info->read_condition = read_condition;
+  subscriber_info->topic_listener = topic_listener;
+  subscriber_info->data_seq = data_seq;
+  subscriber_info->info_seq = info_seq;
+  subscriber_info->raw_data_sizes = raw_data_sizes;
   subscriber_info->rosidl_message_typesupport = type_support;
   subscriber_info->implementation_identifier = RMW_GURUMDDS_ID;
   subscriber_info->ctx = ctx;
@@ -241,11 +276,22 @@ __rmw_destroy_subscription(
     return RMW_RET_ERROR;
   }
 
+  dds_DataSeq_delete(subscriber_info->data_seq);
+  dds_SampleInfoSeq_delete(subscriber_info->info_seq);
+  dds_UnsignedLongSeq_delete(subscriber_info->raw_data_sizes);
+
   dds_ReturnCode_t ret;
   if (subscriber_info->topic_reader != nullptr) {
     dds_Topic * topic =
       reinterpret_cast<dds_Topic *>(dds_DataReader_get_topicdescription(
         subscriber_info->topic_reader));
+
+    ret = dds_DataReader_delete_readcondition(subscriber_info->topic_reader, subscriber_info->read_condition);
+    if (dds_RETCODE_OK != ret) {
+      RMW_SET_ERROR_MSG("failed to delete read condition");
+      return RMW_RET_ERROR;
+    }
+
     ret = dds_Subscriber_delete_datareader(ctx->subscriber, subscriber_info->topic_reader);
     if (ret != dds_RETCODE_OK) {
       RMW_SET_ERROR_MSG("failed to delete datareader");
@@ -1068,12 +1114,41 @@ rmw_subscription_set_on_new_message_callback(
   rmw_event_callback_t callback,
   const void * user_data)
 {
-  (void)subscription;
-  (void)callback;
-  (void)user_data;
+  RMW_CHECK_ARGUMENT_FOR_NULL(subscription, RMW_RET_INVALID_ARGUMENT);
+  RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
+    subscription,
+    subscription->implementation_identifier,
+    RMW_GURUMDDS_ID,
+    return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
 
-  RMW_SET_ERROR_MSG("rmw_subscription_set_on_new_message_callback not implemented");
-  return RMW_RET_UNSUPPORTED;
+  auto subscriber_info = static_cast<GurumddsSubscriberInfo *>(subscription->data);
+  if (subscriber_info == nullptr) {
+    RMW_SET_ERROR_MSG("invalid subscription data");
+    return RMW_RET_ERROR;
+  }
+
+  std::lock_guard<std::mutex> guard(subscriber_info->event_callback_data.mutex);
+  dds_StatusMask mask = subscriber_info->get_status_changes();
+  dds_ReturnCode_t dds_rc = dds_RETCODE_ERROR;
+
+  if (callback) {
+    size_t unread_count = subscriber_info->count_unread();
+    if (0 < unread_count) {
+      callback(user_data, unread_count);
+    }
+
+    subscriber_info->event_callback_data.callback = callback;
+    subscriber_info->event_callback_data.user_data = user_data;
+    mask |= dds_DATA_AVAILABLE_STATUS;
+    dds_rc = dds_DataReader_set_listener(subscriber_info->topic_reader, &subscriber_info->topic_listener, mask);
+  } else {
+    subscriber_info->event_callback_data.callback = nullptr;
+    subscriber_info->event_callback_data.user_data = nullptr;
+    mask &= ~dds_DATA_AVAILABLE_STATUS;
+    dds_rc = dds_DataReader_set_listener(subscriber_info->topic_reader, &subscriber_info->topic_listener, mask);
+  }
+
+  return check_dds_ret_code(dds_rc);
 }
 
 rmw_ret_t
@@ -1147,6 +1222,6 @@ rmw_serialization_support_init(
   static_cast<void>(serialization_support);
 
   RMW_SET_ERROR_MSG("rmw_serialization_support_init: unimplemented");
-  return RMW_RET_UNSUPPORTED;  
+  return RMW_RET_UNSUPPORTED;
 }
 }  // extern "C"
