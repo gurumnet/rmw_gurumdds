@@ -135,6 +135,8 @@ __rmw_create_subscription(
       RMW_SET_ERROR_MSG("failed to finalize topic qos");
       return nullptr;
     }
+
+    GurumddsTopicEventListener::associate_listener(topic);
   } else {
     dds_Duration_t timeout;
     timeout.sec = 0;
@@ -195,13 +197,45 @@ __rmw_create_subscription(
   }
 
   dds_DataReader_set_listener_context(topic_reader, subscriber_info);
-  topic_listener.on_data_available = [](const dds_DataReader * topic_reader){
+  topic_listener.on_requested_deadline_missed = [](const dds_DataReader* topic_reader,
+                                                   const dds_RequestedDeadlineMissedStatus* status) {
+    dds_DataReader* reader = const_cast<dds_DataReader*>(topic_reader);
+    GurumddsSubscriberInfo* info = static_cast<GurumddsSubscriberInfo*>(dds_DataReader_get_listener_context(reader));
+    info->on_requested_deadline_missed(*status);
+  };
+
+  topic_listener.on_requested_incompatible_qos = [](const dds_DataReader* topic_reader,
+                                                    const dds_RequestedIncompatibleQosStatus* status) {
+    dds_DataReader* reader = const_cast<dds_DataReader*>(topic_reader);
+    GurumddsSubscriberInfo* info = static_cast<GurumddsSubscriberInfo*>(dds_DataReader_get_listener_context(reader));
+    info->on_requested_incompatible_qos(*status);
+  };
+
+  topic_listener.on_data_available = [](const dds_DataReader * topic_reader) {
     dds_DataReader* reader = const_cast<dds_DataReader*>(topic_reader);
     GurumddsSubscriberInfo* info = static_cast<GurumddsSubscriberInfo*>(dds_DataReader_get_listener_context(reader));
     std::lock_guard<std::mutex> guard(info->event_callback_data.mutex);
     if(info->event_callback_data.callback) {
       info->event_callback_data.callback(info->event_callback_data.user_data, info->count_unread());
     }
+  };
+
+  topic_listener.on_liveliness_changed = [](const dds_DataReader* topic_reader, const dds_LivelinessChangedStatus* status) {
+    dds_DataReader* reader = const_cast<dds_DataReader*>(topic_reader);
+    GurumddsSubscriberInfo* info = static_cast<GurumddsSubscriberInfo*>(dds_DataReader_get_listener_context(reader));
+    info->on_liveliness_changed(*status);
+  };
+
+  topic_listener.on_subscription_matched = [](const dds_DataReader* topic_reader, const dds_SubscriptionMatchedStatus* status) {
+    dds_DataReader* reader = const_cast<dds_DataReader*>(topic_reader);
+    GurumddsSubscriberInfo* info = static_cast<GurumddsSubscriberInfo*>(dds_DataReader_get_listener_context(reader));
+    info->on_subscription_matched(*status);
+  };
+
+  topic_listener.on_sample_lost = [](const dds_DataReader* topic_reader, const dds_SampleLostStatus* status) {
+    dds_DataReader* reader = const_cast<dds_DataReader*>(topic_reader);
+    GurumddsSubscriberInfo* info = static_cast<GurumddsSubscriberInfo*>(dds_DataReader_get_listener_context(reader));
+    info->on_sample_lost(*status);
   };
 
   subscriber_info->topic_reader = topic_reader;
@@ -213,6 +247,14 @@ __rmw_create_subscription(
   subscriber_info->rosidl_message_typesupport = type_support;
   subscriber_info->implementation_identifier = RMW_GURUMDDS_ID;
   subscriber_info->ctx = ctx;
+  subscriber_info->event_guard_cond[RMW_EVENT_LIVELINESS_CHANGED] = dds_GuardCondition_create();
+  subscriber_info->event_guard_cond[RMW_EVENT_REQUESTED_DEADLINE_MISSED] = dds_GuardCondition_create();
+  subscriber_info->event_guard_cond[RMW_EVENT_REQUESTED_QOS_INCOMPATIBLE] = dds_GuardCondition_create();
+  subscriber_info->event_guard_cond[RMW_EVENT_MESSAGE_LOST] = dds_GuardCondition_create();
+  subscriber_info->event_guard_cond[RMW_EVENT_SUBSCRIPTION_INCOMPATIBLE_TYPE] = dds_GuardCondition_create();
+  subscriber_info->event_guard_cond[RMW_EVENT_SUBSCRIPTION_MATCHED] = dds_GuardCondition_create();
+
+  GurumddsTopicEventListener::add_event(topic, subscriber_info);
 
   entity_get_gid(
     reinterpret_cast<dds_Entity *>(subscriber_info->topic_reader),
@@ -297,14 +339,23 @@ __rmw_destroy_subscription(
       RMW_SET_ERROR_MSG("failed to delete datareader");
       return RMW_RET_ERROR;
     }
-    subscriber_info->topic_reader = nullptr;
 
+    GurumddsTopicEventListener::remove_event(topic, subscriber_info);
+    subscriber_info->topic_reader = nullptr;
     ret = dds_DomainParticipant_delete_topic(ctx->participant, topic);
     if (ret == dds_RETCODE_PRECONDITION_NOT_MET) {
       RCUTILS_LOG_DEBUG_NAMED(RMW_GURUMDDS_ID, "The entity using the topic still exists.");
     } else if (ret != dds_RETCODE_OK) {
       RMW_SET_ERROR_MSG("failed to delete topic");
       return RMW_RET_ERROR;
+    } else {
+      GurumddsTopicEventListener::disassociate_Listener(topic);
+    }
+  }
+
+  for(auto condition: subscriber_info->event_guard_cond) {
+    if(nullptr != condition) {
+      dds_GuardCondition_delete(condition);
     }
   }
 
@@ -1132,7 +1183,6 @@ rmw_subscription_set_on_new_message_callback(
   }
 
   std::lock_guard<std::mutex> guard(subscriber_info->event_callback_data.mutex);
-  dds_StatusMask mask = subscriber_info->get_status_changes();
   dds_ReturnCode_t dds_rc = dds_RETCODE_ERROR;
 
   if (callback) {
@@ -1141,16 +1191,16 @@ rmw_subscription_set_on_new_message_callback(
       callback(user_data, unread_count);
     }
 
+    subscriber_info->mask |= dds_DATA_AVAILABLE_STATUS;
     subscriber_info->event_callback_data.callback = callback;
     subscriber_info->event_callback_data.user_data = user_data;
-    mask |= dds_DATA_AVAILABLE_STATUS;
-    dds_rc = dds_DataReader_set_listener(subscriber_info->topic_reader, &subscriber_info->topic_listener, mask);
   } else {
     subscriber_info->event_callback_data.callback = nullptr;
     subscriber_info->event_callback_data.user_data = nullptr;
-    mask &= ~dds_DATA_AVAILABLE_STATUS;
-    dds_rc = dds_DataReader_set_listener(subscriber_info->topic_reader, &subscriber_info->topic_listener, mask);
+    subscriber_info->mask &= ~dds_DATA_AVAILABLE_STATUS;
   }
+
+  dds_rc = dds_DataReader_set_listener(subscriber_info->topic_reader, &subscriber_info->topic_listener, subscriber_info->mask);
 
   return check_dds_ret_code(dds_rc);
 }

@@ -43,10 +43,10 @@
     return RMW_RET_ERROR; \
   }
 
-rmw_ret_t
+inline rmw_ret_t
 __gather_event_conditions(
   rmw_events_t * events,
-  std::unordered_set<dds_StatusCondition *> & status_conditions)
+  std::unordered_set<dds_Condition*> & status_conditions)
 {
   RMW_CHECK_ARGUMENT_FOR_NULL(events, RMW_RET_INVALID_ARGUMENT);
   std::unordered_map<dds_StatusCondition *, dds_StatusMask> status_map;
@@ -56,29 +56,38 @@ __gather_event_conditions(
     RMW_CHECK_ARGUMENT_FOR_NULL(events, RMW_RET_INVALID_ARGUMENT);
 
     auto event_info = static_cast<GurumddsEventInfo *>(now->data);
-    if (event_info == nullptr) {
+    if (nullptr == event_info) {
       RMW_SET_ERROR_MSG("event handle is null");
       return RMW_RET_ERROR;
     }
 
-    dds_StatusCondition * status_condition = event_info->get_statuscondition();
-    if (status_condition == nullptr) {
-      RMW_SET_ERROR_MSG("failed to get status condition");
-      return RMW_RET_ERROR;
+    const auto event_type = now->event_type;
+    if(!is_event_supported(event_type)) {
+      RMW_SET_ERROR_MSG_WITH_FORMAT_STRING("unsupported event: %d", now->event_type);
+      continue;
     }
 
-    if (is_event_supported(now->event_type)) {
-      auto map_pair = status_map.emplace(status_condition, 0);
-      auto it = map_pair.first;
-      it->second |= get_status_kind_from_rmw(now->event_type);
-    } else {
-      RMW_SET_ERROR_MSG_WITH_FORMAT_STRING("unsupported event: %d", now->event_type);
+    if(event_info->has_callback(event_type)) {
+      dds_GuardCondition * condition = event_info->get_guard_condition(event_type);
+      if (nullptr == condition) {
+        RMW_SET_ERROR_MSG_WITH_FORMAT_STRING("unsupported event: %d", event_type);
+        continue;
+      }
+
+      status_conditions.insert(reinterpret_cast<dds_Condition *>(condition));
     }
+
+    auto& mask = status_map[event_info->get_status_condition()];
+    mask |= get_status_kind_from_rmw(event_type);
   }
 
-  for (auto & map_pair : status_map) {
-    dds_StatusCondition_set_enabled_statuses(map_pair.first, map_pair.second);
-    status_conditions.insert(map_pair.first);
+  for(auto & pair : status_map) {
+    if(pair.second == 0) {
+      continue;
+    }
+
+    dds_StatusCondition_set_enabled_statuses(pair.first, pair.second);
+    status_conditions.insert(reinterpret_cast<dds_Condition *>(pair.first));
   }
 
   return RMW_RET_OK;
@@ -101,14 +110,7 @@ __handle_active_event_conditions(rmw_events_t * events)
       return RMW_RET_ERROR;
     }
 
-    dds_StatusMask mask = event_info->get_status_changes();
-    bool is_active = false;
-
-    if (is_event_supported(now->event_type)) {
-      is_active = ((mask & get_status_kind_from_rmw(now->event_type)) != 0);
-    }
-
-    if (!is_active) {
+    if (!event_info->is_status_changed(now->event_type)) {
       events->events[i] = nullptr;
     }
   }
@@ -142,7 +144,8 @@ __rmw_wait(
   rmw_wait_set_t * wait_set,
   const rmw_time_t * wait_timeout)
 {
-  RCUTILS_UNUSED(events);
+  RCUTILS_CAN_RETURN_WITH_ERROR_OF(RMW_RET_INVALID_ARGUMENT);
+  RCUTILS_CAN_RETURN_WITH_ERROR_OF(RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
   struct atexit_t
   {
     ~atexit_t()
@@ -245,7 +248,7 @@ __rmw_wait(
     }
   }
 
-  std::unordered_set<dds_StatusCondition *> status_conditions;
+  std::unordered_set<dds_Condition *> status_conditions;
 
   rmw_ret_t ret_code = __gather_event_conditions(events, status_conditions);
   if (ret_code != RMW_RET_OK) {
@@ -253,9 +256,7 @@ __rmw_wait(
   }
 
   for (auto status_condition : status_conditions) {
-    dds_ReturnCode_t ret = dds_WaitSet_attach_condition(
-      dds_wait_set,
-      reinterpret_cast<dds_Condition *>(status_condition));
+    dds_ReturnCode_t ret = dds_WaitSet_attach_condition(dds_wait_set, status_condition);
     CHECK_ATTACH(ret);
   }
 

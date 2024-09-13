@@ -129,6 +129,8 @@ __rmw_create_publisher(
       RMW_SET_ERROR_MSG("failed to finalize topic qos");
       return nullptr;
     }
+
+    GurumddsTopicEventListener::associate_listener(topic);
   } else {
     dds_Duration_t timeout;
     timeout.sec = 0;
@@ -165,11 +167,48 @@ __rmw_create_publisher(
     return nullptr;
   }
 
+  dds_DataWriterListener listener{};
+  listener.on_offered_deadline_missed = [](const dds_DataWriter * topic_writer,
+                                           const dds_OfferedDeadlineMissedStatus * status) {
+    dds_DataWriter * writer = const_cast<dds_DataWriter *>(topic_writer);
+    GurumddsPublisherInfo * info = static_cast<GurumddsPublisherInfo*>(dds_DataWriter_get_listener_context(writer));
+    info->on_offered_deadline_missed(*status);
+  };
+
+  listener.on_offered_incompatible_qos = [](const dds_DataWriter * topic_writer,
+                                            const dds_OfferedIncompatibleQosStatus * status) {
+    dds_DataWriter * writer = const_cast<dds_DataWriter *>(topic_writer);
+    GurumddsPublisherInfo * info = static_cast<GurumddsPublisherInfo*>(dds_DataWriter_get_listener_context(writer));
+    info->on_offered_incompatible_qos(*status);
+  };
+
+  listener.on_liveliness_lost = [](const dds_DataWriter * topic_writer, const dds_LivelinessLostStatus * status) {
+    dds_DataWriter * writer = const_cast<dds_DataWriter *>(topic_writer);
+    GurumddsPublisherInfo * info = static_cast<GurumddsPublisherInfo*>(dds_DataWriter_get_listener_context(writer));
+    info->on_liveliness_lost(*status);
+  };
+
+  listener.on_publication_matched = [](const dds_DataWriter * topic_writer,
+                                       const dds_PublicationMatchedStatus * status) {
+    dds_DataWriter * writer = const_cast<dds_DataWriter *>(topic_writer);
+    GurumddsPublisherInfo * info = static_cast<GurumddsPublisherInfo*>(dds_DataWriter_get_listener_context(writer));
+    info->on_publication_matched(*status);
+  };
+
+  dds_DataWriter_set_listener_context(topic_writer, publisher_info);
   publisher_info->topic_writer = topic_writer;
+  publisher_info->topic_listener = listener;
   publisher_info->rosidl_message_typesupport = type_support;
   publisher_info->implementation_identifier = RMW_GURUMDDS_ID;
   publisher_info->sequence_number = 0;
   publisher_info->ctx = ctx;
+  publisher_info->event_guard_cond[RMW_EVENT_LIVELINESS_LOST] = dds_GuardCondition_create();
+  publisher_info->event_guard_cond[RMW_EVENT_OFFERED_DEADLINE_MISSED] = dds_GuardCondition_create();
+  publisher_info->event_guard_cond[RMW_EVENT_OFFERED_QOS_INCOMPATIBLE] = dds_GuardCondition_create();
+  publisher_info->event_guard_cond[RMW_EVENT_PUBLISHER_INCOMPATIBLE_TYPE] = dds_GuardCondition_create();
+  publisher_info->event_guard_cond[RMW_EVENT_PUBLICATION_MATCHED] = dds_GuardCondition_create();
+
+  GurumddsTopicEventListener::add_event(topic, publisher_info);
 
   entity_get_gid(
     reinterpret_cast<dds_Entity *>(publisher_info->topic_writer),
@@ -241,6 +280,7 @@ __rmw_destroy_publisher(
       return RMW_RET_ERROR;
     }
     publisher_info->topic_writer = nullptr;
+    GurumddsTopicEventListener::remove_event(topic, publisher_info);
 
     ret = dds_DomainParticipant_delete_topic(ctx->participant, topic);
     if (ret == dds_RETCODE_PRECONDITION_NOT_MET) {
@@ -248,6 +288,14 @@ __rmw_destroy_publisher(
     } else if (ret != dds_RETCODE_OK) {
       RMW_SET_ERROR_MSG("failed to delete topic");
       return RMW_RET_ERROR;
+    } else {
+      GurumddsTopicEventListener::disassociate_Listener(topic);
+    }
+  }
+
+  for(auto condition: publisher_info->event_guard_cond) {
+    if(nullptr != condition) {
+      dds_GuardCondition_delete(condition);
     }
   }
 
