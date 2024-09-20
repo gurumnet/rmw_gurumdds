@@ -935,6 +935,7 @@ rmw_take_response(
         int32_t sn_high = 0;
         uint32_t sn_low = 0;
         int8_t client_guid[16] = {0};
+        dds_SampleInfoEx * sampleinfo_ex = reinterpret_cast<dds_SampleInfoEx *>(sample_info);
         bool res = deserialize_response_basic(
           type_support->data,
           type_support->typesupport_identifier,
@@ -959,8 +960,9 @@ rmw_take_response(
           request_header->source_timestamp =
             sample_info->source_timestamp.sec * static_cast<int64_t>(1000000000) +
             sample_info->source_timestamp.nanosec;
-          // TODO(clemjh): SampleInfo doesn't contain received_timestamp
-          request_header->received_timestamp = 0;
+          request_header->received_timestamp =
+            sampleinfo_ex->received_timestamp.sec * static_cast<int64_t>(1000000000) +
+            sampleinfo_ex->received_timestamp.nanosec;
           request_header->request_id.sequence_number = ((int64_t)sn_high) << 32 | sn_low;
           memcpy(request_header->request_id.writer_guid, client_guid, 16);
 
@@ -1033,8 +1035,9 @@ rmw_take_response(
           request_header->source_timestamp =
             sample_info->source_timestamp.sec * static_cast<int64_t>(1000000000) +
             sample_info->source_timestamp.nanosec;
-          // TODO(clemjh): SampleInfo doesn't contain received_timestamp
-          request_header->received_timestamp = 0;
+          request_header->received_timestamp =
+            sampleinfo_ex->received_timestamp.sec * static_cast<int64_t>(1000000000) +
+            sampleinfo_ex->received_timestamp.nanosec;
           request_header->request_id.sequence_number = sequence_number;
           memcpy(request_header->request_id.writer_guid, client_guid, 16);
 
