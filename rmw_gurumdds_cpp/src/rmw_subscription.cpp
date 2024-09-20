@@ -422,8 +422,9 @@ _take(
       message_info->source_timestamp =
         sample_info->source_timestamp.sec * static_cast<int64_t>(1000000000) +
         sample_info->source_timestamp.nanosec;
-      // TODO(clemjh): SampleInfo doesn't contain received_timestamp
-      message_info->received_timestamp = 0;
+      message_info->received_timestamp =
+        sampleinfo_ex->received_timestamp.sec * static_cast<int64_t>(1000000000) +
+        sampleinfo_ex->received_timestamp.nanosec;
       message_info->publication_sequence_number = sequence_number;
       message_info->reception_sequence_number = RMW_MESSAGE_INFO_SEQUENCE_NUMBER_UNSUPPORTED;
       rmw_gid_t * sender_gid = &message_info->publisher_gid;
@@ -557,8 +558,9 @@ _take_serialized(
       message_info->source_timestamp =
         sample_info->source_timestamp.sec * static_cast<int64_t>(1000000000) +
         sample_info->source_timestamp.nanosec;
-      // TODO(clemjh): SampleInfo doesn't contain received_timestamp
-      message_info->received_timestamp = 0;
+      message_info->received_timestamp =
+        sampleinfo_ex->received_timestamp.sec * static_cast<int64_t>(1000000000) +
+        sampleinfo_ex->received_timestamp.nanosec;
       message_info->publication_sequence_number = sequence_number;
       message_info->reception_sequence_number = RMW_MESSAGE_INFO_SEQUENCE_NUMBER_UNSUPPORTED;
       rmw_gid_t * sender_gid = &message_info->publisher_gid;
@@ -986,12 +988,14 @@ rmw_take_sequence(
         }
 
         auto message_info = &(message_info_sequence->data[*taken]);
+        dds_SampleInfoEx * sampleinfo_ex = reinterpret_cast<dds_SampleInfoEx *>(sample_info);
 
         message_info->source_timestamp =
           sample_info->source_timestamp.sec * static_cast<int64_t>(1000000000) +
           sample_info->source_timestamp.nanosec;
-        // TODO(clemjh): SampleInfo doesn't contain received_timestamp
-        message_info->received_timestamp = 0;
+        message_info->received_timestamp =
+          sampleinfo_ex->received_timestamp.sec * static_cast<int64_t>(1000000000) +
+          sampleinfo_ex->received_timestamp.nanosec;
         rmw_gid_t * sender_gid = &message_info->publisher_gid;
         sender_gid->implementation_identifier = RMW_GURUMDDS_ID;
         memset(sender_gid->data, 0, RMW_GID_STORAGE_SIZE);
