@@ -456,6 +456,13 @@ _take(
       static_cast<size_t>(sample_size)
     );
     if (!result) {
+      deserialize_cdr_to_ros(
+        subscriber_info->rosidl_message_typesupport->data,
+        subscriber_info->rosidl_message_typesupport->typesupport_identifier,
+        ros_message,
+        sample,
+        static_cast<size_t>(sample_size)
+      );
       RMW_SET_ERROR_MSG("failed to deserialize message");
       dds_DataReader_raw_return_loan(topic_reader, data_values, sample_infos, sample_sizes);
       dds_DataSeq_delete(data_values);

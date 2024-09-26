@@ -55,7 +55,9 @@ link_directories(${GurumDDS_LIBRARY_DIRS})
 
 add_library(rmw_gurumdds_cpp
   SHARED
+  src/cdr_buffer.cpp
   src/demangle.cpp
+  src/cdr_deser_buffer.cpp
   src/event_converter.cpp
   src/get_entities.cpp
   src/identifier.cpp
