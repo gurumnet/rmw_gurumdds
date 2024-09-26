@@ -403,7 +403,7 @@ public:
       if (offset + str_size * 2 > size) {
         throw std::runtime_error("Out of buffer");
       }
-      bool res = rosidl_runtime_c__U16String__resize(&dst, str_size + 1);
+      bool res = rosidl_runtime_c__U16String__resize(&dst, str_size);
       if (!res) {
         throw std::runtime_error("Failed to resize wstring");
       }

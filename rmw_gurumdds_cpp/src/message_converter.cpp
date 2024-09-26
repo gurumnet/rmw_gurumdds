@@ -166,14 +166,10 @@ void MessageSerializer::serialize_wchar(
     }
 
     for (uint32_t i = 0; i < member->size_function(input + member->offset_); i++) {
-      buffer <<
-        static_cast<uint32_t>(
-        *(reinterpret_cast<const uint16_t *>(
-          member->get_const_function(input + member->offset_, i))));
+      buffer << *(reinterpret_cast<const uint16_t *>(member->get_const_function(input + member->offset_, i)));
     }
   } else {
-    buffer <<
-      static_cast<uint32_t>(*(reinterpret_cast<const uint16_t *>(input + member->offset_)));
+    buffer << *(reinterpret_cast<const uint16_t *>(input + member->offset_));
   }
 }
 
@@ -299,12 +295,11 @@ void MessageSerializer::serialize_wchar(
       buffer << static_cast<uint32_t>(seq.size);
 
       for (uint32_t i = 0; i < seq.size; i++) {
-        buffer << static_cast<uint32_t>(seq.data[i]);
+        buffer << seq.data[i];
       }
     }
   } else {
-    buffer <<
-      static_cast<uint32_t>(*(reinterpret_cast<const uint16_t *>(input + member->offset_)));
+    buffer << *(reinterpret_cast<const uint16_t *>(input + member->offset_));
   }
 }
 
@@ -372,30 +367,18 @@ void MessageSerializer::serialize_struct_arr(
     if (!member->array_size_ || member->is_upper_bound_) {
       // Sequence
       buffer << static_cast<uint32_t>(member->size_function(input + member->offset_));
-      for (uint32_t i = 0; i < member->size_function(input + member->offset_); i++) {
-        serialize(
-          reinterpret_cast<const rosidl_typesupport_introspection_c__MessageMembers *>(
-            member->members_->data
+    }
+
+    for (uint32_t i = 0; i < member->size_function(input + member->offset_); i++) {
+      serialize(
+        reinterpret_cast<const rosidl_typesupport_introspection_c__MessageMembers *>(
+          member->members_->data
           ),
-          reinterpret_cast<const uint8_t *>(
-            member->get_const_function(input + member->offset_, i)
-          ),
-          false
-        );
-      }
-    } else {
-      const void * tmp = input + member->offset_;
-      for (uint32_t i = 0; i < member->size_function(input + member->offset_); i++) {
-        serialize(
-          reinterpret_cast<const rosidl_typesupport_introspection_c__MessageMembers *>(
-            member->members_->data
-          ),
-          reinterpret_cast<const uint8_t *>(
-            member->get_const_function(&tmp, i)
-          ),
-          false
-        );
-      }
+        reinterpret_cast<const uint8_t *>(
+          member->get_const_function(input + member->offset_, i)
+            ),
+        false
+      );
     }
   } else {
     serialize(
@@ -467,15 +450,14 @@ void MessageDeserializer::deserialize_wchar(
     }
 
     for (uint32_t i = 0; i < member->size_function(output + member->offset_); i++) {
-      uint32_t data = 0;
+      uint16_t data = 0;
       buffer >> data;
-      *(reinterpret_cast<uint16_t *>(member->get_function(output + member->offset_, i))) =
-        static_cast<uint16_t>(data);
+      *(reinterpret_cast<uint16_t *>(member->get_function(output + member->offset_, i))) = data;
     }
   } else {
-    uint32_t data = 0;
+    uint16_t data = 0;
     buffer >> data;
-    *(reinterpret_cast<uint16_t *>(output + member->offset_)) = static_cast<uint16_t>(data);
+    *(reinterpret_cast<uint16_t *>(output + member->offset_)) = data;
   }
 }
 
@@ -626,23 +608,17 @@ void MessageDeserializer::deserialize_wchar(
       }
 
       for (uint32_t i = 0; i < size; i++) {
-        uint32_t data = 0;
-        buffer >> data;
-        seq_ptr->data[i] = static_cast<uint16_t>(data);
+        buffer >> seq_ptr->data[i];
       }
     } else {
       auto arr = reinterpret_cast<uint16_t *>(output + member->offset_);
       for (uint32_t i = 0; i < member->array_size_; i++) {
-        uint8_t data = 0;
-        buffer >> data;
-        arr[i] = static_cast<uint16_t>(data);
+        buffer >> arr[i];
       }
     }
   } else {
     auto dst = reinterpret_cast<uint16_t *>(output + member->offset_);
-    uint32_t data = 0;
-    buffer >> data;
-    *dst = static_cast<uint16_t>(data);
+    buffer >> *dst;
   }
 }
 
