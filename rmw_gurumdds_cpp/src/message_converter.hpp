@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef MESSAGE_CONVERTER_HPP_
-#define MESSAGE_CONVERTER_HPP_
+#ifndef RMW_GURUMDDS__MESSAGE_CONVERTER_HPP_
+#define RMW_GURUMDDS__MESSAGE_CONVERTER_HPP_
 
 #include "rosidl_runtime_cpp/bounded_vector.hpp"
 
@@ -31,187 +31,39 @@
 
 #include "cdr_buffer.hpp"
 
-class MessageSerializer
-{
-public:
-  explicit MessageSerializer(CDRSerializationBuffer & a_buffer)
-  : buffer(a_buffer) {}
+namespace rmw_gurumdds {
+enum class LanguageKind { UNKNOWN, C, CXX };
 
-  template<typename MessageMembersT>
-  void serialize(const MessageMembersT * members, const uint8_t * input, bool roundup_)
-  {
-    for (uint32_t i = 0; i < members->member_count_; i++) {
-      auto member = members->members_ + i;
-      switch (member->type_id_) {
-        case rosidl_typesupport_introspection_cpp::ROS_TYPE_BOOLEAN:
-          serialize_boolean(member, input);
-          break;
-        case rosidl_typesupport_introspection_cpp::ROS_TYPE_CHAR:
-        case rosidl_typesupport_introspection_cpp::ROS_TYPE_OCTET:
-        case rosidl_typesupport_introspection_cpp::ROS_TYPE_UINT8:
-        case rosidl_typesupport_introspection_cpp::ROS_TYPE_INT8:
-          serialize_primitive<uint8_t>(member, input);
-          break;
-        case rosidl_typesupport_introspection_cpp::ROS_TYPE_UINT16:
-        case rosidl_typesupport_introspection_cpp::ROS_TYPE_INT16:
-          serialize_primitive<uint16_t>(member, input);
-          break;
-        case rosidl_typesupport_introspection_cpp::ROS_TYPE_FLOAT:
-        case rosidl_typesupport_introspection_cpp::ROS_TYPE_UINT32:
-        case rosidl_typesupport_introspection_cpp::ROS_TYPE_INT32:
-          serialize_primitive<uint32_t>(member, input);
-          break;
-        case rosidl_typesupport_introspection_cpp::ROS_TYPE_DOUBLE:
-        case rosidl_typesupport_introspection_cpp::ROS_TYPE_LONG_DOUBLE:
-        case rosidl_typesupport_introspection_cpp::ROS_TYPE_UINT64:
-        case rosidl_typesupport_introspection_cpp::ROS_TYPE_INT64:
-          serialize_primitive<uint64_t>(member, input);
-          break;
-        case rosidl_typesupport_introspection_cpp::ROS_TYPE_WCHAR:
-          serialize_wchar(member, input);
-          break;
-        case rosidl_typesupport_introspection_cpp::ROS_TYPE_STRING:
-          serialize_string(member, input);
-          break;
-        case rosidl_typesupport_introspection_cpp::ROS_TYPE_WSTRING:
-          serialize_wstring(member, input);
-          break;
-        case rosidl_typesupport_introspection_cpp::ROS_TYPE_MESSAGE:
-          serialize_struct_arr(member, input);
-          break;
-        default:
-          throw std::logic_error("This should not be rechable");
-          break;
-      }
-    }
-
-    if (roundup_) {
-      buffer.roundup(4);
-    }
+template<typename T>
+constexpr LanguageKind get_language_kind() {
+  if constexpr (std::is_same_v<T, rosidl_typesupport_introspection_c__MessageMember>) {
+    return LanguageKind::C;
+  } else if constexpr (std::is_same_v<T, rosidl_typesupport_introspection_cpp::MessageMember>) {
+    return LanguageKind::CXX;
   }
 
-private:
-  template<typename MessageMemberT>
-  void serialize_boolean(
-    const MessageMemberT * member,
-    const uint8_t * input);
+  return LanguageKind::UNKNOWN;
+}
 
-  template<typename MessageMemberT>
-  void serialize_wchar(
-    const MessageMemberT * member,
-    const uint8_t * input);
+template<typename MessageMembersT>
+using MessageMemberType =  std::remove_cv_t<std::remove_pointer_t<decltype(std::declval<MessageMembersT>().members_)>>;
 
-  template<typename MessageMemberT>
-  void serialize_string(
-    const MessageMemberT * member,
-    const uint8_t * input);
+template<typename T>
+struct rmw_seq_t {};
 
-  template<typename MessageMemberT>
-  void serialize_wstring(
-    const MessageMemberT * member,
-    const uint8_t * input);
-
-  template<typename PrimitiveT, typename MessageMemberT>
-  void serialize_primitive(
-    const MessageMemberT * member,
-    const uint8_t * input);
-
-  template<typename MessageMemberT>
-  void serialize_struct_arr(
-    const MessageMemberT * member,
-    const uint8_t * input);
-
-private:
-  CDRSerializationBuffer & buffer;
+#define RMW_GURUMDDS_SEQ_HELPER(HelperItemType, SIZE) \
+template<> struct rmw_seq_t<HelperItemType>: rosidl_runtime_c__uint ## SIZE ## __Sequence {    \
+    bool init(size_t size) { return rosidl_runtime_c__uint ## SIZE ## __Sequence__init(this, size);} \
+    void fini() { rosidl_runtime_c__uint ## SIZE ## __Sequence__fini(this); }                                                       \
 };
 
-class MessageDeserializer
-{
-public:
-  explicit MessageDeserializer(CDRDeserializationBuffer & a_buffer)
-  : buffer(a_buffer) {}
+RMW_GURUMDDS_SEQ_HELPER(uint8_t, 8);
+RMW_GURUMDDS_SEQ_HELPER(uint16_t, 16);
+RMW_GURUMDDS_SEQ_HELPER(uint32_t, 32);
+RMW_GURUMDDS_SEQ_HELPER(uint64_t, 64);
+}
 
-  template<typename MessageMembersT>
-  void deserialize(const MessageMembersT * members, uint8_t * output)
-  {
-    for (uint32_t i = 0; i < members->member_count_; i++) {
-      auto member = members->members_ + i;
-      switch (member->type_id_) {
-        case rosidl_typesupport_introspection_cpp::ROS_TYPE_BOOLEAN:
-          deserialize_boolean(member, output);
-          break;
-        case rosidl_typesupport_introspection_cpp::ROS_TYPE_CHAR:
-        case rosidl_typesupport_introspection_cpp::ROS_TYPE_OCTET:
-        case rosidl_typesupport_introspection_cpp::ROS_TYPE_UINT8:
-        case rosidl_typesupport_introspection_cpp::ROS_TYPE_INT8:
-          deserialize_primitive<uint8_t>(member, output);
-          break;
-        case rosidl_typesupport_introspection_cpp::ROS_TYPE_UINT16:
-        case rosidl_typesupport_introspection_cpp::ROS_TYPE_INT16:
-          deserialize_primitive<uint16_t>(member, output);
-          break;
-        case rosidl_typesupport_introspection_cpp::ROS_TYPE_FLOAT:
-        case rosidl_typesupport_introspection_cpp::ROS_TYPE_UINT32:
-        case rosidl_typesupport_introspection_cpp::ROS_TYPE_INT32:
-          deserialize_primitive<uint32_t>(member, output);
-          break;
-        case rosidl_typesupport_introspection_cpp::ROS_TYPE_DOUBLE:
-        case rosidl_typesupport_introspection_cpp::ROS_TYPE_LONG_DOUBLE:
-        case rosidl_typesupport_introspection_cpp::ROS_TYPE_UINT64:
-        case rosidl_typesupport_introspection_cpp::ROS_TYPE_INT64:
-          deserialize_primitive<uint64_t>(member, output);
-          break;
-        case rosidl_typesupport_introspection_cpp::ROS_TYPE_WCHAR:
-          deserialize_wchar(member, output);
-          break;
-        case rosidl_typesupport_introspection_cpp::ROS_TYPE_STRING:
-          deserialize_string(member, output);
-          break;
-        case rosidl_typesupport_introspection_cpp::ROS_TYPE_WSTRING:
-          deserialize_wstring(member, output);
-          break;
-        case rosidl_typesupport_introspection_cpp::ROS_TYPE_MESSAGE:
-          deserialize_struct_arr(member, output);
-          break;
-        default:
-          break;
-      }
-    }
-  }
+#include "message_serializer.hpp"
+#include "message_deserializer.hpp"
 
-private:
-  template<typename MessageMemberT>
-  void deserialize_boolean(
-    const MessageMemberT * member,
-    uint8_t * output);
-
-  template<typename MessageMemberT>
-  void deserialize_wchar(
-    const MessageMemberT * member,
-    uint8_t * output);
-
-  template<typename MessageMemberT>
-  void deserialize_string(
-    const MessageMemberT * member,
-    uint8_t * output);
-
-  template<typename MessageMemberT>
-  void deserialize_wstring(
-    const MessageMemberT * member,
-    uint8_t * output);
-
-  template<typename PrimitiveT, typename MessageMemberT>
-  void deserialize_primitive(
-    const MessageMemberT * member,
-    uint8_t * output);
-
-  template<typename MessageMemberT>
-  void deserialize_struct_arr(
-    const MessageMemberT * member,
-    uint8_t * output);
-
-private:
-  CDRDeserializationBuffer & buffer;
-};
-
-#endif  // MESSAGE_CONVERTER_HPP_
+#endif  // RMW_GURUMDDS__MESSAGE_CONVERTER_HPP_
