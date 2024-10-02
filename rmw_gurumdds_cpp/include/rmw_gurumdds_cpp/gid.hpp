@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef RMW_GURUMDDS_CPP__GID_HPP_
-#define RMW_GURUMDDS_CPP__GID_HPP_
+#ifndef RMW_GURUMDDS__GID_HPP_
+#define RMW_GURUMDDS__GID_HPP_
 
 #include <cstring>
 #include <iostream>
@@ -47,4 +47,4 @@ void entity_get_gid(dds_Entity * const entity, rmw_gid_t & gid)
   }
 }
 
-#endif // RMW_GURUMDDS_CPP__GID_HPP_
+#endif // RMW_GURUMDDS__GID_HPP_

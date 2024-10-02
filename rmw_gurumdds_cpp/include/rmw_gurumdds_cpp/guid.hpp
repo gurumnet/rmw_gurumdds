@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef RMW_GURUMDDS_CPP__GUID_HPP_
-#define RMW_GURUMDDS_CPP__GUID_HPP_
+#ifndef RMW_GURUMDDS__GUID_HPP_
+#define RMW_GURUMDDS__GUID_HPP_
 
 #include <cstring>
 #include <iostream>
@@ -126,4 +126,4 @@ inline void dds_BuiltinTopicKey_to_GUID(
 #endif
 }
 
-#endif // RMW_GURUMDDS_CPP__GUID_HPP_
+#endif // RMW_GURUMDDS__GUID_HPP_

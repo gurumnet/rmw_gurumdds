@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef RMW_GURUMDDS_CPP__RMW_CONTEXT_IMPL_HPP_
-#define RMW_GURUMDDS_CPP__RMW_CONTEXT_IMPL_HPP_
+#ifndef RMW_GURUMDDS__RMW_CONTEXT_IMPL_HPP_
+#define RMW_GURUMDDS__RMW_CONTEXT_IMPL_HPP_
 
 #include <memory>
 #include <mutex>
@@ -94,4 +94,4 @@ struct rmw_context_impl_s
   finalize();
 };
 
-#endif // RMW_GURUMDDS_CPP__RMW_CONTEXT_IMPL_HPP_
+#endif // RMW_GURUMDDS__RMW_CONTEXT_IMPL_HPP_

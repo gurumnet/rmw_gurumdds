@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef RMW_GURUMDDS_CPP__RMW_WAIT_HPP_
-#define RMW_GURUMDDS_CPP__RMW_WAIT_HPP_
+#ifndef RMW_GURUMDDS__RMW_WAIT_HPP_
+#define RMW_GURUMDDS__RMW_WAIT_HPP_
 
 #include <chrono>
 #include <unordered_map>
@@ -556,4 +556,4 @@ __rmw_wait(
   return rret;
 }
 
-#endif // RMW_GURUMDDS_CPP__RMW_WAIT_HPP_
+#endif // RMW_GURUMDDS__RMW_WAIT_HPP_
