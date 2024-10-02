@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef RMW_GURUMDDS_CPP__TYPE_SUPPORT_SERVICE_HPP_
-#define RMW_GURUMDDS_CPP__TYPE_SUPPORT_SERVICE_HPP_
+#ifndef RMW_GURUMDDS__TYPE_SUPPORT_SERVICE_HPP_
+#define RMW_GURUMDDS__TYPE_SUPPORT_SERVICE_HPP_
 
 #include <string>
 #include <utility>
@@ -1032,4 +1032,4 @@ dds_sn_to_ros_sn(uint64_t sn_dds, int64_t * sn_ros)
 {
   *sn_ros = ((sn_dds & 0x00000000FFFFFFFF) << 32) | ((sn_dds & 0xFFFFFFFF00000000) >> 32);
 }
-#endif // RMW_GURUMDDS_CPP__TYPE_SUPPORT_SERVICE_HPP_
+#endif // RMW_GURUMDDS__TYPE_SUPPORT_SERVICE_HPP_

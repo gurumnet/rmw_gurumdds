@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef RMW_GURUMDDS_CPP__TYPES_HPP_
-#define RMW_GURUMDDS_CPP__TYPES_HPP_
+#ifndef RMW_GURUMDDS__TYPES_HPP_
+#define RMW_GURUMDDS__TYPES_HPP_
 
 #include <atomic>
 #include <cassert>
@@ -289,4 +289,4 @@ private:
   std::vector<GurumddsEventInfo*> event_list_;
 };
 
-#endif // RMW_GURUMDDS_CPP__TYPES_HPP_
+#endif // RMW_GURUMDDS__TYPES_HPP_
