@@ -26,11 +26,11 @@
 
 #include "rmw_dds_common/context.hpp"
 
-#include "rmw_gurumdds_cpp/rmw_context_impl.hpp"
 #include "rmw_gurumdds_cpp/demangle.hpp"
 #include "rmw_gurumdds_cpp/identifier.hpp"
-#include "rmw_gurumdds_cpp/namespace_prefix.hpp"
 #include "rmw_gurumdds_cpp/names_and_types_helpers.hpp"
+#include "rmw_gurumdds_cpp/namespace_prefix.hpp"
+#include "rmw_gurumdds_cpp/rmw_context_impl.hpp"
 
 extern "C"
 {
@@ -58,7 +58,7 @@ rmw_count_publishers(
     RMW_SET_ERROR_MSG_WITH_FORMAT_STRING("topic_name argument is invalid: %s", reason);
     return RMW_RET_INVALID_ARGUMENT;
   }
-  
+
   RMW_CHECK_ARGUMENT_FOR_NULL(count, RMW_RET_INVALID_ARGUMENT);
 
   auto common_ctx = &node->context->impl->common_ctx;
@@ -92,7 +92,7 @@ rmw_count_subscribers(
     RMW_SET_ERROR_MSG_WITH_FORMAT_STRING("topic_name argument is invalid: %s", reason);
     return RMW_RET_INVALID_ARGUMENT;
   }
-  
+
   RMW_CHECK_ARGUMENT_FOR_NULL(count, RMW_RET_INVALID_ARGUMENT);
 
   auto common_ctx = &node->context->impl->common_ctx;
@@ -127,7 +127,7 @@ rmw_count_clients(
     RMW_SET_ERROR_MSG_WITH_FORMAT_STRING("service_name argument is invalid: %s", reason);
     return RMW_RET_INVALID_ARGUMENT;
   }
-  
+
   auto common_ctx = &node->context->impl->common_ctx;
   const std::string mangled_service_name = create_topic_name(
     ros_service_response_prefix, service_name, "", false);

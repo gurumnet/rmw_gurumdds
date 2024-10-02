@@ -47,4 +47,4 @@ void entity_get_gid(dds_Entity * const entity, rmw_gid_t & gid)
   }
 }
 
-#endif  // RMW_GURUMDDS_CPP__GID_HPP_
+#endif // RMW_GURUMDDS_CPP__GID_HPP_

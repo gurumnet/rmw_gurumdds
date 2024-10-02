@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "rmw_dds_common/qos.hpp"
+#include "rmw/qos_profiles.h"
 
-#include "rmw_gurumdds_cpp/rmw_qos.hpp"
+#include "rmw_dds_common/qos.hpp"
 
 extern "C"
 {

@@ -12,24 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <cassert>
-#include <memory>
-#include <string>
-
-#include "rcpputils/scope_exit.hpp"
-
-#include "rcutils/logging_macros.h"
-#include "rcutils/types.h"
-
-#include "rmw/allocators.h"
-#include "rmw/rmw.h"
-#include "rmw/types.h"
-
-#include "rmw_gurumdds_cpp/graph_cache.hpp"
 #include "rmw_gurumdds_cpp/rmw_context_impl.hpp"
-#include "rmw_gurumdds_cpp/rmw_publisher.hpp"
-
-#include "rosidl_typesupport_cpp/message_type_support.hpp"
 
 using rmw_dds_common::msg::ParticipantEntitiesInfo;
 
@@ -49,8 +32,15 @@ rmw_context_impl_s::rmw_context_impl_s(rmw_context_t* const base)
   common_ctx.sub = nullptr;
 }
 
+rmw_context_impl_s::~rmw_context_impl_s()
+{
+  if (0u != this->node_count) {
+    RCUTILS_LOG_ERROR_NAMED(RMW_GURUMDDS_ID, "not all nodes finalized: %lu", this->node_count);
+  }
+}
+
 rmw_ret_t
-rmw_context_impl_t::initialize_node(
+rmw_context_impl_s::initialize_node(
   const char * node_name,
   const char * node_namespace,
   const bool localhost_only)
@@ -99,7 +89,7 @@ rmw_context_impl_t::initialize_node(
 }
 
 rmw_ret_t
-rmw_context_impl_t::finalize_node()
+rmw_context_impl_s::finalize_node()
 {
   this->node_count--;
   if (0u != this->node_count) {
@@ -111,14 +101,14 @@ rmw_context_impl_t::finalize_node()
 }
 
 rmw_ret_t
-rmw_context_impl_t::initialize_participant(
+rmw_context_impl_s::initialize_participant(
   const char * node_name,
   const char * node_namespace,
   const bool localhost_only)
 {
   dds_PublisherQos publisher_qos;
   dds_SubscriberQos subscriber_qos;
-  rmw_context_impl_t * const ctx = this;
+  rmw_context_impl_s * const ctx = this;
 
   auto scope_exit_dp_finalize = rcpputils::make_scope_exit(
     [ctx, &publisher_qos, &subscriber_qos]()
@@ -286,7 +276,7 @@ rmw_context_impl_t::initialize_participant(
 }
 
 rmw_ret_t
-rmw_context_impl_t::finalize_participant()
+rmw_context_impl_s::finalize_participant()
 {
   // Finalize graph_cache
   if (RMW_RET_OK != graph_cache_finalize(this)) {
@@ -356,7 +346,7 @@ rmw_context_impl_t::finalize_participant()
 }
 
 rmw_ret_t
-rmw_context_impl_t::finalize()
+rmw_context_impl_s::finalize()
 {
   dds_DomainParticipantFactory * factory = dds_DomainParticipantFactory_get_instance();
 

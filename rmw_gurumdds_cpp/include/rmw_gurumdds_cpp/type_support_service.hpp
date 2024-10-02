@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef TYPE_SUPPORT_SERVICE_HPP_
-#define TYPE_SUPPORT_SERVICE_HPP_
+#ifndef RMW_GURUMDDS_CPP__TYPE_SUPPORT_SERVICE_HPP_
+#define RMW_GURUMDDS_CPP__TYPE_SUPPORT_SERVICE_HPP_
 
 #include <string>
 #include <utility>
 
-#include "type_support_common.hpp"
+#include "rmw_gurumdds_cpp/type_support_common.hpp"
 
 #define GET_TYPENAME(T) \
   typename std::remove_pointer<typename std::remove_const<decltype(T)>::type>::type
@@ -1032,4 +1032,4 @@ dds_sn_to_ros_sn(uint64_t sn_dds, int64_t * sn_ros)
 {
   *sn_ros = ((sn_dds & 0x00000000FFFFFFFF) << 32) | ((sn_dds & 0xFFFFFFFF00000000) >> 32);
 }
-#endif  // TYPE_SUPPORT_SERVICE_HPP_
+#endif // RMW_GURUMDDS_CPP__TYPE_SUPPORT_SERVICE_HPP_

@@ -17,11 +17,11 @@
 #include <vector>
 
 #include "rmw/get_topic_endpoint_info.h"
-#include "rmw/impl/cpp/macros.hpp"
 #include "rmw/impl/cpp/key_value.hpp"
-#include "rmw/topic_endpoint_info_array.h"
-#include "rmw/topic_endpoint_info.h"
+#include "rmw/impl/cpp/macros.hpp"
 #include "rmw/rmw.h"
+#include "rmw/topic_endpoint_info.h"
+#include "rmw/topic_endpoint_info_array.h"
 #include "rmw/types.h"
 
 #include "rmw_gurumdds_cpp/demangle.hpp"

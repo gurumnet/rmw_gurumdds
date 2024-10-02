@@ -13,14 +13,12 @@
 // limitations under the License.
 
 #include <limits>
-
 #include <string>
 
 #include "rosidl_runtime_c/type_hash.h"
 
-#include "rmw_dds_common/time_utils.hpp"
-
 #include "rmw_dds_common/qos.hpp"
+#include "rmw_dds_common/time_utils.hpp"
 
 #include "rmw_gurumdds_cpp/qos.hpp"
 
@@ -203,8 +201,7 @@ bool get_datareader_qos(
 }
 
 rmw_qos_history_policy_t
-convert_history(
-  const dds_HistoryQosPolicy * const policy)
+convert_history(const dds_HistoryQosPolicy * const policy)
 {
   switch (policy->kind) {
     case dds_KEEP_LAST_HISTORY_QOS:
@@ -217,8 +214,7 @@ convert_history(
 }
 
 rmw_qos_reliability_policy_t
-convert_reliability(
-  const dds_ReliabilityQosPolicy * const policy)
+convert_reliability(const dds_ReliabilityQosPolicy * const policy)
 {
   switch (policy->kind) {
     case dds_BEST_EFFORT_RELIABILITY_QOS:
@@ -231,8 +227,7 @@ convert_reliability(
 }
 
 rmw_qos_durability_policy_t
-convert_durability(
-  const dds_DurabilityQosPolicy * const policy)
+convert_durability(const dds_DurabilityQosPolicy * const policy)
 {
   switch (policy->kind) {
     case dds_VOLATILE_DURABILITY_QOS:
@@ -245,23 +240,20 @@ convert_durability(
 }
 
 rmw_time_t
-convert_deadline(
-  const dds_DeadlineQosPolicy * const policy)
+convert_deadline(const dds_DeadlineQosPolicy * const policy)
 {
   return dds_duration_to_rmw(policy->period);
 }
 
 rmw_time_t
-convert_lifespan(
-  const dds_LifespanQosPolicy * const policy)
+convert_lifespan(const dds_LifespanQosPolicy * const policy)
 {
   rmw_time_t time = RMW_DURATION_INFINITE;
   return policy == nullptr ? time : dds_duration_to_rmw(policy->duration);
 }
 
 rmw_qos_liveliness_policy_t
-convert_liveliness(
-  const dds_LivelinessQosPolicy * const policy)
+convert_liveliness(const dds_LivelinessQosPolicy * const policy)
 {
   switch (policy->kind) {
     case dds_AUTOMATIC_LIVELINESS_QOS:
@@ -274,29 +266,28 @@ convert_liveliness(
 }
 
 rmw_time_t
-convert_liveliness_lease_duration(
-  const dds_LivelinessQosPolicy * const policy)
+convert_liveliness_lease_duration(const dds_LivelinessQosPolicy * const policy)
 {
   return dds_duration_to_rmw(policy->lease_duration);
 }
 
 rmw_qos_policy_kind_t
-convert_qos_policy(
-  dds_QosPolicyId_t policy_id)
+convert_qos_policy(const dds_QosPolicyId_t policy_id)
 {
-  if (policy_id == dds_HISTORY_QOS_POLICY_ID) {
-    return RMW_QOS_POLICY_HISTORY;
-  } else if (policy_id == dds_RELIABILITY_QOS_POLICY_ID) {
-    return RMW_QOS_POLICY_RELIABILITY;
-  } else if (policy_id == dds_DURABILITY_QOS_POLICY_ID) {
-    return RMW_QOS_POLICY_DURABILITY;
-  } else if (policy_id == dds_DEADLINE_QOS_POLICY_ID) {
-    return RMW_QOS_POLICY_DEADLINE;
-  } else if (policy_id == dds_LIFESPAN_QOS_POLICY_ID) {
-    return RMW_QOS_POLICY_LIFESPAN;
-  } else if (policy_id == dds_LIVELINESS_QOS_POLICY_ID) {
-    return RMW_QOS_POLICY_LIVELINESS;
+  switch(policy_id) {
+    case dds_HISTORY_QOS_POLICY_ID:
+      return RMW_QOS_POLICY_HISTORY;
+    case dds_RELIABILITY_QOS_POLICY_ID:
+      return RMW_QOS_POLICY_RELIABILITY;
+    case dds_DURABILITY_QOS_POLICY_ID:
+      return RMW_QOS_POLICY_DURABILITY;
+    case dds_DEADLINE_QOS_POLICY_ID:
+      return RMW_QOS_POLICY_DEADLINE;
+    case dds_LIFESPAN_QOS_POLICY_ID:
+        return RMW_QOS_POLICY_LIFESPAN;
+    case dds_LIVELINESS_QOS_POLICY_ID:
+      return RMW_QOS_POLICY_LIVELINESS;
+    default:
+      return RMW_QOS_POLICY_INVALID;
   }
-
-  return RMW_QOS_POLICY_INVALID;
 }

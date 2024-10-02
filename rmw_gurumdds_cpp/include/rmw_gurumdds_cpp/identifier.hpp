@@ -17,4 +17,4 @@
 
 extern const char * const RMW_GURUMDDS_ID;
 
-#endif  // RMW_GURUMDDS_CPP__IDENTIFIER_HPP_
+#endif // RMW_GURUMDDS_CPP__IDENTIFIER_HPP_
