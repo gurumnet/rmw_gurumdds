@@ -1,4 +1,4 @@
-#include "cdr_buffer.hpp"
+#include "rmw_gurumdds_cpp/cdr_buffer.hpp"
 
 namespace rmw_gurumdds
 {
@@ -33,7 +33,7 @@ CdrDeserializationBuffer::CdrDeserializationBuffer(uint8_t * buf, size_t size)
   if (size < CDR_HEADER_SIZE) {
     throw std::runtime_error("Insufficient buffer size");
   }
-  swap_ = (buf[1] != system_endian);
+  swap_ = (buf[1] != CDR_SYSTEM_ENDIAN);
   buf_ = buf + CDR_HEADER_SIZE;
   size_ = size - CDR_HEADER_SIZE;
   offset_ = 0;

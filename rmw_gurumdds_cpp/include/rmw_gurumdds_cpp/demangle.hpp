@@ -46,4 +46,4 @@ _identity_demangle(const std::string & name);
 using DemangleFunction = std::string (*)(const std::string &);
 using MangleFunction = DemangleFunction;
 
-#endif  // RMW_GURUMDDS_CPP__DEMANGLE_HPP_
+#endif // RMW_GURUMDDS_CPP__DEMANGLE_HPP_

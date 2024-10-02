@@ -29,7 +29,7 @@
 
 #include "rosidl_typesupport_introspection_c/message_introspection.h"
 
-#include "cdr_buffer.hpp"
+#include "rmw_gurumdds_cpp/cdr_buffer.hpp"
 
 namespace rmw_gurumdds {
 enum class LanguageKind { UNKNOWN, C, CXX };
@@ -63,7 +63,7 @@ RMW_GURUMDDS_SEQ_HELPER(uint32_t, 32);
 RMW_GURUMDDS_SEQ_HELPER(uint64_t, 64);
 }
 
-#include "message_serializer.hpp"
-#include "message_deserializer.hpp"
+#include "rmw_gurumdds_cpp/message_serializer.hpp"
+#include "rmw_gurumdds_cpp/message_deserializer.hpp"
 
 #endif  // RMW_GURUMDDS__MESSAGE_CONVERTER_HPP_

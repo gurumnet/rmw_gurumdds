@@ -1,5 +1,5 @@
 #include <cassert>
-#include "cdr_buffer.hpp"
+#include "rmw_gurumdds_cpp/cdr_buffer.hpp"
 
 namespace rmw_gurumdds {
 CdrBuffer::CdrBuffer(uint8_t * buf, size_t size)

@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef TYPE_SUPPORT_COMMON_HPP_
-#define TYPE_SUPPORT_COMMON_HPP_
+#ifndef RMW_GURUMDDS_CPP__TYPE_SUPPORT_COMMON_HPP_
+#define RMW_GURUMDDS_CPP__TYPE_SUPPORT_COMMON_HPP_
 
 #if defined(_MSC_VER)
 #include <BaseTsd.h>
@@ -37,7 +37,7 @@ typedef SSIZE_T ssize_t;
 #include "rosidl_typesupport_introspection_cpp/message_introspection.hpp"
 #include "rosidl_typesupport_introspection_cpp/service_introspection.hpp"
 
-#include "message_converter.hpp"
+#include "rmw_gurumdds_cpp/message_converter.hpp"
 
 template<typename MessageMembersT>
 std::string
@@ -462,4 +462,4 @@ deserialize_cdr_to_ros(
   return false;
 }
 
-#endif  // TYPE_SUPPORT_COMMON_HPP_
+#endif // RMW_GURUMDDS_CPP__TYPE_SUPPORT_COMMON_HPP_

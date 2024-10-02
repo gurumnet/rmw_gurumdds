@@ -22,8 +22,8 @@
 
 #include "rmw/allocators.h"
 #include "rmw/error_handling.h"
-#include "rmw/rmw.h"
 #include "rmw/impl/cpp/macros.hpp"
+#include "rmw/rmw.h"
 
 #include "rmw_gurumdds_cpp/dds_include.hpp"
 #include "rmw_gurumdds_cpp/event_converter.hpp"
@@ -556,4 +556,4 @@ __rmw_wait(
   return rret;
 }
 
-#endif  // RMW_GURUMDDS_CPP__RMW_WAIT_HPP_
+#endif // RMW_GURUMDDS_CPP__RMW_WAIT_HPP_

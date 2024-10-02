@@ -14,8 +14,8 @@
 
 #include "rmw/allocators.h"
 #include "rmw/error_handling.h"
-#include "rmw/rmw.h"
 #include "rmw/impl/cpp/macros.hpp"
+#include "rmw/rmw.h"
 
 #include "rmw_gurumdds_cpp/dds_include.hpp"
 #include "rmw_gurumdds_cpp/identifier.hpp"
