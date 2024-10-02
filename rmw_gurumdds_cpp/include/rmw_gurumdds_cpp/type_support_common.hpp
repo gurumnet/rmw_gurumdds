@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef RMW_GURUMDDS_CPP__TYPE_SUPPORT_COMMON_HPP_
-#define RMW_GURUMDDS_CPP__TYPE_SUPPORT_COMMON_HPP_
+#ifndef RMW_GURUMDDS__TYPE_SUPPORT_COMMON_HPP_
+#define RMW_GURUMDDS__TYPE_SUPPORT_COMMON_HPP_
 
 #if defined(_MSC_VER)
 #include <BaseTsd.h>
@@ -462,4 +462,4 @@ deserialize_cdr_to_ros(
   return false;
 }
 
-#endif // RMW_GURUMDDS_CPP__TYPE_SUPPORT_COMMON_HPP_
+#endif // RMW_GURUMDDS__TYPE_SUPPORT_COMMON_HPP_

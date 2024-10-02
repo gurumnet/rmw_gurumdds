@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef RMW_GURUMDDS_CPP__RMW_PUBLISHER_HPP_
-#define RMW_GURUMDDS_CPP__RMW_PUBLISHER_HPP_
+#ifndef RMW_GURUMDDS__RMW_PUBLISHER_HPP_
+#define RMW_GURUMDDS__RMW_PUBLISHER_HPP_
 
 rmw_publisher_t *
 __rmw_create_publisher(
@@ -40,4 +40,4 @@ publish(
   rmw_publisher_allocation_t * allocation);
 }
 
-#endif // RMW_GURUMDDS_CPP__RMW_PUBLISHER_HPP_
+#endif // RMW_GURUMDDS__RMW_PUBLISHER_HPP_
