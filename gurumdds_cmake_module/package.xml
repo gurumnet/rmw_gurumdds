@@ -4,9 +4,9 @@
   <name>gurumdds_cmake_module</name>
   <version>3.6.1</version>
   <description>Provide CMake module to find GurumNetworks GurumDDS.</description>
-  <maintainer email="donghee@gurum.cc">Donghee Lee</maintainer>
-  <maintainer email="jaemin@gurum.cc">Jaemin Jo</maintainer>
-  <maintainer email="hongsup@gurum.cc">Hongsup Shim</maintainer>
+  <maintainer email="donghyeon@gurum.cc">Donghyeon Lee</maintainer>
+  <maintainer email="hyunsoo@gurum.cc">Hyunsoo Kim</maintainer>
+  <maintainer email="seontai@gurum.cc">Seontai Kim</maintainer>
   <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
