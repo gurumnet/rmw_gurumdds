@@ -59,6 +59,6 @@ RMW_GURUMDDS_CPP_PUBLIC
 dds_DataWriter *
 get_response_data_writer(rmw_service_t * service);
 
-}  // namespace rmw_gurumdds_cpp
+} // namespace rmw_gurumdds_cpp
 
-#endif  // RMW_GURUMDDS_CPP__GET_ENTITIES_HPP_
+#endif // RMW_GURUMDDS_CPP__GET_ENTITIES_HPP_

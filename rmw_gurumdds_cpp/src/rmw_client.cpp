@@ -19,13 +19,13 @@
 #include <thread>
 #include <utility>
 
-#include "rcutils/logging_macros.h"
 #include "rcutils/error_handling.h"
+#include "rcutils/logging_macros.h"
 
 #include "rmw/allocators.h"
-#include "rmw/rmw.h"
 #include "rmw/error_handling.h"
 #include "rmw/impl/cpp/macros.hpp"
+#include "rmw/rmw.h"
 #include "rmw/types.h"
 #include "rmw/validate_full_topic_name.h"
 
@@ -39,9 +39,8 @@
 #include "rmw_gurumdds_cpp/namespace_prefix.hpp"
 #include "rmw_gurumdds_cpp/qos.hpp"
 #include "rmw_gurumdds_cpp/rmw_context_impl.hpp"
+#include "rmw_gurumdds_cpp/type_support_service.hpp"
 #include "rmw_gurumdds_cpp/types.hpp"
-
-#include "type_support_service.hpp"
 
 extern "C"
 {

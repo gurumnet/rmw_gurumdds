@@ -14,9 +14,6 @@
 
 #include <string>
 #include <sstream>
-#include <limits>
-#include <thread>
-#include <chrono>
 
 #include "rcutils/error_handling.h"
 #include "rcutils/types.h"
@@ -34,11 +31,13 @@
 #include "rmw_gurumdds_cpp/gid.hpp"
 #include "rmw_gurumdds_cpp/graph_cache.hpp"
 #include "rmw_gurumdds_cpp/identifier.hpp"
-#include "rmw_gurumdds_cpp/namespace_prefix.hpp"
 #include "rmw_gurumdds_cpp/names_and_types_helpers.hpp"
+#include "rmw_gurumdds_cpp/namespace_prefix.hpp"
 #include "rmw_gurumdds_cpp/qos.hpp"
 #include "rmw_gurumdds_cpp/rmw_context_impl.hpp"
 #include "rmw_gurumdds_cpp/rmw_publisher.hpp"
+#include "rmw_gurumdds_cpp/type_support_common.hpp"
+#include "rmw_gurumdds_cpp/type_support_service.hpp"
 #include "rmw_gurumdds_cpp/types.hpp"
 
 rmw_publisher_t *
@@ -443,7 +442,7 @@ rmw_create_publisher(
   if (ret != RMW_RET_OK) {
     return nullptr;
   }
-  
+
   if (!adapted_qos_policies.avoid_ros_namespace_conventions) {
     int validation_result = RMW_TOPIC_VALID;
     ret = rmw_validate_full_topic_name(topic_name, &validation_result, nullptr);

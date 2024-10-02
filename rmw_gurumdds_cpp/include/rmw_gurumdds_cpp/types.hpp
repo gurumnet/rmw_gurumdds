@@ -289,4 +289,4 @@ private:
   std::vector<GurumddsEventInfo*> event_list_;
 };
 
-#endif  // RMW_GURUMDDS_CPP__TYPES_HPP_
+#endif // RMW_GURUMDDS_CPP__TYPES_HPP_

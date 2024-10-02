@@ -17,8 +17,8 @@
 #include <thread>
 #include <utility>
 
-#include "rcutils/logging_macros.h"
 #include "rcutils/error_handling.h"
+#include "rcutils/logging_macros.h"
 
 #include "rmw/allocators.h"
 #include "rmw/get_service_names_and_types.h"
@@ -38,7 +38,7 @@
 #include "rmw_gurumdds_cpp/rmw_context_impl.hpp"
 #include "rmw_gurumdds_cpp/types.hpp"
 
-#include "type_support_service.hpp"
+#include "rmw_gurumdds_cpp/type_support_service.hpp"
 
 extern "C"
 {

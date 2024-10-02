@@ -12,11 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <utility>
+#include <mutex>
 #include <string>
-#include <limits>
-#include <thread>
-#include <chrono>
 
 #include "rcutils/error_handling.h"
 
@@ -33,13 +30,15 @@
 #include "rmw_gurumdds_cpp/event_converter.hpp"
 #include "rmw_gurumdds_cpp/gid.hpp"
 #include "rmw_gurumdds_cpp/graph_cache.hpp"
-#include "rmw_gurumdds_cpp/identifier.hpp"
 #include "rmw_gurumdds_cpp/guid.hpp"
-#include "rmw_gurumdds_cpp/namespace_prefix.hpp"
+#include "rmw_gurumdds_cpp/identifier.hpp"
 #include "rmw_gurumdds_cpp/names_and_types_helpers.hpp"
+#include "rmw_gurumdds_cpp/namespace_prefix.hpp"
 #include "rmw_gurumdds_cpp/qos.hpp"
 #include "rmw_gurumdds_cpp/rmw_context_impl.hpp"
 #include "rmw_gurumdds_cpp/rmw_subscription.hpp"
+#include "rmw_gurumdds_cpp/type_support_common.hpp"
+#include "rmw_gurumdds_cpp/type_support_service.hpp"
 #include "rmw_gurumdds_cpp/types.hpp"
 
 rmw_subscription_t *

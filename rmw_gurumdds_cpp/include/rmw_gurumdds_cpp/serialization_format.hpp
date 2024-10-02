@@ -17,4 +17,4 @@
 
 extern const char * const gurumdds_serialization_format;
 
-#endif  // RMW_GURUMDDS_CPP__SERIALIZATION_FORMAT_HPP_
+#endif // RMW_GURUMDDS_CPP__SERIALIZATION_FORMAT_HPP_

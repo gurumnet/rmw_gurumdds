@@ -14,7 +14,7 @@ inline CdrSerializationBuffer<true>::CdrSerializationBuffer(uint8_t * buf, size_
     throw std::runtime_error("Insufficient buffer size");
   }
   memset(buf, 0, CDR_HEADER_SIZE);
-  buf[CDR_HEADER_ENDIAN_IDX] = system_endian;
+  buf[CDR_HEADER_ENDIAN_IDX] = CDR_SYSTEM_ENDIAN;
   buf_ = buf + CDR_HEADER_SIZE;
   size_ = size - CDR_HEADER_SIZE;
 }

@@ -126,4 +126,4 @@ graph_remove_entity(
   const dds_GUID_t * const guid,
   const bool is_reader);
 
-#endif  // RMW_GURUMDDS_CPP__GRAPH_CACHE_HPP_
+#endif // RMW_GURUMDDS_CPP__GRAPH_CACHE_HPP_
