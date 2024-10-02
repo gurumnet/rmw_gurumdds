@@ -56,10 +56,12 @@ link_directories(${GurumDDS_LIBRARY_DIRS})
 add_library(rmw_gurumdds_cpp
   SHARED
   src/cdr_buffer.cpp
-  src/demangle.cpp
   src/cdr_deser_buffer.cpp
+  src/context_listener_thread.cpp
+  src/demangle.cpp
   src/event_converter.cpp
   src/get_entities.cpp
+  src/graph_cache.cpp
   src/identifier.cpp
   src/message_converter.cpp
   src/names_and_types_helpers.cpp
@@ -67,6 +69,7 @@ add_library(rmw_gurumdds_cpp
   src/qos.cpp
   src/rmw_client.cpp
   src/rmw_compare_gids_equal.cpp
+  src/rmw_context_impl.cpp
   src/rmw_count.cpp
   src/rmw_event.cpp
   src/rmw_features.cpp
@@ -77,49 +80,48 @@ add_library(rmw_gurumdds_cpp
   src/rmw_guard_condition.cpp
   src/rmw_init.cpp
   src/rmw_logging.cpp
-  src/rmw_node_info_and_types.cpp
   src/rmw_node.cpp
+  src/rmw_node_info_and_types.cpp
   src/rmw_publisher.cpp
   src/rmw_qos.cpp
   src/rmw_serialize.cpp
-  src/rmw_service_names_and_types.cpp
   src/rmw_service.cpp
+  src/rmw_service_names_and_types.cpp
   src/rmw_subscription.cpp
   src/rmw_topic_names_and_types.cpp
   src/rmw_wait.cpp
-  src/rmw_context_impl.cpp
-  src/context_listener_thread.cpp
-  src/graph_cache.cpp
   src/serialization_format.cpp
   src/types.cpp
 )
 
 ament_target_dependencies(rmw_gurumdds_cpp
+  "GurumDDS"
   "rcpputils"
   "rcutils"
-  "rosidl_typesupport_introspection_c"
-  "rosidl_typesupport_introspection_cpp"
   "rmw"
   "rmw_dds_common"
   "rosidl_runtime_c"
   "rosidl_runtime_cpp"
-  "GurumDDS")
+  "rosidl_typesupport_introspection_c"
+  "rosidl_typesupport_introspection_cpp"
+)
 ament_export_libraries(rmw_gurumdds_cpp)
 
 ament_export_dependencies(
-  rosidl_typesupport_introspection_cpp
-  rosidl_typesupport_introspection_c
-  rosidl_runtime_c
-  rosidl_runtime_cpp
   rcpputils
   rcutils
   rmw
   rmw_dds_common
+  rosidl_runtime_c
+  rosidl_runtime_cpp
+  rosidl_typesupport_introspection_c
+  rosidl_typesupport_introspection_cpp
 )
 
 register_rmw_implementation(
   "c:rosidl_typesupport_c:rosidl_typesupport_introspection_c"
-  "cpp:rosidl_typesupport_cpp:rosidl_typesupport_introspection_cpp")
+  "cpp:rosidl_typesupport_cpp:rosidl_typesupport_introspection_cpp"
+)
 
 configure_rmw_library(rmw_gurumdds_cpp)
 

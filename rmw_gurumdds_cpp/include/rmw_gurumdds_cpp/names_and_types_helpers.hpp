@@ -54,4 +54,4 @@ create_topic_name(
   const char * suffix,
   const rmw_qos_profile_t * qos_policies);
 
-#endif  // RMW_GURUMDDS_CPP__NAMES_AND_TYPES_HELPERS_HPP_
+#endif // RMW_GURUMDDS_CPP__NAMES_AND_TYPES_HELPERS_HPP_

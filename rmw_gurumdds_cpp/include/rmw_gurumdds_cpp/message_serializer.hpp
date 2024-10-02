@@ -62,6 +62,6 @@ private:
 };
 }
 
-#include "message_serializer.inl"
+#include "rmw_gurumdds_cpp/message_serializer.inl"
 
 #endif  // RMW_GURUMDDS__MESSAGE_SERIALIZER_HPP_

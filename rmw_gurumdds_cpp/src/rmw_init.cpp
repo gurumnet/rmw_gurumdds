@@ -154,7 +154,7 @@ rmw_init(const rmw_init_options_t * options, rmw_context_t * context)
   context->instance_id = options->instance_id;
   context->implementation_identifier = RMW_GURUMDDS_ID;
   context->actual_domain_id = RMW_DEFAULT_DOMAIN_ID != options->domain_id ? options->domain_id : 0u;
-  context->impl = new (std::nothrow) rmw_context_impl_s(context);
+  context->impl = new (std::nothrow) rmw_context_impl_t(context);
   if (context->impl == nullptr) {
     RMW_SET_ERROR_MSG("failed to allocate rmw context impl");
     goto fail;

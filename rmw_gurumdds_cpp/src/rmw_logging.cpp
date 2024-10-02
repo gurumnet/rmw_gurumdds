@@ -14,8 +14,8 @@
 
 #include "rcutils/logging_macros.h"
 
-#include "rmw/rmw.h"
 #include "rmw/error_handling.h"
+#include "rmw/rmw.h"
 
 #include "rmw_gurumdds_cpp/dds_include.hpp"
 

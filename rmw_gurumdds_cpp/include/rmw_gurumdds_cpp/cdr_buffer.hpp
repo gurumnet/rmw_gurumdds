@@ -29,9 +29,9 @@
 #define CDR_LITTLE_ENDIAN 1
 
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-#define system_endian CDR_LITTLE_ENDIAN
+#define CDR_SYSTEM_ENDIAN CDR_LITTLE_ENDIAN
 #else
-#define system_endian CDR_BIG_ENDIAN
+#define CDR_SYSTEM_ENDIAN CDR_BIG_ENDIAN
 #endif
 
 #define CDR_HEADER_SIZE 4
@@ -118,6 +118,6 @@ private:
 };
 }
 
-#include "cdr_serialization_buffer.inl"
+#include "rmw_gurumdds_cpp/cdr_serialization_buffer.inl"
 
 #endif  // RMW_GURUMDDS__CDR_BUFFER_HPP_

@@ -126,4 +126,4 @@ inline void dds_BuiltinTopicKey_to_GUID(
 #endif
 }
 
-#endif  // RMW_GURUMDDS_CPP__GUID_HPP_
+#endif // RMW_GURUMDDS_CPP__GUID_HPP_
