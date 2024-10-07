@@ -372,7 +372,7 @@ _take(
   rmw_message_info_t * message_info,
   rmw_subscription_allocation_t * allocation)
 {
-  (void)allocation;
+  RCUTILS_UNUSED(allocation);
   *taken = false;
 
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
@@ -515,7 +515,7 @@ _take_serialized(
   rmw_message_info_t * message_info,
   rmw_subscription_allocation_t * allocation)
 {
-  (void)allocation;
+  RCUTILS_UNUSED(allocation);
   *taken = false;
 
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
@@ -650,9 +650,9 @@ rmw_init_subscription_allocation(
   const rosidl_runtime_c__Sequence__bound * message_bounds,
   rmw_subscription_allocation_t * allocation)
 {
-  (void)type_support;
-  (void)message_bounds;
-  (void)allocation;
+  RCUTILS_UNUSED(type_support);
+  RCUTILS_UNUSED(message_bounds);
+  RCUTILS_UNUSED(allocation);
 
   RMW_SET_ERROR_MSG("rmw_init_subscription_allocation is not supported");
   return RMW_RET_UNSUPPORTED;
@@ -661,7 +661,7 @@ rmw_init_subscription_allocation(
 rmw_ret_t
 rmw_fini_subscription_allocation(rmw_subscription_allocation_t * allocation)
 {
-  (void)allocation;
+  RCUTILS_UNUSED(allocation);
 
   RMW_SET_ERROR_MSG("rmw_fini_subscription_allocation is not supported");
   return RMW_RET_UNSUPPORTED;
@@ -926,7 +926,7 @@ rmw_take_sequence(
   size_t * taken,
   rmw_subscription_allocation_t * allocation)
 {
-  (void)allocation;
+  RCUTILS_UNUSED(allocation);
   RCUTILS_CHECK_FOR_NULL_WITH_MSG(
     subscription, "subscription handle is null", return RMW_RET_INVALID_ARGUMENT);
   RCUTILS_CHECK_FOR_NULL_WITH_MSG(
@@ -1130,10 +1130,10 @@ rmw_take_loaned_message(
   bool * taken,
   rmw_subscription_allocation_t * allocation)
 {
-  (void)subscription;
-  (void)loaned_message;
-  (void)taken;
-  (void)allocation;
+  RCUTILS_UNUSED(subscription);
+  RCUTILS_UNUSED(loaned_message);
+  RCUTILS_UNUSED(taken);
+  RCUTILS_UNUSED(allocation);
 
   RMW_SET_ERROR_MSG("rmw_take_loaned_message is not supported");
   return RMW_RET_UNSUPPORTED;
@@ -1147,11 +1147,11 @@ rmw_take_loaned_message_with_info(
   rmw_message_info_t * message_info,
   rmw_subscription_allocation_t * allocation)
 {
-  (void)subscription;
-  (void)loaned_message;
-  (void)taken;
-  (void)message_info;
-  (void)allocation;
+  RCUTILS_UNUSED(subscription);
+  RCUTILS_UNUSED(loaned_message);
+  RCUTILS_UNUSED(taken);
+  RCUTILS_UNUSED(message_info);
+  RCUTILS_UNUSED(allocation);
 
   RMW_SET_ERROR_MSG("rmw_take_loaned_message_with_info is not supported");
   return RMW_RET_UNSUPPORTED;
@@ -1162,8 +1162,8 @@ rmw_return_loaned_message_from_subscription(
   const rmw_subscription_t * subscription,
   void * loaned_message)
 {
-  (void)subscription;
-  (void)loaned_message;
+  RCUTILS_UNUSED(subscription);
+  RCUTILS_UNUSED(loaned_message);
 
   RMW_SET_ERROR_MSG("rmw_return_loaned_message_from_subscription is not supported");
   return RMW_RET_UNSUPPORTED;
@@ -1216,8 +1216,8 @@ rmw_subscription_set_content_filter(
   rmw_subscription_t * subscription,
   const rmw_subscription_content_filter_options_t * options)
 {
-  (void)subscription;
-  (void)options;
+  RCUTILS_UNUSED(subscription);
+  RCUTILS_UNUSED(options);
 
   RMW_SET_ERROR_MSG("rmw_subscription_set_content_filter is not supported");
   return RMW_RET_UNSUPPORTED;
@@ -1229,9 +1229,9 @@ rmw_subscription_get_content_filter(
   rcutils_allocator_t * allocator,
   rmw_subscription_content_filter_options_t * options)
 {
-  (void)subscription;
-  (void)allocator;
-  (void)options;
+  RCUTILS_UNUSED(subscription);
+  RCUTILS_UNUSED(allocator);
+  RCUTILS_UNUSED(options);
 
   RMW_SET_ERROR_MSG("rmw_subscription_get_content_filter is not supported");
   return RMW_RET_UNSUPPORTED;
