@@ -23,6 +23,9 @@
 #define GET_TYPENAME(T) \
   typename std::remove_pointer<typename std::remove_const<decltype(T)>::type>::type
 
+
+namespace rmw_gurumdds_cpp
+{
 template<typename ServiceMembersT>
 std::pair<std::string, std::string>
 _create_service_type_name(const void * untyped_members)
@@ -301,8 +304,8 @@ _serialize_service_basic(
   uint32_t sn_low = static_cast<uint32_t>(sequence_number & 0x00000000FFFFFFFFLL);
 
   try {
-    rmw_gurumdds::CdrSerializationBuffer<true> buffer{dds_service, size};
-    rmw_gurumdds::MessageSerializer<true, MessageMembersT> serializer{buffer};
+    rmw_gurumdds_cpp::CdrSerializationBuffer<true> buffer{dds_service, size};
+    rmw_gurumdds_cpp::MessageSerializer<true, MessageMembersT> serializer{buffer};
     buffer << *(reinterpret_cast<const uint64_t *>(client_guid));
     buffer << *(reinterpret_cast<const uint64_t *>(client_guid + 8));
     buffer << *(reinterpret_cast<uint32_t *>(&sn_high));
@@ -498,8 +501,8 @@ _serialize_service_enhanced(
   }
 
   try {
-    rmw_gurumdds::CdrSerializationBuffer<true> buffer{dds_service, size};
-    rmw_gurumdds::MessageSerializer<true, MessageMembersT> serializer{buffer};
+    rmw_gurumdds_cpp::CdrSerializationBuffer<true> buffer{dds_service, size};
+    rmw_gurumdds_cpp::MessageSerializer<true, MessageMembersT> serializer{buffer};
     serializer.serialize(members, ros_service, true);
   } catch (std::runtime_error & e) {
     RMW_SET_ERROR_MSG_WITH_FORMAT_STRING("Failed to serialize ros message: %s", e.what());
@@ -657,8 +660,8 @@ _deserialize_service_basic(
   }
 
   try {
-    auto buffer = rmw_gurumdds::CdrDeserializationBuffer(dds_service, size);
-    auto deserializer = rmw_gurumdds::MessageDeserializer<MessageMembersT>(buffer);
+    auto buffer = rmw_gurumdds_cpp::CdrDeserializationBuffer(dds_service, size);
+    auto deserializer = rmw_gurumdds_cpp::MessageDeserializer<MessageMembersT>(buffer);
     buffer >> *(reinterpret_cast<uint64_t *>(client_guid));
     buffer >> *(reinterpret_cast<uint64_t *>(client_guid + 8));
     buffer >> *(reinterpret_cast<uint32_t *>(sn_high));
@@ -867,8 +870,8 @@ _deserialize_service_enhanced(
   }
 
   try {
-    auto buffer = rmw_gurumdds::CdrDeserializationBuffer(dds_service, size);
-    auto deserializer = rmw_gurumdds::MessageDeserializer<MessageMembersT>(buffer);
+    auto buffer = rmw_gurumdds_cpp::CdrDeserializationBuffer(dds_service, size);
+    auto deserializer = rmw_gurumdds_cpp::MessageDeserializer<MessageMembersT>(buffer);
     deserializer.deserialize(members, ros_service);
   } catch (std::runtime_error & e) {
     RMW_SET_ERROR_MSG_WITH_FORMAT_STRING("Failed to deserialize dds message: %s", e.what());
@@ -1032,4 +1035,6 @@ dds_sn_to_ros_sn(uint64_t sn_dds, int64_t * sn_ros)
 {
   *sn_ros = ((sn_dds & 0x00000000FFFFFFFF) << 32) | ((sn_dds & 0xFFFFFFFF00000000) >> 32);
 }
+} // namespace rmw_gurumdds_cpp
+
 #endif // RMW_GURUMDDS__TYPE_SUPPORT_SERVICE_HPP_

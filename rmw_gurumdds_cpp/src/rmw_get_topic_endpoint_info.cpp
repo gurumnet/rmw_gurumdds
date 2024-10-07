@@ -55,10 +55,10 @@ rmw_get_publishers_info_by_topic(
 
   auto common_ctx = &node->context->impl->common_ctx;
   std::string mangled_topic_name = topic_name;
-  DemangleFunction demangle_type = _identity_demangle;
+  DemangleFunction demangle_type = rmw_gurumdds_cpp::identity_demangle;
   if (!no_mangle) {
-    mangled_topic_name = create_topic_name(ros_topic_prefix, topic_name, "", false);
-    demangle_type = _demangle_if_ros_type;
+    mangled_topic_name = rmw_gurumdds_cpp::create_topic_name(rmw_gurumdds_cpp::ros_topic_prefix, topic_name, "", false);
+    demangle_type = rmw_gurumdds_cpp::demangle_if_ros_type;
   }
 
   return common_ctx->graph_cache.get_writers_info_by_topic(
@@ -93,10 +93,10 @@ rmw_get_subscriptions_info_by_topic(
 
   auto common_ctx = &node->context->impl->common_ctx;
   std::string mangled_topic_name = topic_name;
-  DemangleFunction demangle_type = _identity_demangle;
+  DemangleFunction demangle_type = rmw_gurumdds_cpp::identity_demangle;
   if (!no_mangle) {
-    mangled_topic_name = create_topic_name(ros_topic_prefix, topic_name, "", false);
-    demangle_type = _demangle_if_ros_type;
+    mangled_topic_name = rmw_gurumdds_cpp::create_topic_name(rmw_gurumdds_cpp::ros_topic_prefix, topic_name, "", false);
+    demangle_type = rmw_gurumdds_cpp::demangle_if_ros_type;
   }
 
   return common_ctx->graph_cache.get_readers_info_by_topic(

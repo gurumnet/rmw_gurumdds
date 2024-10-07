@@ -37,7 +37,7 @@ rmw_serialize(
     }
   }
 
-  ssize_t ssize = get_serialized_size(
+  ssize_t ssize = rmw_gurumdds_cpp::get_serialized_size(
     ts->data,
     ts->typesupport_identifier,
     ros_message
@@ -60,7 +60,7 @@ rmw_serialize(
     serialized_message->buffer_capacity = size;
   }
 
-  bool res = serialize_ros_to_cdr(
+  bool res = rmw_gurumdds_cpp::serialize_ros_to_cdr(
     ts->data,
     ts->typesupport_identifier,
     ros_message,
@@ -92,7 +92,7 @@ rmw_deserialize(
     }
   }
 
-  bool res = deserialize_cdr_to_ros(
+  bool res = rmw_gurumdds_cpp::deserialize_cdr_to_ros(
     ts->data,
     ts->typesupport_identifier,
     ros_message,

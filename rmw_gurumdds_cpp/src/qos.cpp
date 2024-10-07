@@ -26,6 +26,8 @@ static inline bool is_time_unspecified(const rmw_time_t & time)
   return rmw_time_equal(time, RMW_DURATION_UNSPECIFIED);
 }
 
+namespace rmw_gurumdds_cpp
+{
 dds_Duration_t
 rmw_time_to_dds(const rmw_time_t & time)
 {
@@ -290,3 +292,4 @@ convert_qos_policy(const dds_QosPolicyId_t policy_id)
       return RMW_QOS_POLICY_INVALID;
   }
 }
+} // namespace rmw_gurumdds_cpp

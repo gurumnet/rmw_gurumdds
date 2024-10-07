@@ -58,8 +58,8 @@ rmw_count_publishers(
   RMW_CHECK_ARGUMENT_FOR_NULL(count, RMW_RET_INVALID_ARGUMENT);
 
   auto common_ctx = &node->context->impl->common_ctx;
-  const std::string mangled_topic_name = create_topic_name(
-    ros_topic_prefix, topic_name, "", false);
+  const std::string mangled_topic_name = rmw_gurumdds_cpp::create_topic_name(
+    rmw_gurumdds_cpp::ros_topic_prefix, topic_name, "", false);
 
   return common_ctx->graph_cache.get_writer_count(mangled_topic_name, count);
 }
@@ -92,8 +92,8 @@ rmw_count_subscribers(
   RMW_CHECK_ARGUMENT_FOR_NULL(count, RMW_RET_INVALID_ARGUMENT);
 
   auto common_ctx = &node->context->impl->common_ctx;
-  const std::string mangled_topic_name = create_topic_name(
-    ros_topic_prefix, topic_name, "", false);
+  const std::string mangled_topic_name = rmw_gurumdds_cpp::create_topic_name(
+    rmw_gurumdds_cpp::ros_topic_prefix, topic_name, "", false);
 
   return common_ctx->graph_cache.get_reader_count(mangled_topic_name, count);
 }
@@ -125,8 +125,8 @@ rmw_count_clients(
   }
 
   auto common_ctx = &node->context->impl->common_ctx;
-  const std::string mangled_service_name = create_topic_name(
-    ros_service_response_prefix, service_name, "", false);
+  const std::string mangled_service_name = rmw_gurumdds_cpp::create_topic_name(
+    rmw_gurumdds_cpp::ros_service_response_prefix, service_name, "", false);
 
   return common_ctx->graph_cache.get_reader_count(mangled_service_name, count);
 }
@@ -158,8 +158,8 @@ rmw_count_services(
   }
 
   auto common_ctx = &node->context->impl->common_ctx;
-  const std::string mangled_service_name = create_topic_name(
-    ros_service_response_prefix, service_name, "", false);
+  const std::string mangled_service_name = rmw_gurumdds_cpp::create_topic_name(
+    rmw_gurumdds_cpp::ros_service_response_prefix, service_name, "", false);
 
   return common_ctx->graph_cache.get_writer_count(mangled_service_name, count);
 }

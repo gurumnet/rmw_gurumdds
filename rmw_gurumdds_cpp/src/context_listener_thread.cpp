@@ -57,8 +57,8 @@ void rmw_gurumdds_listener_thread(rmw_context_impl_t * ctx)
 {
   RCUTILS_LOG_DEBUG_NAMED(RMW_GURUMDDS_ID, "[listener thread] starting up...");
 
-  GurumddsSubscriberInfo * sub_partinfo =
-    reinterpret_cast<GurumddsSubscriberInfo *>(ctx->common_ctx.sub->data);
+  auto sub_partinfo
+    = reinterpret_cast<rmw_gurumdds_cpp::SubscriberInfo *>(ctx->common_ctx.sub->data);
   dds_ReturnCode_t ret = dds_RETCODE_ERROR;
 
   uint32_t active_len = 0;
@@ -75,7 +75,7 @@ void rmw_gurumdds_listener_thread(rmw_context_impl_t * ctx)
   dds_GuardCondition * gcond_exit =
     reinterpret_cast<dds_GuardCondition *>(ctx->common_ctx.listener_thread_gc->data);
 
-  GurumddsWaitSetInfo * waitset_info = new(std::nothrow) GurumddsWaitSetInfo();
+  auto waitset_info = new(std::nothrow) rmw_gurumdds_cpp::WaitSetInfo();
   if (waitset_info == nullptr) {
     RMW_SET_ERROR_MSG("failed to allocate WaitSetInfo");
     goto cleanup;
@@ -140,7 +140,7 @@ void rmw_gurumdds_listener_thread(rmw_context_impl_t * ctx)
     for (uint32_t i = 0; i < active_len && active; i++) {
       cond_active = dds_ConditionSeq_get(waitset_info->active_conditions, i);
       if (nullptr != cond_part_info && cond_part_info == cond_active) {
-        graph_on_participant_info(ctx);
+        rmw_gurumdds_cpp::graph_cache::on_participant_info(ctx);
       } else {
         RMW_SET_ERROR_MSG("unexpected active condition");
         goto cleanup;
@@ -191,6 +191,8 @@ cleanup:
   RCUTILS_LOG_DEBUG_NAMED(RMW_GURUMDDS_ID, "[listener thread] done");
 }
 
+namespace rmw_gurumdds_cpp
+{
 rmw_ret_t
 run_listener_thread(rmw_context_t * ctx)
 {
@@ -223,7 +225,6 @@ run_listener_thread(rmw_context_t * ctx)
   return RMW_RET_ERROR;
 }
 
-
 rmw_ret_t
 stop_listener_thread(rmw_context_t * ctx)
 {
@@ -252,3 +253,4 @@ stop_listener_thread(rmw_context_t * ctx)
   RCUTILS_LOG_DEBUG_NAMED(RMW_GURUMDDS_ID, "[listener thread] stopped");
   return RMW_RET_OK;
 }
+} //namespace rmw_gurumdds_cpp

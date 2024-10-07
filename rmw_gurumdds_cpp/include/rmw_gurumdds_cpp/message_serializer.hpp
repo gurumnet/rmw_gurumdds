@@ -17,7 +17,7 @@
 
 #include "cdr_buffer.hpp"
 
-namespace rmw_gurumdds
+namespace rmw_gurumdds_cpp
 {
 template<bool SERIALIZE, typename MessageMembersT>
 class MessageSerializer {
@@ -59,7 +59,7 @@ private:
 private:
   CdrSerializationBuffer<SERIALIZE> & buffer;
 };
-}
+} // namespace rmw_gurumdds_cpp
 
 #include "rmw_gurumdds_cpp/message_serializer.inl"
 

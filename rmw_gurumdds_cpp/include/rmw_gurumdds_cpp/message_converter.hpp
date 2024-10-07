@@ -31,7 +31,8 @@
 
 #include "rmw_gurumdds_cpp/cdr_buffer.hpp"
 
-namespace rmw_gurumdds {
+namespace rmw_gurumdds_cpp
+{
 enum class LanguageKind { UNKNOWN, C, CXX };
 
 template<typename T>
@@ -61,7 +62,7 @@ RMW_GURUMDDS_SEQ_HELPER(uint8_t, 8);
 RMW_GURUMDDS_SEQ_HELPER(uint16_t, 16);
 RMW_GURUMDDS_SEQ_HELPER(uint32_t, 32);
 RMW_GURUMDDS_SEQ_HELPER(uint64_t, 64);
-}
+} // namespace rmw_gurumdds_cpp
 
 #include "rmw_gurumdds_cpp/message_serializer.hpp"
 #include "rmw_gurumdds_cpp/message_deserializer.hpp"

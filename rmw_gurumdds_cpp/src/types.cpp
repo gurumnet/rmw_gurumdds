@@ -25,7 +25,9 @@
 
 #define ENTITYID_PARTICIPANT 0x000001C1
 
-void GurumddsPublisherInfo::update_inconsistent_topic(int32_t total_count, int32_t total_count_change)
+namespace rmw_gurumdds_cpp
+{
+void PublisherInfo::update_inconsistent_topic(int32_t total_count, int32_t total_count_change)
 {
   std::lock_guard guard_callback{mutex_event};
   inconsistent_topic_changed = true;
@@ -41,7 +43,7 @@ void GurumddsPublisherInfo::update_inconsistent_topic(int32_t total_count, int32
   dds_GuardCondition_set_trigger_value(event_guard_cond[RMW_EVENT_PUBLISHER_INCOMPATIBLE_TYPE], true);
 }
 
-void GurumddsPublisherInfo::on_offered_deadline_missed(const dds_OfferedDeadlineMissedStatus & status)
+void PublisherInfo::on_offered_deadline_missed(const dds_OfferedDeadlineMissedStatus & status)
 {
   std::lock_guard guard_callback{mutex_event};
   offered_deadline_missed_changed = true;
@@ -57,7 +59,7 @@ void GurumddsPublisherInfo::on_offered_deadline_missed(const dds_OfferedDeadline
   dds_GuardCondition_set_trigger_value(event_guard_cond[RMW_EVENT_OFFERED_DEADLINE_MISSED], true);
 }
 
-void GurumddsPublisherInfo::on_offered_incompatible_qos(const dds_OfferedIncompatibleQosStatus & status)
+void PublisherInfo::on_offered_incompatible_qos(const dds_OfferedIncompatibleQosStatus & status)
 {
   std::lock_guard guard_callback{mutex_event};
   offered_incompatible_qos_changed = true;
@@ -74,7 +76,7 @@ void GurumddsPublisherInfo::on_offered_incompatible_qos(const dds_OfferedIncompa
   dds_GuardCondition_set_trigger_value(event_guard_cond[RMW_EVENT_OFFERED_QOS_INCOMPATIBLE], true);
 }
 
-void GurumddsPublisherInfo::on_liveliness_lost(const dds_LivelinessLostStatus & status) {
+void PublisherInfo::on_liveliness_lost(const dds_LivelinessLostStatus & status) {
   std::lock_guard guard_callback{mutex_event};
   liveliness_lost_changed = true;
   liveliness_lost_status.total_count_change += status.total_count_change;
@@ -89,7 +91,7 @@ void GurumddsPublisherInfo::on_liveliness_lost(const dds_LivelinessLostStatus & 
   dds_GuardCondition_set_trigger_value(event_guard_cond[RMW_EVENT_LIVELINESS_LOST], true);
 }
 
-void GurumddsPublisherInfo::on_publication_matched(const dds_PublicationMatchedStatus & status) {
+void PublisherInfo::on_publication_matched(const dds_PublicationMatchedStatus & status) {
   std::lock_guard guard_callback{mutex_event};
   publication_matched_changed = true;
   publication_matched_status.total_count_change += status.total_count_change;
@@ -106,13 +108,13 @@ void GurumddsPublisherInfo::on_publication_matched(const dds_PublicationMatchedS
   dds_GuardCondition_set_trigger_value(event_guard_cond[RMW_EVENT_PUBLICATION_MATCHED], true);
 }
 
-rmw_ret_t GurumddsPublisherInfo::set_on_new_event_callback(
+rmw_ret_t PublisherInfo::set_on_new_event_callback(
   rmw_event_type_t event_type,
   const void * user_data,
   rmw_event_callback_t callback) {
   // mask는 RMW 측에서 보관하게 만든다.
   std::lock_guard guard{mutex_event};
-  dds_StatusMask event_status_type = get_status_kind_from_rmw(event_type);
+  dds_StatusMask event_status_type = rmw_gurumdds_cpp::get_status_kind_from_rmw(event_type);
   if(callback != nullptr) {
     int32_t changes;
     dds_Topic* topic;
@@ -170,7 +172,7 @@ rmw_ret_t GurumddsPublisherInfo::set_on_new_event_callback(
   return RMW_RET_OK;
 }
 
-rmw_ret_t GurumddsPublisherInfo::get_status(rmw_event_type_t event_type, void * event)
+rmw_ret_t PublisherInfo::get_status(rmw_event_type_t event_type, void * event)
 {
   std::lock_guard lock_mutex{mutex_event};
   if (event_type == RMW_EVENT_LIVELINESS_LOST) {
@@ -205,7 +207,7 @@ rmw_ret_t GurumddsPublisherInfo::get_status(rmw_event_type_t event_type, void * 
     auto rmw_status = static_cast<rmw_offered_qos_incompatible_event_status_t *>(event);
     rmw_status->total_count = offered_incompatible_qos_status.total_count;
     rmw_status->total_count_change = offered_incompatible_qos_status.total_count_change;
-    rmw_status->last_policy_kind = convert_qos_policy(offered_incompatible_qos_status.last_policy_id);
+    rmw_status->last_policy_kind = rmw_gurumdds_cpp::convert_qos_policy(offered_incompatible_qos_status.last_policy_id);
     offered_incompatible_qos_status.total_count_change = 0;
   } else if(event_type == RMW_EVENT_PUBLISHER_INCOMPATIBLE_TYPE) {
     if(inconsistent_topic_changed) {
@@ -241,17 +243,17 @@ rmw_ret_t GurumddsPublisherInfo::get_status(rmw_event_type_t event_type, void * 
   return RMW_RET_OK;
 }
 
-dds_StatusCondition * GurumddsPublisherInfo::get_status_condition()
+dds_StatusCondition * PublisherInfo::get_status_condition()
 {
   return dds_DataWriter_get_statuscondition(topic_writer);
 }
 
-dds_GuardCondition * GurumddsPublisherInfo::get_guard_condition(rmw_event_type_t event_type)
+dds_GuardCondition * PublisherInfo::get_guard_condition(rmw_event_type_t event_type)
 {
   return event_guard_cond[event_type];
 }
 
-bool GurumddsPublisherInfo::is_status_changed(rmw_event_type_t event_type)
+bool PublisherInfo::is_status_changed(rmw_event_type_t event_type)
 {
   std::lock_guard lock_guard{mutex_event};
   bool changed = false;
@@ -281,23 +283,23 @@ bool GurumddsPublisherInfo::is_status_changed(rmw_event_type_t event_type)
     }
   }
 
-  if((dds_DataWriter_get_status_changes(topic_writer) & get_status_kind_from_rmw(event_type)) > 0) {
+  if((dds_DataWriter_get_status_changes(topic_writer) & rmw_gurumdds_cpp::get_status_kind_from_rmw(event_type)) > 0) {
     changed = true;
   }
 
   return changed;
 }
 
-bool GurumddsPublisherInfo::has_callback(rmw_event_type_t event_type)
+bool PublisherInfo::has_callback(rmw_event_type_t event_type)
 {
   std::lock_guard lock_guard{mutex_event};
   return has_callback_unsafe(event_type);
 }
 
-bool GurumddsPublisherInfo::has_callback_unsafe(rmw_event_type_t event_type) const
+bool PublisherInfo::has_callback_unsafe(rmw_event_type_t event_type) const
 {
   // RMW_EVENT_PUBLISHER_INCOMPATIBLE_TYPE is always used with a callback
-  return ((mask | dds_INCONSISTENT_TOPIC_STATUS) & get_status_kind_from_rmw(event_type)) > 0;
+  return ((mask | dds_INCONSISTENT_TOPIC_STATUS) & rmw_gurumdds_cpp::get_status_kind_from_rmw(event_type)) > 0;
 }
 
 static std::map<std::string, std::vector<uint8_t>>
@@ -350,13 +352,13 @@ void on_participant_changed(
   }
 
   dds_GUID_t dp_guid;
-  GuidPrefix_t dp_guid_prefix;
-  dds_BuiltinTopicKey_to_GUID(&dp_guid_prefix, data->key);
+  rmw_gurumdds_cpp::GuidPrefix_t dp_guid_prefix;
+  rmw_gurumdds_cpp::dds_BuiltinTopicKey_to_GUID(&dp_guid_prefix, data->key);
   memcpy(dp_guid.prefix, dp_guid_prefix.value, sizeof(dp_guid.prefix));
   dp_guid.entityId = ENTITYID_PARTICIPANT;
 
   if (handle == dds_HANDLE_NIL) {
-    graph_remove_participant(ctx, &dp_guid);
+    rmw_gurumdds_cpp::graph_cache::remove_participant(ctx, &dp_guid);
   } else {
     std::string enclave_str;
     bool enclave_found;
@@ -373,7 +375,7 @@ void on_participant_changed(
       enclave = enclave_str.c_str();
     }
 
-    if (RMW_RET_OK != graph_add_participant(ctx, &dp_guid, enclave)) {
+    if (RMW_RET_OK != rmw_gurumdds_cpp::graph_cache::add_participant(ctx, &dp_guid, enclave)) {
       RMW_SET_ERROR_MSG("failed to assert remote participant in graph");
     }
   }
@@ -394,10 +396,10 @@ void on_publication_changed(
   }
 
   dds_GUID_t endp_guid;
-  GuidPrefix_t dp_guid_prefix, endp_guid_prefix;
-  dds_BuiltinTopicKey_to_GUID(&dp_guid_prefix, data->participant_key);
+  rmw_gurumdds_cpp::GuidPrefix_t dp_guid_prefix, endp_guid_prefix;
+  rmw_gurumdds_cpp::dds_BuiltinTopicKey_to_GUID(&dp_guid_prefix, data->participant_key);
   memcpy(endp_guid.prefix, dp_guid_prefix.value, sizeof(endp_guid.prefix));
-  dds_BuiltinTopicKey_to_GUID(&endp_guid_prefix, data->key);
+  rmw_gurumdds_cpp::dds_BuiltinTopicKey_to_GUID(&endp_guid_prefix, data->key);
   memcpy(&endp_guid.entityId, endp_guid_prefix.value, sizeof(endp_guid.entityId));
 
   if (handle == dds_HANDLE_NIL) {
@@ -408,13 +410,13 @@ void on_publication_changed(
       reinterpret_cast<const uint32_t *>(endp_guid.prefix)[1],
       reinterpret_cast<const uint32_t *>(endp_guid.prefix)[2],
       endp_guid.entityId);
-    graph_remove_entity(ctx, &endp_guid, false);
+    rmw_gurumdds_cpp::graph_cache::remove_entity(ctx, &endp_guid, false);
   } else {
     dds_GUID_t dp_guid;
     memcpy(dp_guid.prefix, dp_guid_prefix.value, sizeof(dp_guid.prefix));
     dp_guid.entityId = ENTITYID_PARTICIPANT;
 
-    graph_add_remote_entity(
+    rmw_gurumdds_cpp::graph_cache::add_remote_entity(
       ctx,
       &endp_guid,
       &dp_guid,
@@ -458,10 +460,10 @@ void on_subscription_changed(
   }
 
   dds_GUID_t endp_guid;
-  GuidPrefix_t dp_guid_prefix, endp_guid_prefix;
-  dds_BuiltinTopicKey_to_GUID(&dp_guid_prefix, data->participant_key);
+  rmw_gurumdds_cpp::GuidPrefix_t dp_guid_prefix, endp_guid_prefix;
+  rmw_gurumdds_cpp::dds_BuiltinTopicKey_to_GUID(&dp_guid_prefix, data->participant_key);
   memcpy(endp_guid.prefix, dp_guid_prefix.value, sizeof(endp_guid.prefix));
-  dds_BuiltinTopicKey_to_GUID(&endp_guid_prefix, data->key);
+  rmw_gurumdds_cpp::dds_BuiltinTopicKey_to_GUID(&endp_guid_prefix, data->key);
   memcpy(&endp_guid.entityId, endp_guid_prefix.value, sizeof(endp_guid.entityId));
 
   if (handle == dds_HANDLE_NIL) {
@@ -472,13 +474,13 @@ void on_subscription_changed(
       reinterpret_cast<const uint32_t *>(endp_guid.prefix)[1],
       reinterpret_cast<const uint32_t *>(endp_guid.prefix)[2],
       endp_guid.entityId);
-    graph_remove_entity(ctx, &endp_guid, false);
+    rmw_gurumdds_cpp::graph_cache::remove_entity(ctx, &endp_guid, false);
   } else {
     dds_GUID_t dp_guid;
     memcpy(dp_guid.prefix, dp_guid_prefix.value, sizeof(dp_guid.prefix));
     dp_guid.entityId = ENTITYID_PARTICIPANT;
 
-    graph_add_remote_entity(
+    rmw_gurumdds_cpp::graph_cache::add_remote_entity(
       ctx,
       &endp_guid,
       &dp_guid,
@@ -507,13 +509,13 @@ void on_subscription_changed(
   }
 }
 
-rmw_ret_t GurumddsSubscriberInfo::set_on_new_event_callback(
+rmw_ret_t SubscriberInfo::set_on_new_event_callback(
   rmw_event_type_t event_type,
   const void * user_data,
   rmw_event_callback_t callback)
 {
   std::lock_guard guard{mutex_event};
-  dds_StatusMask event_status_type = get_status_kind_from_rmw(event_type);
+  dds_StatusMask event_status_type = rmw_gurumdds_cpp::get_status_kind_from_rmw(event_type);
   if(callback != nullptr) {
     int32_t changes;
     dds_Topic* topic;
@@ -579,7 +581,7 @@ rmw_ret_t GurumddsSubscriberInfo::set_on_new_event_callback(
   return RMW_RET_OK;
 }
 
-rmw_ret_t GurumddsSubscriberInfo::get_status(rmw_event_type_t event_type, void * event)
+rmw_ret_t SubscriberInfo::get_status(rmw_event_type_t event_type, void * event)
 {
   std::lock_guard lock_guard{mutex_event};
   if (event_type == RMW_EVENT_LIVELINESS_CHANGED) {
@@ -617,7 +619,7 @@ rmw_ret_t GurumddsSubscriberInfo::get_status(rmw_event_type_t event_type, void *
     auto rmw_status = static_cast<rmw_requested_qos_incompatible_event_status_t *>(event);
     rmw_status->total_count = requested_incompatible_qos_status.total_count;
     rmw_status->total_count_change = requested_incompatible_qos_status.total_count_change;
-    rmw_status->last_policy_kind = convert_qos_policy(requested_incompatible_qos_status.last_policy_id);
+    rmw_status->last_policy_kind = rmw_gurumdds_cpp::convert_qos_policy(requested_incompatible_qos_status.last_policy_id);
     requested_incompatible_qos_status.total_count_change = 0;
   } else if (event_type == RMW_EVENT_MESSAGE_LOST) {
     if(sample_lost_changed) {
@@ -664,7 +666,7 @@ rmw_ret_t GurumddsSubscriberInfo::get_status(rmw_event_type_t event_type, void *
   return RMW_RET_OK;
 }
 
-void GurumddsSubscriberInfo::update_inconsistent_topic(int32_t total_count, int32_t total_count_change) {
+void SubscriberInfo::update_inconsistent_topic(int32_t total_count, int32_t total_count_change) {
   inconsistent_topic_status.total_count_change += total_count_change;
   inconsistent_topic_status.total_count = total_count;
   inconsistent_topic_changed = true;
@@ -678,17 +680,17 @@ void GurumddsSubscriberInfo::update_inconsistent_topic(int32_t total_count, int3
   dds_GuardCondition_set_trigger_value(event_guard_cond[RMW_EVENT_SUBSCRIPTION_INCOMPATIBLE_TYPE], true);
 }
 
-dds_StatusCondition * GurumddsSubscriberInfo::get_status_condition()
+dds_StatusCondition * SubscriberInfo::get_status_condition()
 {
   return dds_DataReader_get_statuscondition(topic_reader);
 }
 
-dds_GuardCondition * GurumddsSubscriberInfo::get_guard_condition(rmw_event_type_t event_type)
+dds_GuardCondition * SubscriberInfo::get_guard_condition(rmw_event_type_t event_type)
 {
   return event_guard_cond[event_type];
 }
 
-bool GurumddsSubscriberInfo::is_status_changed(rmw_event_type_t event_type)
+bool SubscriberInfo::is_status_changed(rmw_event_type_t event_type)
 {
   std::lock_guard lock_guard{mutex_event};
   bool changed = false;
@@ -718,7 +720,7 @@ bool GurumddsSubscriberInfo::is_status_changed(rmw_event_type_t event_type)
     }
   }
 
-  if((dds_DataReader_get_status_changes(topic_reader) & get_status_kind_from_rmw(event_type)) > 0) {
+  if((dds_DataReader_get_status_changes(topic_reader) & rmw_gurumdds_cpp::get_status_kind_from_rmw(event_type)) > 0) {
     changed = true;
   }
 
@@ -761,12 +763,12 @@ inline size_t count_unread_(
   return count;
 }
 
-size_t GurumddsSubscriberInfo::count_unread()
+size_t SubscriberInfo::count_unread()
 {
   return count_unread_(topic_reader, data_seq, info_seq, raw_data_sizes);
 }
 
-void GurumddsSubscriberInfo::on_requested_deadline_missed(const dds_RequestedDeadlineMissedStatus & status)
+void SubscriberInfo::on_requested_deadline_missed(const dds_RequestedDeadlineMissedStatus & status)
 {
   std::lock_guard guard(mutex_event);
   requested_deadline_missed_changed = true;
@@ -781,7 +783,7 @@ void GurumddsSubscriberInfo::on_requested_deadline_missed(const dds_RequestedDea
   dds_GuardCondition_set_trigger_value(event_guard_cond[RMW_EVENT_REQUESTED_DEADLINE_MISSED], true);
 }
 
-void GurumddsSubscriberInfo::on_requested_incompatible_qos(const dds_RequestedIncompatibleQosStatus & status)
+void SubscriberInfo::on_requested_incompatible_qos(const dds_RequestedIncompatibleQosStatus & status)
 {
   std::lock_guard guard(mutex_event);
   requested_incompatible_qos_changed = true;
@@ -797,7 +799,7 @@ void GurumddsSubscriberInfo::on_requested_incompatible_qos(const dds_RequestedIn
   dds_GuardCondition_set_trigger_value(event_guard_cond[RMW_EVENT_REQUESTED_QOS_INCOMPATIBLE], true);
 }
 
-void GurumddsSubscriberInfo::on_liveliness_changed(const dds_LivelinessChangedStatus & status)
+void SubscriberInfo::on_liveliness_changed(const dds_LivelinessChangedStatus & status)
 {
   std::lock_guard guard(mutex_event);
   liveliness_changed = true;
@@ -814,7 +816,7 @@ void GurumddsSubscriberInfo::on_liveliness_changed(const dds_LivelinessChangedSt
   dds_GuardCondition_set_trigger_value(event_guard_cond[RMW_EVENT_LIVELINESS_CHANGED], true);
 }
 
-void GurumddsSubscriberInfo::on_subscription_matched(const dds_SubscriptionMatchedStatus & status)
+void SubscriberInfo::on_subscription_matched(const dds_SubscriptionMatchedStatus & status)
 {
   std::lock_guard guard(mutex_event);
   subscription_matched_changed = true;
@@ -831,7 +833,7 @@ void GurumddsSubscriberInfo::on_subscription_matched(const dds_SubscriptionMatch
   dds_GuardCondition_set_trigger_value(event_guard_cond[RMW_EVENT_SUBSCRIPTION_MATCHED], true);
 }
 
-void GurumddsSubscriberInfo::on_sample_lost(const dds_SampleLostStatus & status) {
+void SubscriberInfo::on_sample_lost(const dds_SampleLostStatus & status) {
   std::lock_guard guard(mutex_event);
   sample_lost_changed = true;
   sample_lost_status.total_count_change += status.total_count_change;
@@ -845,33 +847,33 @@ void GurumddsSubscriberInfo::on_sample_lost(const dds_SampleLostStatus & status)
   dds_GuardCondition_set_trigger_value(event_guard_cond[RMW_EVENT_MESSAGE_LOST], true);
 }
 
-bool GurumddsSubscriberInfo::has_callback(rmw_event_type_t event_type)
+bool SubscriberInfo::has_callback(rmw_event_type_t event_type)
 {
   std::lock_guard guard(mutex_event);
   return has_callback_unsafe(event_type);
 }
 
-bool GurumddsSubscriberInfo::has_callback_unsafe(rmw_event_type_t event_type) const
+bool SubscriberInfo::has_callback_unsafe(rmw_event_type_t event_type) const
 {
   // RMW_EVENT_PUBLISHER_INCOMPATIBLE_TYPE is always used with a callback
-  return ((mask | dds_INCONSISTENT_TOPIC_STATUS) & get_status_kind_from_rmw(event_type)) > 0;
+  return ((mask | dds_INCONSISTENT_TOPIC_STATUS) & rmw_gurumdds_cpp::get_status_kind_from_rmw(event_type)) > 0;
 }
 
-size_t GurumddsClientInfo::count_unread()
+size_t ClientInfo::count_unread()
 {
   return count_unread_(response_reader, data_seq, info_seq, raw_data_sizes);
 }
 
-size_t GurumddsServiceInfo::count_unread()
+size_t ServiceInfo::count_unread()
 {
   return count_unread_(request_reader, data_seq, info_seq, raw_data_sizes);
 }
 
-std::mutex GurumddsTopicEventListener::mutex_table_;
-std::map<dds_Topic*, GurumddsTopicEventListener*> GurumddsTopicEventListener::table_;
+std::mutex TopicEventListener::mutex_table_;
+std::map<dds_Topic*, TopicEventListener*> TopicEventListener::table_;
 
-rmw_ret_t GurumddsTopicEventListener::associate_listener(dds_Topic * topic) {
-  auto event_listener = new(std::nothrow) GurumddsTopicEventListener{};
+rmw_ret_t TopicEventListener::associate_listener(dds_Topic * topic) {
+  auto event_listener = new(std::nothrow) TopicEventListener{};
   if(nullptr == event_listener) {
     return RMW_RET_ERROR;
   }
@@ -882,13 +884,13 @@ rmw_ret_t GurumddsTopicEventListener::associate_listener(dds_Topic * topic) {
   }
 
   dds_TopicListener listener{};
-  listener.on_inconsistent_topic = &GurumddsTopicEventListener::on_inconsistent_topic;
+  listener.on_inconsistent_topic = &TopicEventListener::on_inconsistent_topic;
   dds_Topic_set_listener_context(topic, event_listener);
   dds_Topic_set_listener(topic, &listener, dds_INCONSISTENT_TOPIC_STATUS);
   return RMW_RET_OK;
 }
 
-rmw_ret_t GurumddsTopicEventListener::disassociate_Listener(dds_Topic * topic) {
+rmw_ret_t TopicEventListener::disassociate_Listener(dds_Topic * topic) {
   std::lock_guard guard{mutex_table_};
   auto it = table_.find(topic);
   if(table_.end() == it) {
@@ -904,9 +906,9 @@ rmw_ret_t GurumddsTopicEventListener::disassociate_Listener(dds_Topic * topic) {
   return RMW_RET_OK;
 }
 
-void GurumddsTopicEventListener::on_inconsistent_topic(const dds_Topic* the_topic, const dds_InconsistentTopicStatus* status) {
+void TopicEventListener::on_inconsistent_topic(const dds_Topic* the_topic, const dds_InconsistentTopicStatus* status) {
   auto topic = const_cast<dds_Topic*>(the_topic);
-  auto listener = static_cast<GurumddsTopicEventListener*>(dds_Topic_get_listener_context(topic));
+  auto listener = static_cast<TopicEventListener*>(dds_Topic_get_listener_context(topic));
   if(nullptr == listener) {
     return;
   }
@@ -914,14 +916,14 @@ void GurumddsTopicEventListener::on_inconsistent_topic(const dds_Topic* the_topi
   listener->on_inconsistent_topic(*status);
 }
 
-void GurumddsTopicEventListener::on_inconsistent_topic(const dds_InconsistentTopicStatus& status) {
+void TopicEventListener::on_inconsistent_topic(const dds_InconsistentTopicStatus& status) {
   std::lock_guard guard{mutex_};
   for(auto it: event_list_) {
     it->update_inconsistent_topic(status.total_count, status.total_count_change);
   }
 }
 
-void GurumddsTopicEventListener::add_event(dds_Topic * topic, GurumddsEventInfo * event_info) {
+void TopicEventListener::add_event(dds_Topic * topic, EventInfo * event_info) {
   std::lock_guard guard{mutex_table_};
   auto it = table_.find(topic);
   if(table_.end() == it) {
@@ -938,7 +940,7 @@ void GurumddsTopicEventListener::add_event(dds_Topic * topic, GurumddsEventInfo 
   listener->event_list_.emplace_back(event_info);
 }
 
-void GurumddsTopicEventListener::remove_event(dds_Topic * topic, GurumddsEventInfo * event_info) {
+void TopicEventListener::remove_event(dds_Topic * topic, EventInfo * event_info) {
   std::lock_guard guard{mutex_table_};
   auto it = table_.find(topic);
   if(table_.end() == it) {
@@ -954,3 +956,4 @@ void GurumddsTopicEventListener::remove_event(dds_Topic * topic, GurumddsEventIn
 
     listener->event_list_.erase(list_it);
 }
+} // namespace rmw_gurumdds_cpp

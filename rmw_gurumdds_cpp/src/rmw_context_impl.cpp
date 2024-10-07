@@ -70,7 +70,7 @@ rmw_context_impl_s::initialize_node(
     return ret;
   }
 
-  if (graph_enable(this->base) != RMW_RET_OK) {
+  if (rmw_gurumdds_cpp::graph_cache::enable(this->base) != RMW_RET_OK) {
     dds_Entity_set_context(
       reinterpret_cast<dds_Entity *>(this->participant), 0, nullptr);
     RCUTILS_LOG_ERROR_NAMED(RMW_GURUMDDS_ID, "failed to enable graph cache");
@@ -185,11 +185,11 @@ rmw_context_impl_s::initialize_participant(
       {const_cast<char *>("gurumdds.static_discovery.id"),
         const_cast<void *>(static_cast<const void *>(static_discovery_id.c_str()))},
       {const_cast<char *>("dcps.participant.listener.on_remote_participant_changed"),
-        reinterpret_cast<void *>(on_participant_changed)},
+        reinterpret_cast<void *>(rmw_gurumdds_cpp::on_participant_changed)},
       {const_cast<char *>("dcps.participant.listener.on_remote_publication_changed"),
-        reinterpret_cast<void *>(on_publication_changed)},
+        reinterpret_cast<void *>(rmw_gurumdds_cpp::on_publication_changed)},
       {const_cast<char *>("dcps.participant.listener.on_remote_subscription_changed"),
-        reinterpret_cast<void *>(on_subscription_changed)},
+        reinterpret_cast<void *>(rmw_gurumdds_cpp::on_subscription_changed)},
       {nullptr, nullptr},
     };
     this->participant = dds_DomainParticipantFactory_create_participant_w_props(
@@ -199,11 +199,11 @@ rmw_context_impl_s::initialize_participant(
       {const_cast<char *>("gurumdds.static_discovery.id"),
         const_cast<void *>(static_cast<const void *>(static_discovery_id.c_str()))},
       {const_cast<char *>("dcps.participant.listener.on_remote_participant_changed"),
-        reinterpret_cast<void *>(on_participant_changed)},
+        reinterpret_cast<void *>(rmw_gurumdds_cpp::on_participant_changed)},
       {const_cast<char *>("dcps.participant.listener.on_remote_publication_changed"),
-        reinterpret_cast<void *>(on_publication_changed)},
+        reinterpret_cast<void *>(rmw_gurumdds_cpp::on_publication_changed)},
       {const_cast<char *>("dcps.participant.listener.on_remote_subscription_changed"),
-        reinterpret_cast<void *>(on_subscription_changed)},
+        reinterpret_cast<void *>(rmw_gurumdds_cpp::on_subscription_changed)},
       {nullptr, nullptr},
     };
     this->participant = dds_DomainParticipantFactory_create_participant_w_props(
@@ -256,7 +256,7 @@ rmw_context_impl_s::initialize_participant(
   }
 
   // Initialize graph_cache
-  if (graph_cache_initialize(this) != RMW_RET_OK) {
+  if (rmw_gurumdds_cpp::graph_cache::initialize(this) != RMW_RET_OK) {
     RMW_SET_ERROR_MSG("failed to initialize graph cache");
     return RMW_RET_ERROR;
   }
@@ -276,7 +276,7 @@ rmw_ret_t
 rmw_context_impl_s::finalize_participant()
 {
   // Finalize graph_cache
-  if (RMW_RET_OK != graph_cache_finalize(this)) {
+  if (RMW_RET_OK != rmw_gurumdds_cpp::graph_cache::finalize(this)) {
     RMW_SET_ERROR_MSG("failed to finalize graph cache");
     return RMW_RET_ERROR;
   }

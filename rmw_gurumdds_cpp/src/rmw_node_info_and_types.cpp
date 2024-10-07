@@ -94,8 +94,8 @@ __get_topic_names_and_types_by_node(
   auto common_ctx = &node->context->impl->common_ctx;
 
   if (no_demangle) {
-    demangle_topic = _identity_demangle;
-    demangle_type = _identity_demangle;
+    demangle_topic = rmw_gurumdds_cpp::identity_demangle;
+    demangle_type = rmw_gurumdds_cpp::identity_demangle;
   }
 
   return get_names_and_types_by_node(
@@ -167,8 +167,8 @@ rmw_get_subscriber_names_and_types_by_node(
     allocator,
     node_name,
     node_namespace,
-    _demangle_ros_topic_from_topic,
-    _demangle_if_ros_type,
+    rmw_gurumdds_cpp::demangle_ros_topic_from_topic,
+    rmw_gurumdds_cpp::demangle_if_ros_type,
     no_demangle,
     __get_reader_names_and_types_by_node,
     topic_names_and_types);
@@ -193,8 +193,8 @@ rmw_get_publisher_names_and_types_by_node(
     allocator,
     node_name,
     node_namespace,
-    _demangle_ros_topic_from_topic,
-    _demangle_if_ros_type,
+    rmw_gurumdds_cpp::demangle_ros_topic_from_topic,
+    rmw_gurumdds_cpp::demangle_if_ros_type,
     no_demangle,
     __get_writer_names_and_types_by_node,
     topic_names_and_types);
@@ -217,8 +217,8 @@ rmw_get_service_names_and_types_by_node(
     allocator,
     node_name,
     node_namespace,
-    _demangle_service_request_from_topic,
-    _demangle_service_type_only,
+    rmw_gurumdds_cpp::demangle_service_request_from_topic,
+    rmw_gurumdds_cpp::demangle_service_type_only,
     false,
     __get_reader_names_and_types_by_node,
     service_names_and_types);
@@ -241,8 +241,8 @@ rmw_get_client_names_and_types_by_node(
     allocator,
     node_name,
     node_namespace,
-    _demangle_service_reply_from_topic,
-    _demangle_service_type_only,
+    rmw_gurumdds_cpp::demangle_service_reply_from_topic,
+    rmw_gurumdds_cpp::demangle_service_type_only,
     false,
     __get_reader_names_and_types_by_node,
     service_names_and_types);

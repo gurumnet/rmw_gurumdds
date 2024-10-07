@@ -17,15 +17,16 @@
 
 #include "rmw_gurumdds_cpp/namespace_prefix.hpp"
 
+namespace rmw_gurumdds_cpp
+{
 const char * const ros_topic_prefix = "rt";
 const char * const ros_service_requester_prefix = "rq";
 const char * const ros_service_response_prefix = "rr";
-
-const std::vector<std::string> _ros_prefixes =
-{ros_topic_prefix, ros_service_requester_prefix, ros_service_response_prefix};
+const std::vector<std::string> ros_prefixes
+  = {ros_topic_prefix, ros_service_requester_prefix, ros_service_response_prefix};
 
 std::string
-_resolve_prefix(const std::string & name, const std::string & prefix)
+resolve_prefix(const std::string & name, const std::string & prefix)
 {
   if (name.rfind(prefix + "/", 0) == 0) {
     return name.substr(prefix.length());
@@ -34,9 +35,9 @@ _resolve_prefix(const std::string & name, const std::string & prefix)
 }
 
 std::string
-_get_ros_prefix_if_exists(const std::string & topic_name)
+get_ros_prefix_if_exists(const std::string & topic_name)
 {
-  for (const auto & prefix : _ros_prefixes) {
+  for (const auto & prefix : ros_prefixes) {
     if (topic_name.rfind(prefix, 0) == 0 && topic_name.at(prefix.length()) == '/') {
       return prefix;
     }
@@ -45,9 +46,9 @@ _get_ros_prefix_if_exists(const std::string & topic_name)
 }
 
 std::string
-_strip_ros_prefix_if_exists(const std::string & topic_name)
+strip_ros_prefix_if_exists(const std::string & topic_name)
 {
-  for (const auto & prefix : _ros_prefixes) {
+  for (const auto & prefix : ros_prefixes) {
     if (topic_name.rfind(prefix, 0) == 0 && topic_name.at(prefix.length()) == '/') {
       return topic_name.substr(prefix.length());
     }
@@ -55,7 +56,8 @@ _strip_ros_prefix_if_exists(const std::string & topic_name)
   return topic_name;
 }
 
-const std::vector<std::string> & _get_all_ros_prefixes()
+const std::vector<std::string> & get_all_ros_prefixes()
 {
-  return _ros_prefixes;
+  return ros_prefixes;
 }
+} // namespace rmw_gurumdds_cpp

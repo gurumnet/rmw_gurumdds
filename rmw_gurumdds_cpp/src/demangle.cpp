@@ -23,14 +23,16 @@
 #include "rmw_gurumdds_cpp/identifier.hpp"
 #include "rmw_gurumdds_cpp/namespace_prefix.hpp"
 
-std::string
-_demangle_if_ros_topic(const std::string & topic_name)
+namespace rmw_gurumdds_cpp
 {
-  return _strip_ros_prefix_if_exists(topic_name);
+std::string
+demangle_if_ros_topic(const std::string & topic_name)
+{
+  return strip_ros_prefix_if_exists(topic_name);
 }
 
 std::string
-_demangle_if_ros_type(const std::string & dds_type_string)
+demangle_if_ros_type(const std::string & dds_type_string)
 {
   std::string substring = "dds_::";
   size_t substring_position = dds_type_string.find(substring);
@@ -49,16 +51,16 @@ _demangle_if_ros_type(const std::string & dds_type_string)
 }
 
 std::string
-_demangle_ros_topic_from_topic(const std::string & topic_name)
+demangle_ros_topic_from_topic(const std::string & topic_name)
 {
-  return _resolve_prefix(topic_name, ros_topic_prefix);
+  return resolve_prefix(topic_name, ros_topic_prefix);
 }
 
 std::string
 _demangle_service_from_topic(
   const std::string & prefix, const std::string & topic_name, std::string suffix)
 {
-  std::string service_name = _resolve_prefix(topic_name, prefix);
+  std::string service_name = resolve_prefix(topic_name, prefix);
   if (service_name.empty()) {
     return "";
   }
@@ -82,29 +84,29 @@ _demangle_service_from_topic(
 }
 
 std::string
-_demangle_service_from_topic(const std::string & topic_name)
+demangle_service_from_topic(const std::string & topic_name)
 {
-  const std::string demangled_topic = _demangle_service_reply_from_topic(topic_name);
+  const std::string demangled_topic = demangle_service_reply_from_topic(topic_name);
   if (!demangled_topic.empty()) {
     return demangled_topic;
   }
-  return _demangle_service_request_from_topic(topic_name);
+  return demangle_service_request_from_topic(topic_name);
 }
 
 std::string
-_demangle_service_request_from_topic(const std::string & topic_name)
+demangle_service_request_from_topic(const std::string & topic_name)
 {
   return _demangle_service_from_topic(ros_service_requester_prefix, topic_name, "Request");
 }
 
 std::string
-_demangle_service_reply_from_topic(const std::string & topic_name)
+demangle_service_reply_from_topic(const std::string & topic_name)
 {
   return _demangle_service_from_topic(ros_service_response_prefix, topic_name, "Reply");
 }
 
 std::string
-_demangle_service_type_only(const std::string & dds_type_name)
+demangle_service_type_only(const std::string & dds_type_name)
 {
   std::string ns_substring = "dds_::";
   size_t ns_substring_position = dds_type_name.find(ns_substring);
@@ -151,7 +153,8 @@ _demangle_service_type_only(const std::string & dds_type_name)
 }
 
 std::string
-_identity_demangle(const std::string & name)
+identity_demangle(const std::string & name)
 {
   return name;
 }
+} // namespace rmw_gurumdds_cpp

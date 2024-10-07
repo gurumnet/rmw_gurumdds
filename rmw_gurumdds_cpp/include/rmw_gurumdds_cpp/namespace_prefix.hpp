@@ -18,24 +18,24 @@
 #include <string>
 #include <vector>
 
-#include "rmw_gurumdds_cpp/visibility_control.h"
-
-RMW_GURUMDDS_CPP_PUBLIC extern const char * const ros_topic_prefix;
-RMW_GURUMDDS_CPP_PUBLIC extern const char * const ros_service_requester_prefix;
-RMW_GURUMDDS_CPP_PUBLIC extern const char * const ros_service_response_prefix;
-
-RMW_GURUMDDS_CPP_PUBLIC extern const std::vector<std::string> _ros_prefixes;
+namespace rmw_gurumdds_cpp
+{
+extern const char * const ros_topic_prefix;
+extern const char * const ros_service_requester_prefix;
+extern const char * const ros_service_response_prefix;
+extern const std::vector<std::string> ros_prefixes;
 
 /// Returns `name` stripped of `prefix` if exists, if not return "".
-std::string _resolve_prefix(const std::string & name, const std::string & prefix);
+std::string resolve_prefix(const std::string & name, const std::string & prefix);
 
 /// Return the ROS specific prefix if it exists, otherwise "".
-std::string _get_ros_prefix_if_exists(const std::string & topic_name);
+std::string get_ros_prefix_if_exists(const std::string & topic_name);
 
 /// Returns the topic name stripped of and ROS specific prefix if exists.
-std::string _strip_ros_prefix_if_exists(const std::string & topic_name);
+std::string strip_ros_prefix_if_exists(const std::string & topic_name);
 
 /// Returns the list of ros prefixes
-const std::vector<std::string> & _get_all_ros_prefixes();
+const std::vector<std::string> & get_all_ros_prefixes();
+} // namespace rmw_gurumdds_cpp
 
 #endif // RMW_GURUMDDS__NAMESPACE_PREFIX_HPP_

@@ -1,6 +1,7 @@
 #ifndef RMW_GURUMDDS__MESSAGE_SERIALIZER_INL_
 #define RMW_GURUMDDS__MESSAGE_SERIALIZER_INL_
-namespace rmw_gurumdds
+
+namespace rmw_gurumdds_cpp
 {
 template<bool SERIALIZE, typename MessageMembersT>
 inline MessageSerializer<SERIALIZE, MessageMembersT>::MessageSerializer(CdrSerializationBuffer<SERIALIZE> & buffer)
@@ -267,7 +268,7 @@ inline void MessageSerializer<SERIALIZE, MessageMembersT>::serialize_primitive(
     if constexpr (LANGUAGE_KIND == LanguageKind::C) {
       if (!member->array_size_ || member->is_upper_bound_) {
         // Sequence
-        auto seq = reinterpret_cast<const rmw_gurumdds::rmw_seq_t<T>*>(input + member->offset_);
+        auto seq = reinterpret_cast<const rmw_gurumdds_cpp::rmw_seq_t<T>*>(input + member->offset_);
         buffer << static_cast<uint32_t>(seq->size);
         buffer.copy_arr(seq->data, seq->size);
       } else {
@@ -290,5 +291,6 @@ inline void MessageSerializer<SERIALIZE, MessageMembersT>::serialize_primitive(
     buffer << *reinterpret_cast<const T *>(input + member->offset_);
   }
 }
-}
+} // namespace rmw_gurumdds_cpp
+
 #endif  // RMW_GURUMDDS__MESSAGE_SERIALIZER_INL_
