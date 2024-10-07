@@ -17,7 +17,6 @@
 #include "rmw/impl/cpp/key_value.hpp"
 
 #include "rmw_gurumdds_cpp/event_converter.hpp"
-#include "rmw_gurumdds_cpp/gid.hpp"
 #include "rmw_gurumdds_cpp/graph_cache.hpp"
 #include "rmw_gurumdds_cpp/guid.hpp"
 #include "rmw_gurumdds_cpp/qos.hpp"
