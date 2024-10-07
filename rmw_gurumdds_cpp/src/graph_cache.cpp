@@ -46,7 +46,7 @@ rmw_ret_t add_entity(
   const dds_LifespanQosPolicy * const lifespan,
   const bool is_reader,
   const bool local) {
-  (void)local;
+  RCUTILS_UNUSED(local);
   size_t history_depth = RMW_QOS_POLICY_DEPTH_SYSTEM_DEFAULT;
   rmw_qos_history_policy_e history_kind = RMW_QOS_POLICY_HISTORY_UNKNOWN;
   if (history != nullptr) {

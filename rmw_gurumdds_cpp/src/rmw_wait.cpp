@@ -37,7 +37,7 @@ rmw_create_wait_set(rmw_context_t * context, size_t max_conditions)
     RMW_GURUMDDS_ID,
     return nullptr);
 
-  (void)max_conditions;
+  RCUTILS_UNUSED(max_conditions);
   rmw_wait_set_t * wait_set = rmw_wait_set_allocate();
 
   GurumddsWaitSetInfo * wait_set_info = nullptr;
