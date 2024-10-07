@@ -12,38 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <chrono>
 #include <cstring>
-#include <functional>
-#include <map>
 #include <set>
 #include <string>
-#include <thread>
-#include <vector>
 
 #include "rcutils/allocator.h"
 #include "rcutils/error_handling.h"
 #include "rcutils/logging_macros.h"
-#include "rcutils/strdup.h"
-#include "rcutils/types.h"
 
 #include "rmw/allocators.h"
-#include "rmw/convert_rcutils_ret_to_rmw_ret.h"
 #include "rmw/error_handling.h"
 #include "rmw/get_node_info_and_types.h"
-#include "rmw/get_topic_names_and_types.h"
 #include "rmw/impl/cpp/macros.hpp"
-#include "rmw/impl/cpp/key_value.hpp"
 #include "rmw/names_and_types.h"
-#include "rmw/rmw.h"
 
 #include "rmw_dds_common/context.hpp"
 
 #include "rmw_gurumdds_cpp/dds_include.hpp"
 #include "rmw_gurumdds_cpp/demangle.hpp"
-#include "rmw_gurumdds_cpp/guid.hpp"
 #include "rmw_gurumdds_cpp/identifier.hpp"
-#include "rmw_gurumdds_cpp/names_and_types_helpers.hpp"
 #include "rmw_gurumdds_cpp/rmw_context_impl.hpp"
 
 using GetNamesAndTypesByNodeFunction = rmw_ret_t (*)(

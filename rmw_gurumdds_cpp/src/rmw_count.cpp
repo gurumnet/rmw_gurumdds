@@ -14,9 +14,6 @@
 
 #include <map>
 #include <string>
-#include <vector>
-
-#include "rcutils/logging_macros.h"
 
 #include "rmw/error_handling.h"
 #include "rmw/impl/cpp/macros.hpp"
@@ -26,7 +23,6 @@
 
 #include "rmw_dds_common/context.hpp"
 
-#include "rmw_gurumdds_cpp/demangle.hpp"
 #include "rmw_gurumdds_cpp/identifier.hpp"
 #include "rmw_gurumdds_cpp/names_and_types_helpers.hpp"
 #include "rmw_gurumdds_cpp/namespace_prefix.hpp"

@@ -19,7 +19,6 @@
 
 #include "rcutils/macros.h"
 
-#include "rmw/allocators.h"
 #include "rmw/error_handling.h"
 #include "rmw/impl/cpp/macros.hpp"
 #include "rmw/init.h"
@@ -28,8 +27,6 @@
 #include "rmw/types.h"
 
 #include "rmw_dds_common/context.hpp"
-#include "rmw_dds_common/gid_utils.hpp"
-#include "rmw_dds_common/msg/participant_entities_info.hpp"
 
 #include "rmw_gurumdds_cpp/context_listener_thread.hpp"
 #include "rmw_gurumdds_cpp/graph_cache.hpp"

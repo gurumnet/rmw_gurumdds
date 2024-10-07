@@ -14,15 +14,10 @@
 
 #include <map>
 #include <set>
-#include <string>
 
 #include "rcutils/allocator.h"
-#include "rcutils/logging_macros.h"
-#include "rcutils/strdup.h"
-#include "rcutils/types/string_array.h"
 
 #include "rmw/allocators.h"
-#include "rmw/convert_rcutils_ret_to_rmw_ret.h"
 #include "rmw/error_handling.h"
 #include "rmw/get_topic_names_and_types.h"
 #include "rmw/impl/cpp/macros.hpp"
@@ -31,7 +26,6 @@
 #include "rmw_gurumdds_cpp/dds_include.hpp"
 #include "rmw_gurumdds_cpp/demangle.hpp"
 #include "rmw_gurumdds_cpp/identifier.hpp"
-#include "rmw_gurumdds_cpp/names_and_types_helpers.hpp"
 #include "rmw_gurumdds_cpp/rmw_context_impl.hpp"
 
 extern "C"

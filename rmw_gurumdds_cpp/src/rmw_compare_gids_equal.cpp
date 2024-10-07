@@ -18,7 +18,6 @@
 #include "rmw/types.h"
 
 #include "rmw_gurumdds_cpp/identifier.hpp"
-#include "rmw_gurumdds_cpp/types.hpp"
 
 extern "C"
 {
