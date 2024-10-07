@@ -14,15 +14,12 @@
 
 #include <chrono>
 #include <string>
-#include <thread>
 #include <utility>
 
 #include "rcutils/error_handling.h"
 #include "rcutils/logging_macros.h"
 
 #include "rmw/allocators.h"
-#include "rmw/get_service_names_and_types.h"
-#include "rmw/names_and_types.h"
 #include "rmw/rmw.h"
 #include "rmw/validate_full_topic_name.h"
 

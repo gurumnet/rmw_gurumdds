@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <utility>
-
 #include "rmw_gurumdds_cpp/event_converter.hpp"
 
 /// mapping of RMW_EVENT to the corresponding dds_StatusKind.
