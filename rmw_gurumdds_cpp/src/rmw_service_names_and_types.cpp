@@ -52,8 +52,8 @@ rmw_get_service_names_and_types(
 
   auto common_ctx = &node->context->impl->common_ctx;
   return common_ctx->graph_cache.get_names_and_types(
-    _demangle_service_from_topic,
-    _demangle_service_type_only,
+    rmw_gurumdds_cpp::demangle_service_from_topic,
+    rmw_gurumdds_cpp::demangle_service_type_only,
     allocator,
     service_names_and_types);
 }

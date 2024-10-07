@@ -1,7 +1,8 @@
 #include <cassert>
 #include "rmw_gurumdds_cpp/cdr_buffer.hpp"
 
-namespace rmw_gurumdds {
+namespace rmw_gurumdds_cpp
+{
 CdrBuffer::CdrBuffer(uint8_t * buf, size_t size)
   : buf_{buf}
   , offset_{}
@@ -26,4 +27,4 @@ void CdrBuffer::roundup(uint32_t align) {
 void CdrBuffer::advance(size_t cnt) {
   offset_ += cnt;
 }
-}
+} // namespace rmw_gurumdds_cpp

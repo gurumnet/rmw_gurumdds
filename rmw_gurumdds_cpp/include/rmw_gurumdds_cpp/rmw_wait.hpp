@@ -43,8 +43,7 @@
     return RMW_RET_ERROR; \
   }
 
-inline rmw_ret_t
-__gather_event_conditions(
+static inline rmw_ret_t gather_event_conditions(
   rmw_events_t * events,
   std::unordered_set<dds_Condition*> & status_conditions)
 {
@@ -55,14 +54,14 @@ __gather_event_conditions(
     auto now = static_cast<rmw_event_t *>(events->events[i]);
     RMW_CHECK_ARGUMENT_FOR_NULL(events, RMW_RET_INVALID_ARGUMENT);
 
-    auto event_info = static_cast<GurumddsEventInfo *>(now->data);
+    auto event_info = static_cast<rmw_gurumdds_cpp::EventInfo *>(now->data);
     if (nullptr == event_info) {
       RMW_SET_ERROR_MSG("event handle is null");
       return RMW_RET_ERROR;
     }
 
     const auto event_type = now->event_type;
-    if(!is_event_supported(event_type)) {
+    if(!rmw_gurumdds_cpp::is_event_supported(event_type)) {
       RMW_SET_ERROR_MSG_WITH_FORMAT_STRING("unsupported event: %d", now->event_type);
       continue;
     }
@@ -78,7 +77,7 @@ __gather_event_conditions(
     }
 
     auto& mask = status_map[event_info->get_status_condition()];
-    mask |= get_status_kind_from_rmw(event_type);
+    mask |= rmw_gurumdds_cpp::get_status_kind_from_rmw(event_type);
   }
 
   for(auto & pair : status_map) {
@@ -93,8 +92,7 @@ __gather_event_conditions(
   return RMW_RET_OK;
 }
 
-rmw_ret_t
-__handle_active_event_conditions(rmw_events_t * events)
+static inline rmw_ret_t handle_active_event_conditions(rmw_events_t * events)
 {
   if (events == nullptr) {
     return RMW_RET_OK;
@@ -104,7 +102,7 @@ __handle_active_event_conditions(rmw_events_t * events)
     auto now = static_cast<rmw_event_t *>(events->events[i]);
     RMW_CHECK_ARGUMENT_FOR_NULL(events, RMW_RET_INVALID_ARGUMENT);
 
-    auto event_info = static_cast<GurumddsEventInfo *>(now->data);
+    auto event_info = static_cast<rmw_gurumdds_cpp::EventInfo *>(now->data);
     if (event_info == nullptr) {
       RMW_SET_ERROR_MSG("event handle is null");
       return RMW_RET_ERROR;
@@ -118,12 +116,12 @@ __handle_active_event_conditions(rmw_events_t * events)
   return RMW_RET_OK;
 }
 
-rmw_ret_t __detach_condition(
+static inline rmw_ret_t detach_condition(
   dds_WaitSet * dds_wait_set,
   dds_Condition * condition)
 {
   dds_ReturnCode_t dds_return_code = dds_WaitSet_detach_condition(dds_wait_set, condition);
-  rmw_ret_t from_dds = check_dds_ret_code(dds_return_code);
+  rmw_ret_t from_dds = rmw_gurumdds_cpp::check_dds_ret_code(dds_return_code);
   if (dds_return_code != dds_RETCODE_PRECONDITION_NOT_MET && from_dds != RMW_RET_OK) {
     RMW_SET_ERROR_MSG("failed to detach condition from wait set");
     return from_dds;
@@ -132,9 +130,11 @@ rmw_ret_t __detach_condition(
   return RMW_RET_OK;
 }
 
+namespace rmw_gurumdds_cpp
+{
 template<typename SubscriberInfo, typename ServiceInfo, typename ClientInfo>
 rmw_ret_t
-__rmw_wait(
+wait(
   const char * implementation_identifier,
   rmw_subscriptions_t * subscriptions,
   rmw_guard_conditions_t * guard_conditions,
@@ -159,7 +159,7 @@ __rmw_wait(
         wait set handle, wait_set->implementation_identifier,
         implementation_identifier, return );
 
-      GurumddsWaitSetInfo * wait_set_info = static_cast<GurumddsWaitSetInfo *>(wait_set->data);
+      WaitSetInfo * wait_set_info = static_cast<WaitSetInfo *>(wait_set->data);
       if (wait_set_info == nullptr) {
         RMW_SET_ERROR_MSG("WaitSet implementation struct is null");
         return;
@@ -209,7 +209,7 @@ __rmw_wait(
     wait set handle, wait_set->implementation_identifier,
     implementation_identifier, return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
 
-  GurumddsWaitSetInfo * wait_set_info = static_cast<GurumddsWaitSetInfo *>(wait_set->data);
+  WaitSetInfo * wait_set_info = static_cast<WaitSetInfo *>(wait_set->data);
   if (wait_set_info == nullptr) {
     RMW_SET_ERROR_MSG("WaitSet implementation struct is null");
     return RMW_RET_ERROR;
@@ -251,7 +251,7 @@ __rmw_wait(
 
   std::unordered_set<dds_Condition *> status_conditions;
 
-  rmw_ret_t ret_code = __gather_event_conditions(events, status_conditions);
+  rmw_ret_t ret_code = gather_event_conditions(events, status_conditions);
   if (ret_code != RMW_RET_OK) {
     return ret_code;
   }
@@ -433,7 +433,7 @@ __rmw_wait(
         subscriptions->subscribers[i] = nullptr;
       }
 
-      rmw_ret_t rmw_ret_code = __detach_condition(
+      rmw_ret_t rmw_ret_code = detach_condition(
         dds_wait_set, reinterpret_cast<dds_Condition *>(read_condition));
       if (rmw_ret_code != RMW_RET_OK) {
         return rmw_ret_code;
@@ -467,7 +467,7 @@ __rmw_wait(
         guard_conditions->guard_conditions[i] = nullptr;
       }
 
-      rmw_ret_t rmw_ret_code = __detach_condition(dds_wait_set, condition);
+      rmw_ret_t rmw_ret_code = detach_condition(dds_wait_set, condition);
       if (rmw_ret_code != RMW_RET_OK) {
         return rmw_ret_code;
       }
@@ -502,7 +502,7 @@ __rmw_wait(
         services->services[i] = nullptr;
       }
 
-      rmw_ret_t rmw_ret_code = __detach_condition(
+      rmw_ret_t rmw_ret_code = detach_condition(
         dds_wait_set, reinterpret_cast<dds_Condition *>(read_condition));
       if (rmw_ret_code != RMW_RET_OK) {
         return rmw_ret_code;
@@ -538,7 +538,7 @@ __rmw_wait(
         clients->clients[i] = nullptr;
       }
 
-      rmw_ret_t rmw_ret_code = __detach_condition(
+      rmw_ret_t rmw_ret_code = detach_condition(
         dds_wait_set, reinterpret_cast<dds_Condition *>(read_condition));
       if (rmw_ret_code != RMW_RET_OK) {
         return rmw_ret_code;
@@ -547,7 +547,7 @@ __rmw_wait(
   }
 
   {
-    rmw_ret_t rmw_ret_code = __handle_active_event_conditions(events);
+    rmw_ret_t rmw_ret_code = handle_active_event_conditions(events);
     if (rmw_ret_code != RMW_RET_OK) {
       return rmw_ret_code;
     }
@@ -555,5 +555,6 @@ __rmw_wait(
 
   return rret;
 }
+} // namespace rmw_gurumdds_cpp
 
 #endif // RMW_GURUMDDS__RMW_WAIT_HPP_

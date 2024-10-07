@@ -50,12 +50,12 @@ rmw_get_topic_names_and_types(
     return RMW_RET_INVALID_ARGUMENT;
   }
 
-  DemangleFunction demangle_topic = _demangle_ros_topic_from_topic;
-  DemangleFunction demangle_type = _demangle_if_ros_type;
+  DemangleFunction demangle_topic = rmw_gurumdds_cpp::demangle_ros_topic_from_topic;
+  DemangleFunction demangle_type = rmw_gurumdds_cpp::demangle_if_ros_type;
 
   if (no_demangle) {
-    demangle_topic = _identity_demangle;
-    demangle_type = _identity_demangle;
+    demangle_topic = rmw_gurumdds_cpp::identity_demangle;
+    demangle_type = rmw_gurumdds_cpp::identity_demangle;
   }
 
   auto common_ctx = &node->context->impl->common_ctx;

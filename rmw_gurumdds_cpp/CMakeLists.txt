@@ -63,7 +63,6 @@ add_library(rmw_gurumdds_cpp
   src/get_entities.cpp
   src/graph_cache.cpp
   src/identifier.cpp
-  src/message_converter.cpp
   src/names_and_types_helpers.cpp
   src/namespace_prefix.cpp
   src/qos.cpp

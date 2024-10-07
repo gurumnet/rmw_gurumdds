@@ -15,8 +15,10 @@
 #ifndef RMW_GURUMDDS__RMW_SUBSCRIPTION_HPP_
 #define RMW_GURUMDDS__RMW_SUBSCRIPTION_HPP_
 
+namespace rmw_gurumdds_cpp
+{
 rmw_subscription_t *
-__rmw_create_subscription(
+create_subscription(
   rmw_context_impl_t * const ctx,
   const rmw_node_t * node,
   dds_DomainParticipant * const participant,
@@ -27,8 +29,9 @@ __rmw_create_subscription(
   const bool internal);
 
 rmw_ret_t
-__rmw_destroy_subscription(
+destroy_subscription(
   rmw_context_impl_t * const ctx,
   rmw_subscription_t * const subscription);
+} // namespace rmw_gurumdds_cpp
 
 #endif // RMW_GURUMDDS__RMW_SUBSCRIPTION_HPP_
