@@ -40,8 +40,10 @@
 #include "rmw_gurumdds_cpp/type_support_service.hpp"
 #include "rmw_gurumdds_cpp/types.hpp"
 
+namespace rmw_gurumdds_cpp
+{
 rmw_subscription_t *
-__rmw_create_subscription(
+create_subscription(
   rmw_context_impl_t * const ctx,
   const rmw_node_t * node,
   dds_DomainParticipant * const participant,
@@ -68,7 +70,7 @@ __rmw_create_subscription(
   }
 
   rmw_subscription_t * rmw_subscription = nullptr;
-  GurumddsSubscriberInfo * subscriber_info = nullptr;
+  SubscriberInfo * subscriber_info = nullptr;
   dds_DataReader * topic_reader = nullptr;
   dds_DataReaderQos datareader_qos;
   dds_DataReaderListener topic_listener;
@@ -88,8 +90,8 @@ __rmw_create_subscription(
     return nullptr;
   }
 
-  std::string processed_topic_name = create_topic_name(
-    ros_topic_prefix, topic_name, "", qos_policies);
+  std::string processed_topic_name = rmw_gurumdds_cpp::create_topic_name(
+    rmw_gurumdds_cpp::ros_topic_prefix, topic_name, "", qos_policies);
 
   std::string metastring =
     create_metastring(type_support->data, type_support->typesupport_identifier);
@@ -134,7 +136,7 @@ __rmw_create_subscription(
       return nullptr;
     }
 
-    GurumddsTopicEventListener::associate_listener(topic);
+    TopicEventListener::associate_listener(topic);
   } else {
     dds_Duration_t timeout;
     timeout.sec = 0;
@@ -147,7 +149,7 @@ __rmw_create_subscription(
   }
 
   const rosidl_type_hash_t& type_hash = *type_support->get_type_hash_func(type_support);
-  if (!get_datareader_qos(sub, qos_policies, type_hash, &datareader_qos)) {
+  if (!rmw_gurumdds_cpp::get_datareader_qos(sub, qos_policies, type_hash, &datareader_qos)) {
     // Error message already set
     return nullptr;
   }
@@ -172,9 +174,9 @@ __rmw_create_subscription(
     return nullptr;
   }
 
-  subscriber_info = new(std::nothrow) GurumddsSubscriberInfo();
+  subscriber_info = new(std::nothrow) SubscriberInfo();
   if (subscriber_info == nullptr) {
-    RMW_SET_ERROR_MSG("failed to allocate GurumddsSubscriberInfo");
+    RMW_SET_ERROR_MSG("failed to allocate SubscriberInfo");
     return nullptr;
   }
 
@@ -198,20 +200,20 @@ __rmw_create_subscription(
   topic_listener.on_requested_deadline_missed = [](const dds_DataReader* topic_reader,
                                                    const dds_RequestedDeadlineMissedStatus* status) {
     dds_DataReader* reader = const_cast<dds_DataReader*>(topic_reader);
-    GurumddsSubscriberInfo* info = static_cast<GurumddsSubscriberInfo*>(dds_DataReader_get_listener_context(reader));
+    SubscriberInfo* info = static_cast<SubscriberInfo*>(dds_DataReader_get_listener_context(reader));
     info->on_requested_deadline_missed(*status);
   };
 
   topic_listener.on_requested_incompatible_qos = [](const dds_DataReader* topic_reader,
                                                     const dds_RequestedIncompatibleQosStatus* status) {
     dds_DataReader* reader = const_cast<dds_DataReader*>(topic_reader);
-    GurumddsSubscriberInfo* info = static_cast<GurumddsSubscriberInfo*>(dds_DataReader_get_listener_context(reader));
+    SubscriberInfo* info = static_cast<SubscriberInfo*>(dds_DataReader_get_listener_context(reader));
     info->on_requested_incompatible_qos(*status);
   };
 
   topic_listener.on_data_available = [](const dds_DataReader * topic_reader) {
     dds_DataReader* reader = const_cast<dds_DataReader*>(topic_reader);
-    GurumddsSubscriberInfo* info = static_cast<GurumddsSubscriberInfo*>(dds_DataReader_get_listener_context(reader));
+    SubscriberInfo* info = static_cast<SubscriberInfo*>(dds_DataReader_get_listener_context(reader));
     std::lock_guard<std::mutex> guard(info->event_callback_data.mutex);
     if(info->event_callback_data.callback) {
       info->event_callback_data.callback(info->event_callback_data.user_data, info->count_unread());
@@ -220,19 +222,19 @@ __rmw_create_subscription(
 
   topic_listener.on_liveliness_changed = [](const dds_DataReader* topic_reader, const dds_LivelinessChangedStatus* status) {
     dds_DataReader* reader = const_cast<dds_DataReader*>(topic_reader);
-    GurumddsSubscriberInfo* info = static_cast<GurumddsSubscriberInfo*>(dds_DataReader_get_listener_context(reader));
+    SubscriberInfo* info = static_cast<SubscriberInfo*>(dds_DataReader_get_listener_context(reader));
     info->on_liveliness_changed(*status);
   };
 
   topic_listener.on_subscription_matched = [](const dds_DataReader* topic_reader, const dds_SubscriptionMatchedStatus* status) {
     dds_DataReader* reader = const_cast<dds_DataReader*>(topic_reader);
-    GurumddsSubscriberInfo* info = static_cast<GurumddsSubscriberInfo*>(dds_DataReader_get_listener_context(reader));
+    SubscriberInfo* info = static_cast<SubscriberInfo*>(dds_DataReader_get_listener_context(reader));
     info->on_subscription_matched(*status);
   };
 
   topic_listener.on_sample_lost = [](const dds_DataReader* topic_reader, const dds_SampleLostStatus* status) {
     dds_DataReader* reader = const_cast<dds_DataReader*>(topic_reader);
-    GurumddsSubscriberInfo* info = static_cast<GurumddsSubscriberInfo*>(dds_DataReader_get_listener_context(reader));
+    SubscriberInfo* info = static_cast<SubscriberInfo*>(dds_DataReader_get_listener_context(reader));
     info->on_sample_lost(*status);
   };
 
@@ -252,9 +254,9 @@ __rmw_create_subscription(
   subscriber_info->event_guard_cond[RMW_EVENT_SUBSCRIPTION_INCOMPATIBLE_TYPE] = dds_GuardCondition_create();
   subscriber_info->event_guard_cond[RMW_EVENT_SUBSCRIPTION_MATCHED] = dds_GuardCondition_create();
 
-  GurumddsTopicEventListener::add_event(topic, subscriber_info);
+  TopicEventListener::add_event(topic, subscriber_info);
 
-  entity_get_gid(
+  rmw_gurumdds_cpp::entity_get_gid(
     reinterpret_cast<dds_Entity *>(subscriber_info->topic_reader),
     subscriber_info->subscriber_gid);
 
@@ -290,7 +292,7 @@ __rmw_create_subscription(
   rmw_subscription->is_cft_enabled = false;
 
   if (!internal) {
-    if (graph_on_subscriber_created(ctx, node, subscriber_info) != RMW_RET_OK) {
+    if (rmw_gurumdds_cpp::graph_cache::on_subscriber_created(ctx, node, subscriber_info) != RMW_RET_OK) {
       RMW_SET_ERROR_MSG("failed to update graph for subscriber");
       return nullptr;
     }
@@ -304,13 +306,13 @@ __rmw_create_subscription(
 }
 
 rmw_ret_t
-__rmw_destroy_subscription(
+destroy_subscription(
   rmw_context_impl_t * const ctx,
   rmw_subscription_t * const subscription)
 {
   std::lock_guard<std::mutex> guard(ctx->endpoint_mutex);
 
-  auto subscriber_info = static_cast<GurumddsSubscriberInfo *>(subscription->data);
+  auto subscriber_info = static_cast<SubscriberInfo *>(subscription->data);
   if (subscriber_info == nullptr) {
     RMW_SET_ERROR_MSG("invalid subscriber data");
     return RMW_RET_ERROR;
@@ -338,7 +340,7 @@ __rmw_destroy_subscription(
       return RMW_RET_ERROR;
     }
 
-    GurumddsTopicEventListener::remove_event(topic, subscriber_info);
+    TopicEventListener::remove_event(topic, subscriber_info);
     subscriber_info->topic_reader = nullptr;
     ret = dds_DomainParticipant_delete_topic(ctx->participant, topic);
     if (ret == dds_RETCODE_PRECONDITION_NOT_MET) {
@@ -347,7 +349,7 @@ __rmw_destroy_subscription(
       RMW_SET_ERROR_MSG("failed to delete topic");
       return RMW_RET_ERROR;
     } else {
-      GurumddsTopicEventListener::disassociate_Listener(topic);
+      TopicEventListener::disassociate_Listener(topic);
     }
   }
 
@@ -363,7 +365,7 @@ __rmw_destroy_subscription(
 }
 
 static rmw_ret_t
-_take(
+take(
   const char * identifier,
   const rmw_subscription_t * subscription,
   void * ros_message,
@@ -380,7 +382,7 @@ _take(
     identifier,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
 
-  auto subscriber_info = static_cast<GurumddsSubscriberInfo *>(subscription->data);
+  auto subscriber_info = static_cast<SubscriberInfo *>(subscription->data);
   RCUTILS_CHECK_ARGUMENT_FOR_NULL(subscriber_info, RMW_RET_ERROR);
 
   dds_DataReader * topic_reader = subscriber_info->topic_reader;
@@ -506,7 +508,7 @@ _take(
 }
 
 static rmw_ret_t
-_take_serialized(
+take_serialized(
   const char * identifier,
   const rmw_subscription_t * subscription,
   rmw_serialized_message_t * serialized_message,
@@ -523,7 +525,7 @@ _take_serialized(
     identifier,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
 
-  auto subscriber_info = static_cast<GurumddsSubscriberInfo *>(subscription->data);
+  auto subscriber_info = static_cast<SubscriberInfo *>(subscription->data);
   RCUTILS_CHECK_ARGUMENT_FOR_NULL(subscriber_info, RMW_RET_ERROR);
 
   dds_DataReader * topic_reader = subscriber_info->topic_reader;
@@ -640,6 +642,7 @@ _take_serialized(
 
   return RMW_RET_OK;
 }
+} // namespace rmw_gurumdds_cpp
 
 extern "C"
 {
@@ -721,7 +724,7 @@ rmw_create_subscription(
   rmw_context_impl_t * ctx = node->context->impl;
 
   rmw_subscription_t * const rmw_sub =
-    __rmw_create_subscription(
+    rmw_gurumdds_cpp::create_subscription(
     ctx,
     node,
     ctx->participant,
@@ -759,7 +762,7 @@ rmw_subscription_count_matched_publishers(
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
   RMW_CHECK_ARGUMENT_FOR_NULL(publisher_count, RMW_RET_INVALID_ARGUMENT);
 
-  auto subscriber_info = static_cast<GurumddsSubscriberInfo *>(subscription->data);
+  auto subscriber_info = static_cast<rmw_gurumdds_cpp::SubscriberInfo *>(subscription->data);
   if (subscriber_info == nullptr) {
     RMW_SET_ERROR_MSG("subscriber internal data is invalid");
     return RMW_RET_ERROR;
@@ -798,7 +801,7 @@ rmw_subscription_get_actual_qos(
     RMW_GURUMDDS_ID,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
 
-  auto subscriber_info = static_cast<GurumddsSubscriberInfo *>(subscription->data);
+  auto subscriber_info = static_cast<rmw_gurumdds_cpp::SubscriberInfo *>(subscription->data);
   if (subscriber_info == nullptr) {
     RMW_SET_ERROR_MSG("subscription internal data is invalid");
     return RMW_RET_ERROR;
@@ -817,12 +820,12 @@ rmw_subscription_get_actual_qos(
     return RMW_RET_ERROR;
   }
 
-  qos->reliability = convert_reliability(&dds_qos.reliability);
-  qos->durability = convert_durability(&dds_qos.durability);
-  qos->deadline = convert_deadline(&dds_qos.deadline);
-  qos->liveliness = convert_liveliness(&dds_qos.liveliness);
-  qos->liveliness_lease_duration = convert_liveliness_lease_duration(&dds_qos.liveliness);
-  qos->history = convert_history(&dds_qos.history);
+  qos->reliability = rmw_gurumdds_cpp::convert_reliability(&dds_qos.reliability);
+  qos->durability = rmw_gurumdds_cpp::convert_durability(&dds_qos.durability);
+  qos->deadline = rmw_gurumdds_cpp::convert_deadline(&dds_qos.deadline);
+  qos->liveliness = rmw_gurumdds_cpp::convert_liveliness(&dds_qos.liveliness);
+  qos->liveliness_lease_duration = rmw_gurumdds_cpp::convert_liveliness_lease_duration(&dds_qos.liveliness);
+  qos->history = rmw_gurumdds_cpp::convert_history(&dds_qos.history);
   qos->depth = static_cast<size_t>(dds_qos.history.depth);
 
   ret = dds_DataReaderQos_finalize(&dds_qos);
@@ -852,14 +855,14 @@ rmw_destroy_subscription(rmw_node_t * node, rmw_subscription_t * subscription)
 
   rmw_context_impl_t * ctx = node->context->impl;
 
-  if (graph_on_subscriber_deleted(
-      ctx, node, reinterpret_cast<GurumddsSubscriberInfo *>(subscription->data)))
+  if (rmw_gurumdds_cpp::graph_cache::on_subscriber_deleted(
+      ctx, node, reinterpret_cast<rmw_gurumdds_cpp::SubscriberInfo *>(subscription->data)))
   {
     RCUTILS_LOG_ERROR_NAMED(RMW_GURUMDDS_ID, "failed to update graph for subscriber");
     return RMW_RET_ERROR;
   }
 
-  rmw_ret_t ret = __rmw_destroy_subscription(ctx, subscription);
+  rmw_ret_t ret = rmw_gurumdds_cpp::destroy_subscription(ctx, subscription);
 
   if (ret == RMW_RET_OK) {
     if (subscription->topic_name != nullptr) {
@@ -891,7 +894,7 @@ rmw_take(
   RCUTILS_CHECK_FOR_NULL_WITH_MSG(
     taken, "boolean flag for taken is null", return RMW_RET_INVALID_ARGUMENT);
 
-  return _take(
+  return rmw_gurumdds_cpp::take(
     RMW_GURUMDDS_ID, subscription, ros_message, taken, nullptr, allocation);
 }
 
@@ -912,7 +915,7 @@ rmw_take_with_info(
   RCUTILS_CHECK_FOR_NULL_WITH_MSG(
     message_info, "message info pointer is null", return RMW_RET_INVALID_ARGUMENT);
 
-  return _take(
+  return rmw_gurumdds_cpp::take(
     RMW_GURUMDDS_ID, subscription, ros_message, taken, message_info, allocation);
 }
 
@@ -962,7 +965,7 @@ rmw_take_sequence(
   message_sequence->size = 0;
   message_info_sequence->size = 0;
 
-  GurumddsSubscriberInfo * info = static_cast<GurumddsSubscriberInfo *>(subscription->data);
+  rmw_gurumdds_cpp::SubscriberInfo * info = static_cast<rmw_gurumdds_cpp::SubscriberInfo *>(subscription->data);
   RCUTILS_CHECK_FOR_NULL_WITH_MSG(info, "custom subscriber info is null", return RMW_RET_ERROR);
 
   dds_DataReader * topic_reader = info->topic_reader;
@@ -1027,7 +1030,7 @@ rmw_take_sequence(
           return RMW_RET_ERROR;
         }
         uint32_t sample_size = dds_UnsignedLongSeq_get(sample_sizes, i);
-        bool result = deserialize_cdr_to_ros(
+        bool result = rmw_gurumdds_cpp::deserialize_cdr_to_ros(
           info->rosidl_message_typesupport->data,
           info->rosidl_message_typesupport->typesupport_identifier,
           message_sequence->data[*taken],
@@ -1095,7 +1098,7 @@ rmw_take_serialized_message(
   RCUTILS_CHECK_FOR_NULL_WITH_MSG(
     taken, "boolean flag for taken is null", return RMW_RET_INVALID_ARGUMENT);
 
-  return _take_serialized(
+  return rmw_gurumdds_cpp::take_serialized(
     RMW_GURUMDDS_ID, subscription,
     serialized_message, taken, nullptr, allocation);
 }
@@ -1117,7 +1120,7 @@ rmw_take_serialized_message_with_info(
   RCUTILS_CHECK_FOR_NULL_WITH_MSG(
     message_info, "message info pointer is null", return RMW_RET_INVALID_ARGUMENT);
 
-  return _take_serialized(
+  return rmw_gurumdds_cpp::take_serialized(
     RMW_GURUMDDS_ID, subscription,
     serialized_message, taken, message_info, allocation);
 }
@@ -1181,7 +1184,7 @@ rmw_subscription_set_on_new_message_callback(
     RMW_GURUMDDS_ID,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
 
-  auto subscriber_info = static_cast<GurumddsSubscriberInfo *>(subscription->data);
+  auto subscriber_info = static_cast<rmw_gurumdds_cpp::SubscriberInfo *>(subscription->data);
   if (subscriber_info == nullptr) {
     RMW_SET_ERROR_MSG("invalid subscription data");
     return RMW_RET_ERROR;
@@ -1207,7 +1210,7 @@ rmw_subscription_set_on_new_message_callback(
 
   dds_rc = dds_DataReader_set_listener(subscriber_info->topic_reader, &subscriber_info->topic_listener, subscriber_info->mask);
 
-  return check_dds_ret_code(dds_rc);
+  return rmw_gurumdds_cpp::check_dds_ret_code(dds_rc);
 }
 
 rmw_ret_t

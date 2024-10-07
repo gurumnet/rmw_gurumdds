@@ -40,8 +40,10 @@
 #include "rmw_gurumdds_cpp/type_support_service.hpp"
 #include "rmw_gurumdds_cpp/types.hpp"
 
+namespace rmw_gurumdds_cpp
+{
 rmw_publisher_t *
-__rmw_create_publisher(
+create_publisher(
   rmw_context_impl_t * const ctx,
   const rmw_node_t * node,
   dds_DomainParticipant * const participant,
@@ -68,7 +70,7 @@ __rmw_create_publisher(
   }
 
   rmw_publisher_t * rmw_publisher = nullptr;
-  GurumddsPublisherInfo * publisher_info = nullptr;
+  PublisherInfo * publisher_info = nullptr;
   dds_DataWriter * topic_writer = nullptr;
   dds_DataWriterQos datawriter_qos;
   dds_Topic * topic = nullptr;
@@ -83,8 +85,8 @@ __rmw_create_publisher(
     return nullptr;
   }
 
-  std::string processed_topic_name = create_topic_name(
-    ros_topic_prefix, topic_name, "", qos_policies);
+  std::string processed_topic_name = rmw_gurumdds_cpp::create_topic_name(
+    rmw_gurumdds_cpp::ros_topic_prefix, topic_name, "", qos_policies);
 
   std::string metastring =
     create_metastring(type_support->data, type_support->typesupport_identifier);
@@ -129,7 +131,7 @@ __rmw_create_publisher(
       return nullptr;
     }
 
-    GurumddsTopicEventListener::associate_listener(topic);
+    TopicEventListener::associate_listener(topic);
   } else {
     dds_Duration_t timeout;
     timeout.sec = 0;
@@ -142,7 +144,7 @@ __rmw_create_publisher(
   }
 
   const rosidl_type_hash_t& type_hash = *type_support->get_type_hash_func(type_support);
-  if (!get_datawriter_qos(pub, qos_policies, type_hash, &datawriter_qos)) {
+  if (!rmw_gurumdds_cpp::get_datawriter_qos(pub, qos_policies, type_hash, &datawriter_qos)) {
     // Error message already set
     return nullptr;
   }
@@ -160,9 +162,9 @@ __rmw_create_publisher(
     return nullptr;
   }
 
-  publisher_info = new(std::nothrow) GurumddsPublisherInfo();
+  publisher_info = new(std::nothrow) PublisherInfo();
   if (publisher_info == nullptr) {
-    RMW_SET_ERROR_MSG("failed to allocate GurumddsPublisherInfo");
+    RMW_SET_ERROR_MSG("failed to allocate PublisherInfo");
     return nullptr;
   }
 
@@ -170,27 +172,27 @@ __rmw_create_publisher(
   listener.on_offered_deadline_missed = [](const dds_DataWriter * topic_writer,
                                            const dds_OfferedDeadlineMissedStatus * status) {
     dds_DataWriter * writer = const_cast<dds_DataWriter *>(topic_writer);
-    GurumddsPublisherInfo * info = static_cast<GurumddsPublisherInfo*>(dds_DataWriter_get_listener_context(writer));
+    PublisherInfo * info = static_cast<PublisherInfo*>(dds_DataWriter_get_listener_context(writer));
     info->on_offered_deadline_missed(*status);
   };
 
   listener.on_offered_incompatible_qos = [](const dds_DataWriter * topic_writer,
                                             const dds_OfferedIncompatibleQosStatus * status) {
     dds_DataWriter * writer = const_cast<dds_DataWriter *>(topic_writer);
-    GurumddsPublisherInfo * info = static_cast<GurumddsPublisherInfo*>(dds_DataWriter_get_listener_context(writer));
+    PublisherInfo * info = static_cast<PublisherInfo*>(dds_DataWriter_get_listener_context(writer));
     info->on_offered_incompatible_qos(*status);
   };
 
   listener.on_liveliness_lost = [](const dds_DataWriter * topic_writer, const dds_LivelinessLostStatus * status) {
     dds_DataWriter * writer = const_cast<dds_DataWriter *>(topic_writer);
-    GurumddsPublisherInfo * info = static_cast<GurumddsPublisherInfo*>(dds_DataWriter_get_listener_context(writer));
+    PublisherInfo * info = static_cast<PublisherInfo*>(dds_DataWriter_get_listener_context(writer));
     info->on_liveliness_lost(*status);
   };
 
   listener.on_publication_matched = [](const dds_DataWriter * topic_writer,
                                        const dds_PublicationMatchedStatus * status) {
     dds_DataWriter * writer = const_cast<dds_DataWriter *>(topic_writer);
-    GurumddsPublisherInfo * info = static_cast<GurumddsPublisherInfo*>(dds_DataWriter_get_listener_context(writer));
+    PublisherInfo * info = static_cast<PublisherInfo*>(dds_DataWriter_get_listener_context(writer));
     info->on_publication_matched(*status);
   };
 
@@ -207,9 +209,9 @@ __rmw_create_publisher(
   publisher_info->event_guard_cond[RMW_EVENT_PUBLISHER_INCOMPATIBLE_TYPE] = dds_GuardCondition_create();
   publisher_info->event_guard_cond[RMW_EVENT_PUBLICATION_MATCHED] = dds_GuardCondition_create();
 
-  GurumddsTopicEventListener::add_event(topic, publisher_info);
+  TopicEventListener::add_event(topic, publisher_info);
 
-  entity_get_gid(
+  rmw_gurumdds_cpp::entity_get_gid(
     reinterpret_cast<dds_Entity *>(publisher_info->topic_writer),
     publisher_info->publisher_gid);
 
@@ -244,7 +246,7 @@ __rmw_create_publisher(
   rmw_publisher->can_loan_messages = false;
 
   if (!internal) {
-    if (graph_on_publisher_created(ctx, node, publisher_info) != RMW_RET_OK) {
+    if (rmw_gurumdds_cpp::graph_cache::on_publisher_created(ctx, node, publisher_info) != RMW_RET_OK) {
       RCUTILS_LOG_ERROR_NAMED(RMW_GURUMDDS_ID, "failed to update graph for publisher");
       return nullptr;
     }
@@ -258,13 +260,13 @@ __rmw_create_publisher(
 }
 
 rmw_ret_t
-__rmw_destroy_publisher(
+destroy_publisher(
   rmw_context_impl_t * const ctx,
   rmw_publisher_t * const publisher)
 {
   std::lock_guard<std::mutex> guard(ctx->endpoint_mutex);
 
-  auto publisher_info = static_cast<GurumddsPublisherInfo *>(publisher->data);
+  auto publisher_info = static_cast<PublisherInfo *>(publisher->data);
   if (publisher_info == nullptr) {
     RMW_SET_ERROR_MSG("invalid publisher data");
     return RMW_RET_ERROR;
@@ -279,7 +281,7 @@ __rmw_destroy_publisher(
       return RMW_RET_ERROR;
     }
     publisher_info->topic_writer = nullptr;
-    GurumddsTopicEventListener::remove_event(topic, publisher_info);
+    TopicEventListener::remove_event(topic, publisher_info);
 
     ret = dds_DomainParticipant_delete_topic(ctx->participant, topic);
     if (ret == dds_RETCODE_PRECONDITION_NOT_MET) {
@@ -288,7 +290,7 @@ __rmw_destroy_publisher(
       RMW_SET_ERROR_MSG("failed to delete topic");
       return RMW_RET_ERROR;
     } else {
-      GurumddsTopicEventListener::disassociate_Listener(topic);
+      TopicEventListener::disassociate_Listener(topic);
     }
   }
 
@@ -304,8 +306,6 @@ __rmw_destroy_publisher(
   return RMW_RET_OK;
 }
 
-namespace rmw_gurumdds
-{
 rmw_ret_t publish(
   const char* identifier,
   const rmw_publisher_t* publisher,
@@ -321,7 +321,7 @@ rmw_ret_t publish(
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
 
 
-  auto publisher_info = static_cast<GurumddsPublisherInfo *>(publisher->data);
+  auto publisher_info = static_cast<PublisherInfo *>(publisher->data);
   RCUTILS_CHECK_ARGUMENT_FOR_NULL(publisher_info, RMW_RET_ERROR);
 
   dds_DataWriter * topic_writer = publisher_info->topic_writer;
@@ -385,7 +385,7 @@ rmw_ret_t publish(
 
   return RMW_RET_OK;
 }
-}
+} // namespace rmw_gurumdds_cpp
 
 extern "C"
 {
@@ -467,7 +467,7 @@ rmw_create_publisher(
   rmw_context_impl_t * ctx = node->context->impl;
 
   rmw_publisher_t * const rmw_pub =
-    __rmw_create_publisher(
+    rmw_gurumdds_cpp::create_publisher(
     ctx,
     node,
     ctx->participant,
@@ -505,7 +505,7 @@ rmw_publisher_count_matched_subscriptions(
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
   RMW_CHECK_ARGUMENT_FOR_NULL(subscription_count, RMW_RET_INVALID_ARGUMENT);
 
-  auto publisher_info = static_cast<GurumddsPublisherInfo *>(publisher->data);
+  auto publisher_info = static_cast<rmw_gurumdds_cpp::PublisherInfo *>(publisher->data);
   if (publisher_info == nullptr) {
     RMW_SET_ERROR_MSG("publisher internal data is invalid");
     return RMW_RET_ERROR;
@@ -535,7 +535,7 @@ rmw_publisher_assert_liveliness(const rmw_publisher_t * publisher)
 {
   RMW_CHECK_ARGUMENT_FOR_NULL(publisher, RMW_RET_INVALID_ARGUMENT);
 
-  auto publisher_info = static_cast<GurumddsPublisherInfo *>(publisher->data);
+  auto publisher_info = static_cast<rmw_gurumdds_cpp::PublisherInfo *>(publisher->data);
   if (publisher_info == nullptr) {
     RMW_SET_ERROR_MSG("publisher internal data is invalid");
     return RMW_RET_ERROR;
@@ -564,13 +564,13 @@ rmw_publisher_wait_for_all_acked(const rmw_publisher_t * publisher, rmw_time_t w
     RMW_GURUMDDS_ID,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
 
-  auto publisher_info = static_cast<GurumddsPublisherInfo *>(publisher->data);
+  auto publisher_info = static_cast<rmw_gurumdds_cpp::PublisherInfo *>(publisher->data);
   if (publisher_info == nullptr) {
     RMW_SET_ERROR_MSG("publisher internal data is invalid");
     return RMW_RET_ERROR;
   }
 
-  dds_Duration_t timeout = rmw_time_to_dds(wait_timeout);
+  dds_Duration_t timeout = rmw_gurumdds_cpp::rmw_time_to_dds(wait_timeout);
   dds_ReturnCode_t ret = dds_DataWriter_wait_for_acknowledgments(
     publisher_info->topic_writer, &timeout);
 
@@ -602,14 +602,14 @@ rmw_destroy_publisher(rmw_node_t * node, rmw_publisher_t * publisher)
 
   rmw_context_impl_t * ctx = node->context->impl;
 
-  if (graph_on_publisher_deleted(
-      ctx, node, reinterpret_cast<GurumddsPublisherInfo *>(publisher->data)))
+  if (rmw_gurumdds_cpp::graph_cache::on_publisher_deleted(
+      ctx, node, reinterpret_cast<rmw_gurumdds_cpp::PublisherInfo *>(publisher->data)))
   {
     RCUTILS_LOG_ERROR_NAMED(RMW_GURUMDDS_ID, "failed to update graph for publisher");
     return RMW_RET_ERROR;
   }
 
-  rmw_ret_t ret = __rmw_destroy_publisher(ctx, publisher);
+  rmw_ret_t ret = rmw_gurumdds_cpp::destroy_publisher(ctx, publisher);
 
   if (ret == RMW_RET_OK) {
     if (publisher->topic_name != nullptr) {
@@ -638,7 +638,7 @@ rmw_get_gid_for_publisher(const rmw_publisher_t * publisher, rmw_gid_t * gid)
     RMW_GURUMDDS_ID,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
 
-  auto publisher_info = static_cast<GurumddsPublisherInfo *>(publisher->data);
+  auto publisher_info = static_cast<rmw_gurumdds_cpp::PublisherInfo *>(publisher->data);
   if (publisher_info == nullptr) {
     RMW_SET_ERROR_MSG("publisher info handle is null");
     return RMW_RET_ERROR;
@@ -662,7 +662,7 @@ rmw_publisher_get_actual_qos(
     RMW_GURUMDDS_ID,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
 
-  auto publisher_info = static_cast<GurumddsPublisherInfo *>(publisher->data);
+  auto publisher_info = static_cast<rmw_gurumdds_cpp::PublisherInfo *>(publisher->data);
   if (publisher_info == nullptr) {
     RMW_SET_ERROR_MSG("publisher internal data is invalid");
     return RMW_RET_ERROR;
@@ -681,13 +681,13 @@ rmw_publisher_get_actual_qos(
     return RMW_RET_ERROR;
   }
 
-  qos->reliability = convert_reliability(&dds_qos.reliability);
-  qos->durability = convert_durability(&dds_qos.durability);
-  qos->deadline = convert_deadline(&dds_qos.deadline);
-  qos->lifespan = convert_lifespan(&dds_qos.lifespan);
-  qos->liveliness = convert_liveliness(&dds_qos.liveliness);
-  qos->liveliness_lease_duration = convert_liveliness_lease_duration(&dds_qos.liveliness);
-  qos->history = convert_history(&dds_qos.history);
+  qos->reliability = rmw_gurumdds_cpp::convert_reliability(&dds_qos.reliability);
+  qos->durability = rmw_gurumdds_cpp::convert_durability(&dds_qos.durability);
+  qos->deadline = rmw_gurumdds_cpp::convert_deadline(&dds_qos.deadline);
+  qos->lifespan = rmw_gurumdds_cpp::convert_lifespan(&dds_qos.lifespan);
+  qos->liveliness = rmw_gurumdds_cpp::convert_liveliness(&dds_qos.liveliness);
+  qos->liveliness_lease_duration = rmw_gurumdds_cpp::convert_liveliness_lease_duration(&dds_qos.liveliness);
+  qos->history = rmw_gurumdds_cpp::convert_history(&dds_qos.history);
   qos->depth = static_cast<size_t>(dds_qos.history.depth);
 
   ret = dds_DataWriterQos_finalize(&dds_qos);
@@ -706,7 +706,7 @@ rmw_publish(
   rmw_publisher_allocation_t * allocation)
 {
   RMW_CHECK_ARGUMENT_FOR_NULL(publisher, RMW_RET_INVALID_ARGUMENT);
-  return rmw_gurumdds::publish(publisher->implementation_identifier, publisher, ros_message, allocation);
+  return rmw_gurumdds_cpp::publish(publisher->implementation_identifier, publisher, ros_message, allocation);
 }
 
 rmw_ret_t
@@ -724,15 +724,15 @@ rmw_publish_serialized_message(
     RMW_GURUMDDS_ID,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
 
-  auto publisher_info = static_cast<GurumddsPublisherInfo *>(publisher->data);
+  auto publisher_info = static_cast<rmw_gurumdds_cpp::PublisherInfo *>(publisher->data);
   RCUTILS_CHECK_ARGUMENT_FOR_NULL(publisher_info, RMW_RET_ERROR);
 
   dds_DataWriter * topic_writer = publisher_info->topic_writer;
   RCUTILS_CHECK_ARGUMENT_FOR_NULL(topic_writer, RMW_RET_ERROR);
 
   dds_SampleInfoEx sampleinfo_ex{};
-  ros_sn_to_dds_sn(++publisher_info->sequence_number, &sampleinfo_ex.seq);
-  ros_guid_to_dds_guid(
+  rmw_gurumdds_cpp::ros_sn_to_dds_sn(++publisher_info->sequence_number, &sampleinfo_ex.seq);
+  rmw_gurumdds_cpp::ros_guid_to_dds_guid(
     reinterpret_cast<const uint8_t *>(publisher_info->publisher_gid.data),
     reinterpret_cast<uint8_t *>(&sampleinfo_ex.src_guid));
 

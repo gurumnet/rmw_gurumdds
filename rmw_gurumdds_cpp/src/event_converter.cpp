@@ -29,6 +29,8 @@ static const dds_StatusKind g_mask_map[] {
   dds_PUBLICATION_MATCHED_STATUS // RMW_EVENT_PUBLICATION_MATCHED
 };
 
+namespace rmw_gurumdds_cpp
+{
 dds_StatusKind get_status_kind_from_rmw(const rmw_event_type_t event_t)
 {
   if (!is_event_supported(event_t)) {
@@ -56,3 +58,4 @@ rmw_ret_t check_dds_ret_code(const dds_ReturnCode_t dds_return_code)
       return RMW_RET_ERROR;
   }
 }
+} // namespace rmw_gurumdds_cpp

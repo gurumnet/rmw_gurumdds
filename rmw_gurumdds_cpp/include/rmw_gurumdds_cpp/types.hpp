@@ -33,8 +33,9 @@
 #include "rmw/ret_types.h"
 
 #include "rmw_gurumdds_cpp/dds_include.hpp"
-#include "rmw_gurumdds_cpp/visibility_control.h"
 
+namespace rmw_gurumdds_cpp
+{
 void on_participant_changed(
   const dds_DomainParticipant * a_participant,
   const dds_ParticipantBuiltinTopicData * data,
@@ -55,7 +56,7 @@ typedef struct _GurumddsWaitSetInfo
   dds_WaitSet * wait_set;
   dds_ConditionSeq * active_conditions;
   dds_ConditionSeq * attached_conditions;
-} GurumddsWaitSetInfo;
+} WaitSetInfo;
 
 typedef struct
 {
@@ -92,9 +93,9 @@ typedef struct _GurumddsEventInfo
     int32_t total_count_change
     ) = 0;
 
-} GurumddsEventInfo;
+} EventInfo;
 
-typedef struct _GurumddsPublisherInfo : GurumddsEventInfo
+typedef struct _GurumddsPublisherInfo : EventInfo
 {
   const rosidl_message_type_support_t * rosidl_message_typesupport;
   const char * implementation_identifier;
@@ -148,14 +149,14 @@ typedef struct _GurumddsPublisherInfo : GurumddsEventInfo
   void on_liveliness_lost(const dds_LivelinessLostStatus & status);
 
   void on_publication_matched(const dds_PublicationMatchedStatus & status);
-} GurumddsPublisherInfo;
+} PublisherInfo;
 
 typedef struct _GurumddsPublisherGID
 {
   uint8_t publication_handle[16];
-} GurumddsPublisherGID;
+} PublisherGID;
 
-typedef struct _GurumddsSubscriberInfo : GurumddsEventInfo
+typedef struct _GurumddsSubscriberInfo : EventInfo
 {
   const rosidl_message_type_support_t * rosidl_message_typesupport;
   const char * implementation_identifier;
@@ -220,7 +221,7 @@ typedef struct _GurumddsSubscriberInfo : GurumddsEventInfo
   void on_sample_lost(const dds_SampleLostStatus& status);
 
   size_t count_unread();
-} GurumddsSubscriberInfo;
+} SubscriberInfo;
 
 typedef struct _GurumddsClientInfo
 {
@@ -243,7 +244,7 @@ typedef struct _GurumddsClientInfo
   event_callback_data_t event_callback_data;
 
   size_t count_unread();
-} GurumddsClientInfo;
+} ClientInfo;
 
 typedef struct _GurumddsServiceInfo
 {
@@ -264,17 +265,17 @@ typedef struct _GurumddsServiceInfo
   event_callback_data_t event_callback_data;
 
   size_t count_unread();
-} GurumddsServiceInfo;
+} ServiceInfo;
 
-class GurumddsTopicEventListener {
+class TopicEventListener {
 public:
   static rmw_ret_t associate_listener(dds_Topic* topic);
 
   static rmw_ret_t disassociate_Listener(dds_Topic* topic);
 
-  static void add_event(dds_Topic* topic, GurumddsEventInfo* event_info);
+  static void add_event(dds_Topic* topic, EventInfo* event_info);
 
-  static void remove_event(dds_Topic* topic, GurumddsEventInfo* event_info);
+  static void remove_event(dds_Topic* topic, EventInfo* event_info);
 
   void on_inconsistent_topic(const dds_InconsistentTopicStatus& status);
 
@@ -282,11 +283,12 @@ private:
   static void on_inconsistent_topic(const dds_Topic* the_topic, const dds_InconsistentTopicStatus* status);
 
 private:
-  static std::map<dds_Topic*, GurumddsTopicEventListener*> table_;
+  static std::map<dds_Topic*, TopicEventListener*> table_;
   static std::mutex mutex_table_;
 
   std::recursive_mutex mutex_;
-  std::vector<GurumddsEventInfo*> event_list_;
+  std::vector<EventInfo*> event_list_;
 };
+} // namespace rmw_gurumdds_cpp
 
 #endif // RMW_GURUMDDS__TYPES_HPP_

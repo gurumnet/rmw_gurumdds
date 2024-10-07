@@ -94,8 +94,8 @@ rmw_take_event(
 
   rmw_ret_t ret_code = RMW_RET_UNSUPPORTED;
 
-  if (is_event_supported(event_handle->event_type)) {
-    auto custom_event_info = static_cast<GurumddsEventInfo *>(event_handle->data);
+  if (rmw_gurumdds_cpp::is_event_supported(event_handle->event_type)) {
+    auto custom_event_info = static_cast<rmw_gurumdds_cpp::EventInfo *>(event_handle->data);
     ret_code = custom_event_info->get_status(event_handle->event_type, event_info);
   } else {
     RMW_SET_ERROR_MSG_WITH_FORMAT_STRING("event %d not supported", event_handle->event_type);
@@ -114,7 +114,7 @@ rmw_event_set_callback(
   RCUTILS_UNUSED(rmw_event);
   RCUTILS_UNUSED(callback);
   RCUTILS_UNUSED(user_data);
-  auto event_info = static_cast<GurumddsEventInfo*>(rmw_event->data);
+  auto event_info = static_cast<rmw_gurumdds_cpp::EventInfo*>(rmw_event->data);
   return event_info->set_on_new_event_callback(rmw_event->event_type, user_data, callback);
 }
 }  // extern "C"

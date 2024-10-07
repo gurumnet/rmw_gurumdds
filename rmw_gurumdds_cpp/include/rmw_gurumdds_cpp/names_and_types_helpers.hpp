@@ -26,6 +26,8 @@
 #include "rmw/names_and_types.h"
 #include "rmw/rmw.h"
 
+namespace rmw_gurumdds_cpp
+{
 rmw_ret_t
 copy_services_to_names_and_types(
   const std::map<std::string, std::set<std::string>> & services,
@@ -53,5 +55,6 @@ create_topic_name(
   const char * topic_name,
   const char * suffix,
   const rmw_qos_profile_t * qos_policies);
+} // namespace rmw_gurumdds_cpp
 
 #endif // RMW_GURUMDDS__NAMES_AND_TYPES_HELPERS_HPP_

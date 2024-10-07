@@ -19,94 +19,95 @@
 
 #include "rmw_gurumdds_cpp/types.hpp"
 
+namespace rmw_gurumdds_cpp::graph_cache {
 rmw_ret_t
-graph_cache_initialize(rmw_context_impl_t * const ctx);
+initialize(rmw_context_impl_t * const ctx);
 
 rmw_ret_t
-graph_cache_finalize(rmw_context_impl_t * const ctx);
+finalize(rmw_context_impl_t * const ctx);
 
 rmw_ret_t
-graph_enable(rmw_context_t * const ctx);
+enable(rmw_context_t * const ctx);
 
 rmw_ret_t
-graph_publish_update(
+publish_update(
   rmw_context_impl_t * const ctx,
   void * const msg);
 
 rmw_ret_t
-graph_on_node_created(
+on_node_created(
   rmw_context_impl_t * const ctx,
   const rmw_node_t * const node);
 
 rmw_ret_t
-graph_on_node_deleted(
+on_node_deleted(
   rmw_context_impl_t * const ctx,
   const rmw_node_t * const node);
 
 rmw_ret_t
-graph_on_publisher_created(
+on_publisher_created(
   rmw_context_impl_t * const ctx,
   const rmw_node_t * const node,
-  GurumddsPublisherInfo * const pub);
+  PublisherInfo * const pub);
 
 rmw_ret_t
-graph_on_publisher_deleted(
+on_publisher_deleted(
   rmw_context_impl_t * const ctx,
   const rmw_node_t * const node,
-  GurumddsPublisherInfo * const pub);
+  PublisherInfo * const pub);
 
 rmw_ret_t
-graph_on_subscriber_created(
+on_subscriber_created(
   rmw_context_impl_t * const ctx,
   const rmw_node_t * const node,
-  GurumddsSubscriberInfo * const sub);
+  SubscriberInfo * const sub);
 
 rmw_ret_t
-graph_on_subscriber_deleted(
+on_subscriber_deleted(
   rmw_context_impl_t * const ctx,
   const rmw_node_t * const node,
-  GurumddsSubscriberInfo * const sub);
+  SubscriberInfo * const sub);
 
 rmw_ret_t
-graph_on_service_created(
+on_service_created(
   rmw_context_impl_t * const ctx,
   const rmw_node_t * const node,
-  GurumddsServiceInfo * const svc);
+  ServiceInfo * const svc);
 
 rmw_ret_t
-graph_on_service_deleted(
+on_service_deleted(
   rmw_context_impl_t * const ctx,
   const rmw_node_t * const node,
-  GurumddsServiceInfo * const svc);
+  ServiceInfo * const svc);
 
 rmw_ret_t
-graph_on_client_created(
+on_client_created(
   rmw_context_impl_t * const ctx,
   const rmw_node_t * const node,
-  GurumddsClientInfo * const client);
+  ClientInfo * const client);
 
 rmw_ret_t
-graph_on_client_deleted(
+on_client_deleted(
   rmw_context_impl_t * const ctx,
   const rmw_node_t * const node,
-  GurumddsClientInfo * const client);
+  ClientInfo * const client);
 
 rmw_ret_t
-graph_on_participant_info(rmw_context_impl_t * ctx);
+on_participant_info(rmw_context_impl_t * ctx);
 
 rmw_ret_t
-graph_add_participant(
+add_participant(
   rmw_context_impl_t * const ctx,
   const dds_GUID_t * const dp_guid,
   const char * const enclave);
 
 rmw_ret_t
-graph_remove_participant(
+remove_participant(
   rmw_context_impl_t * const ctx,
   const dds_GUID_t * const dp_guid);
 
 rmw_ret_t
-graph_add_remote_entity(
+add_remote_entity(
   rmw_context_impl_t * ctx,
   const dds_GUID_t * const endp_guid,
   const dds_GUID_t * const dp_guid,
@@ -121,9 +122,10 @@ graph_add_remote_entity(
   const bool is_reader);
 
 rmw_ret_t
-graph_remove_entity(
+remove_entity(
   rmw_context_impl_t * const ctx,
   const dds_GUID_t * const guid,
   const bool is_reader);
+} // namespace rmw_gurumdds_cpp::graph_cache
 
 #endif // RMW_GURUMDDS__GRAPH_CACHE_HPP_

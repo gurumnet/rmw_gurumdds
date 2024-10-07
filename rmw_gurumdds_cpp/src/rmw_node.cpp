@@ -123,7 +123,7 @@ __rmw_create_node(
   node_handle->data = nullptr;
   node_handle->context = context;
 
-  if (graph_on_node_created(ctx, node_handle) != RMW_RET_OK) {
+  if (rmw_gurumdds_cpp::graph_cache::on_node_created(ctx, node_handle) != RMW_RET_OK) {
     RMW_SET_ERROR_MSG("failed to create node");
     return nullptr;
   }
@@ -149,7 +149,7 @@ __rmw_destroy_node(const char * implementation_identifier, rmw_node_t * node)
   rmw_context_impl_t * ctx = node->context->impl;
   std::lock_guard<std::mutex> guard(ctx->initialization_mutex);
 
-  if (graph_on_node_deleted(ctx, node) != RMW_RET_OK) {
+  if (rmw_gurumdds_cpp::graph_cache::on_node_deleted(ctx, node) != RMW_RET_OK) {
     RMW_SET_ERROR_MSG("failed to update for node delete");
     return RMW_RET_ERROR;
   }
