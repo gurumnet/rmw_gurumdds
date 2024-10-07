@@ -1,7 +1,6 @@
 #ifndef RMW_GURUMDDS__MESSAGE_SERIALIZER_HPP_
 #define RMW_GURUMDDS__MESSAGE_SERIALIZER_HPP_
 
-
 #include "rosidl_runtime_cpp/bounded_vector.hpp"
 
 #include "rosidl_runtime_c/primitives_sequence.h"
