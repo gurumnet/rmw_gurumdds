@@ -1244,10 +1244,10 @@ rmw_take_dynamic_message(
   bool * taken,
   rmw_subscription_allocation_t * allocation)
 {
-  static_cast<void>(subscription);
-  static_cast<void>(dynamic_message);
-  static_cast<void>(taken);
-  static_cast<void>(allocation);
+  RCUTILS_UNUSED(subscription);
+  RCUTILS_UNUSED(dynamic_message);
+  RCUTILS_UNUSED(taken);
+  RCUTILS_UNUSED(allocation);
 
   RMW_SET_ERROR_MSG("rmw_take_dynamic_message: unimplemented");
   return RMW_RET_UNSUPPORTED;
@@ -1261,11 +1261,11 @@ rmw_take_dynamic_message_with_info(
   rmw_message_info_t * message_info,
   rmw_subscription_allocation_t * allocation)
 {
-  static_cast<void>(subscription);
-  static_cast<void>(dynamic_message);
-  static_cast<void>(taken);
-  static_cast<void>(message_info);
-  static_cast<void>(allocation);
+  RCUTILS_UNUSED(subscription);
+  RCUTILS_UNUSED(dynamic_message);
+  RCUTILS_UNUSED(taken);
+  RCUTILS_UNUSED(message_info);
+  RCUTILS_UNUSED(allocation);
 
   RMW_SET_ERROR_MSG("rmw_take_dynamic_message_with_info: unimplemented");
   return RMW_RET_UNSUPPORTED;
@@ -1277,9 +1277,9 @@ rmw_serialization_support_init(
   rcutils_allocator_t * allocator,
   rosidl_dynamic_typesupport_serialization_support_t * serialization_support)
 {
-  static_cast<void>(serialization_lib_name);
-  static_cast<void>(allocator);
-  static_cast<void>(serialization_support);
+  RCUTILS_UNUSED(serialization_lib_name);
+  RCUTILS_UNUSED(allocator);
+  RCUTILS_UNUSED(serialization_support);
 
   RMW_SET_ERROR_MSG("rmw_serialization_support_init: unimplemented");
   return RMW_RET_UNSUPPORTED;
