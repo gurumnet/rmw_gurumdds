@@ -45,9 +45,6 @@ rmw_context_impl_s::initialize_node(
   const char * node_namespace,
   const bool localhost_only)
 {
-  (void)node_name;
-  (void)node_namespace;
-
   if (this->node_count != 0u) {
     if ((this->base->options.localhost_only == RMW_LOCALHOST_ONLY_ENABLED) != localhost_only)
     {
