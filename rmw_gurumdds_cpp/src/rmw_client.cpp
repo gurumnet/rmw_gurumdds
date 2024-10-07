@@ -95,7 +95,7 @@ rmw_create_client(
   rmw_context_impl_t * ctx = node->context->impl;
   std::lock_guard<std::mutex> guard(ctx->endpoint_mutex);
 
-  GurumddsClientInfo * client_info = nullptr;
+  rmw_gurumdds_cpp::ClientInfo * client_info = nullptr;
   rmw_client_t * rmw_client = nullptr;
 
   dds_DomainParticipant * participant = ctx->participant;
@@ -134,7 +134,7 @@ rmw_create_client(
 
   // Create topic and type name strings
   service_type_name =
-    create_service_type_name(type_support->data, type_support->typesupport_identifier);
+    rmw_gurumdds_cpp::create_service_type_name(type_support->data, type_support->typesupport_identifier);
   request_type_name = service_type_name.first;
   response_type_name = service_type_name.second;
   if (request_type_name.empty() || response_type_name.empty()) {
@@ -144,13 +144,13 @@ rmw_create_client(
 
   request_topic_name.reserve(256);
   response_topic_name.reserve(256);
-  request_topic_name = create_topic_name(
-    ros_service_requester_prefix, service_name, "Request", &adapted_qos_policies);
-  response_topic_name = create_topic_name(
-    ros_service_response_prefix, service_name, "Reply", &adapted_qos_policies);
+  request_topic_name = rmw_gurumdds_cpp::create_topic_name(
+    rmw_gurumdds_cpp::ros_service_requester_prefix, service_name, "Request", &adapted_qos_policies);
+  response_topic_name = rmw_gurumdds_cpp::create_topic_name(
+    rmw_gurumdds_cpp::ros_service_response_prefix, service_name, "Reply", &adapted_qos_policies);
 
   service_metastring =
-    create_service_metastring(type_support->data, type_support->typesupport_identifier);
+    rmw_gurumdds_cpp::create_service_metastring(type_support->data, type_support->typesupport_identifier);
   request_metastring = service_metastring.first;
   response_metastring = service_metastring.second;
   if (request_metastring.empty() || response_metastring.empty()) {
@@ -260,7 +260,7 @@ rmw_create_client(
 
   // Create datawriter for request
   type_hash = type_support->request_typesupport->get_type_hash_func(type_support->request_typesupport);
-  if (!get_datawriter_qos(publisher, &adapted_qos_policies, *type_hash, &datawriter_qos)) {
+  if (!rmw_gurumdds_cpp::get_datawriter_qos(publisher, &adapted_qos_policies, *type_hash, &datawriter_qos)) {
     // Error message already set
     goto fail;
   }
@@ -280,7 +280,7 @@ rmw_create_client(
   }
 
   type_hash = type_support->response_typesupport->get_type_hash_func(type_support->response_typesupport);
-  if (!get_datareader_qos(subscriber, &adapted_qos_policies, *type_hash, &datareader_qos)) {
+  if (!rmw_gurumdds_cpp::get_datareader_qos(subscriber, &adapted_qos_policies, *type_hash, &datareader_qos)) {
     // error message already set
     goto fail;
   }
@@ -306,9 +306,9 @@ rmw_create_client(
     goto fail;
   }
 
-  client_info = new(std::nothrow) GurumddsClientInfo();
+  client_info = new(std::nothrow) rmw_gurumdds_cpp::ClientInfo();
   if (client_info == nullptr) {
-    RMW_SET_ERROR_MSG("failed to allocate GurumddsClientInfo");
+    RMW_SET_ERROR_MSG("failed to allocate ClientInfo");
     goto fail;
   }
 
@@ -331,7 +331,7 @@ rmw_create_client(
   dds_DataReader_set_listener_context(response_reader, client_info);
   response_listener.on_data_available = [](const dds_DataReader * response_reader){
     dds_DataReader* reader = const_cast<dds_DataReader*>(response_reader);
-    GurumddsClientInfo* info = static_cast<GurumddsClientInfo*>(dds_DataReader_get_listener_context(reader));
+    auto* info = static_cast<rmw_gurumdds_cpp::ClientInfo*>(dds_DataReader_get_listener_context(reader));
     std::lock_guard<std::mutex> guard(info->event_callback_data.mutex);
     if(info->event_callback_data.callback) {
       info->event_callback_data.callback(info->event_callback_data.user_data, info->count_unread());
@@ -354,10 +354,10 @@ rmw_create_client(
   dds_DataWriter_get_guid(request_writer, client_guid);
   memcpy(client_info->writer_guid, client_guid, sizeof(client_guid));
 
-  entity_get_gid(
+  rmw_gurumdds_cpp::entity_get_gid(
     reinterpret_cast<dds_Entity *>(client_info->request_writer),
     client_info->publisher_gid);
-  entity_get_gid(
+  rmw_gurumdds_cpp::entity_get_gid(
     reinterpret_cast<dds_Entity *>(client_info->response_reader),
     client_info->subscriber_gid);
 
@@ -377,7 +377,7 @@ rmw_create_client(
   }
   memcpy(const_cast<char *>(rmw_client->service_name), service_name, strlen(service_name) + 1);
 
-  if (graph_on_client_created(ctx, node, client_info) != RMW_RET_OK) {
+  if (rmw_gurumdds_cpp::graph_cache::on_client_created(ctx, node, client_info) != RMW_RET_OK) {
     RCUTILS_LOG_ERROR_NAMED(RMW_GURUMDDS_ID, "failed to update graph for client creation");
     goto fail;
   }
@@ -456,7 +456,7 @@ rmw_destroy_client(rmw_node_t * node, rmw_client_t * client)
   rmw_context_impl_t * ctx = node->context->impl;
   std::lock_guard<std::mutex> guard(ctx->endpoint_mutex);
 
-  GurumddsClientInfo * client_info = static_cast<GurumddsClientInfo *>(client->data);
+  auto client_info = static_cast<rmw_gurumdds_cpp::ClientInfo *>(client->data);
 
   if (client_info != nullptr) {
     if (client_info->request_writer != nullptr) {
@@ -487,7 +487,7 @@ rmw_destroy_client(rmw_node_t * node, rmw_client_t * client)
       }
     }
 
-    if (graph_on_client_deleted(ctx, node, client_info) != RMW_RET_OK) {
+    if (rmw_gurumdds_cpp::graph_cache::on_client_deleted(ctx, node, client_info) != RMW_RET_OK) {
       RCUTILS_LOG_ERROR_NAMED(RMW_GURUMDDS_ID, "failed to update graph for client deletion");
       return RMW_RET_ERROR;
     }
@@ -529,7 +529,7 @@ rmw_service_server_is_available(
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
   RMW_CHECK_ARGUMENT_FOR_NULL(is_available, RMW_RET_ERROR);
 
-  GurumddsClientInfo * client_info = static_cast<GurumddsClientInfo *>(client->data);
+  auto client_info = static_cast<rmw_gurumdds_cpp::ClientInfo *>(client->data);
   if (client_info == nullptr) {
     RMW_SET_ERROR_MSG("client info handle is null");
     return RMW_RET_ERROR;
@@ -607,7 +607,7 @@ rmw_get_gid_for_client(const rmw_client_t * client, rmw_gid_t * gid)
     RMW_GURUMDDS_ID,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
 
-  GurumddsClientInfo * client_info = static_cast<GurumddsClientInfo *>(client->data);
+  auto client_info = static_cast<rmw_gurumdds_cpp::ClientInfo *>(client->data);
   if (client_info == nullptr) {
     RMW_SET_ERROR_MSG("client info is null");
     return RMW_RET_ERROR;
@@ -632,7 +632,7 @@ rmw_client_request_publisher_get_actual_qos(
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
   RMW_CHECK_ARGUMENT_FOR_NULL(qos, RMW_RET_INVALID_ARGUMENT);
 
-  GurumddsClientInfo * client_info = static_cast<GurumddsClientInfo *>(client->data);
+  auto client_info = static_cast<rmw_gurumdds_cpp::ClientInfo *>(client->data);
   if (client_info == nullptr) {
     RMW_SET_ERROR_MSG("client info is null");
     return RMW_RET_ERROR;
@@ -651,13 +651,13 @@ rmw_client_request_publisher_get_actual_qos(
     return RMW_RET_ERROR;
   }
 
-  qos->reliability = convert_reliability(&dds_qos.reliability);
-  qos->durability = convert_durability(&dds_qos.durability);
-  qos->deadline = convert_deadline(&dds_qos.deadline);
-  qos->lifespan = convert_lifespan(&dds_qos.lifespan);
-  qos->liveliness = convert_liveliness(&dds_qos.liveliness);
-  qos->liveliness_lease_duration = convert_liveliness_lease_duration(&dds_qos.liveliness);
-  qos->history = convert_history(&dds_qos.history);
+  qos->reliability = rmw_gurumdds_cpp::convert_reliability(&dds_qos.reliability);
+  qos->durability = rmw_gurumdds_cpp::convert_durability(&dds_qos.durability);
+  qos->deadline = rmw_gurumdds_cpp::convert_deadline(&dds_qos.deadline);
+  qos->lifespan = rmw_gurumdds_cpp::convert_lifespan(&dds_qos.lifespan);
+  qos->liveliness = rmw_gurumdds_cpp::convert_liveliness(&dds_qos.liveliness);
+  qos->liveliness_lease_duration = rmw_gurumdds_cpp::convert_liveliness_lease_duration(&dds_qos.liveliness);
+  qos->history = rmw_gurumdds_cpp::convert_history(&dds_qos.history);
   qos->depth = static_cast<size_t>(dds_qos.history.depth);
 
   ret = dds_DataWriterQos_finalize(&dds_qos);
@@ -682,7 +682,7 @@ rmw_client_response_subscription_get_actual_qos(
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
   RMW_CHECK_ARGUMENT_FOR_NULL(qos, RMW_RET_INVALID_ARGUMENT);
 
-  GurumddsClientInfo * client_info = static_cast<GurumddsClientInfo *>(client->data);
+  auto client_info = static_cast<rmw_gurumdds_cpp::ClientInfo *>(client->data);
   if (client_info == nullptr) {
     RMW_SET_ERROR_MSG("client info is null");
     return RMW_RET_ERROR;
@@ -701,12 +701,12 @@ rmw_client_response_subscription_get_actual_qos(
     return RMW_RET_ERROR;
   }
 
-  qos->reliability = convert_reliability(&dds_qos.reliability);
-  qos->durability = convert_durability(&dds_qos.durability);
-  qos->deadline = convert_deadline(&dds_qos.deadline);
-  qos->liveliness = convert_liveliness(&dds_qos.liveliness);
-  qos->liveliness_lease_duration = convert_liveliness_lease_duration(&dds_qos.liveliness);
-  qos->history = convert_history(&dds_qos.history);
+  qos->reliability = rmw_gurumdds_cpp::convert_reliability(&dds_qos.reliability);
+  qos->durability = rmw_gurumdds_cpp::convert_durability(&dds_qos.durability);
+  qos->deadline = rmw_gurumdds_cpp::convert_deadline(&dds_qos.deadline);
+  qos->liveliness = rmw_gurumdds_cpp::convert_liveliness(&dds_qos.liveliness);
+  qos->liveliness_lease_duration = rmw_gurumdds_cpp::convert_liveliness_lease_duration(&dds_qos.liveliness);
+  qos->history = rmw_gurumdds_cpp::convert_history(&dds_qos.history);
   qos->depth = static_cast<size_t>(dds_qos.history.depth);
 
   ret = dds_DataReaderQos_finalize(&dds_qos);
@@ -733,7 +733,7 @@ rmw_send_request(
   RMW_CHECK_ARGUMENT_FOR_NULL(ros_request, RMW_RET_INVALID_ARGUMENT);
   RMW_CHECK_ARGUMENT_FOR_NULL(sequence_id, RMW_RET_INVALID_ARGUMENT);
 
-  GurumddsClientInfo * client_info = static_cast<GurumddsClientInfo *>(client->data);
+  auto client_info = static_cast<rmw_gurumdds_cpp::ClientInfo *>(client->data);
   if (client_info == nullptr) {
     RMW_SET_ERROR_MSG("client info handle is null");
     return RMW_RET_ERROR;
@@ -754,7 +754,7 @@ rmw_send_request(
   size_t size = 0;
 
   if (client_info->ctx->service_mapping_basic) {
-    void * dds_request = allocate_request_basic(
+    void * dds_request = rmw_gurumdds_cpp::allocate_request_basic(
       type_support->data,
       type_support->typesupport_identifier,
       ros_request,
@@ -765,7 +765,7 @@ rmw_send_request(
       return RMW_RET_ERROR;
     }
 
-    bool res = serialize_request_basic(
+    bool res = rmw_gurumdds_cpp::serialize_request_basic(
       type_support->data,
       type_support->typesupport_identifier,
       ros_request,
@@ -788,7 +788,7 @@ rmw_send_request(
     }
     free(dds_request);
   } else {
-    void * dds_request = allocate_request_enhanced(
+    void * dds_request = rmw_gurumdds_cpp::allocate_request_enhanced(
       type_support->data,
       type_support->typesupport_identifier,
       ros_request,
@@ -799,7 +799,7 @@ rmw_send_request(
       return RMW_RET_ERROR;
     }
 
-    bool res = serialize_request_enhanced(
+    bool res = rmw_gurumdds_cpp::serialize_request_enhanced(
       type_support->data,
       type_support->typesupport_identifier,
       ros_request,
@@ -815,8 +815,8 @@ rmw_send_request(
 
     dds_SampleInfoEx sampleinfo_ex;
     memset(&sampleinfo_ex, 0, sizeof(dds_SampleInfoEx));
-    ros_sn_to_dds_sn(++client_info->sequence_number, &sampleinfo_ex.seq);
-    ros_guid_to_dds_guid(
+    rmw_gurumdds_cpp::ros_sn_to_dds_sn(++client_info->sequence_number, &sampleinfo_ex.seq);
+    rmw_gurumdds_cpp::ros_guid_to_dds_guid(
       reinterpret_cast<const uint8_t *>(client_info->writer_guid),
       reinterpret_cast<uint8_t *>(&sampleinfo_ex.src_guid));
 
@@ -853,7 +853,7 @@ rmw_take_response(
 
   *taken = false;
 
-  GurumddsClientInfo * client_info = static_cast<GurumddsClientInfo *>(client->data);
+  auto client_info = static_cast<rmw_gurumdds_cpp::ClientInfo *>(client->data);
   if (client_info == nullptr) {
     RMW_SET_ERROR_MSG("client info handle is null");
     return RMW_RET_ERROR;
@@ -932,7 +932,7 @@ rmw_take_response(
         uint32_t sn_low = 0;
         int8_t client_guid[16] = {0};
         dds_SampleInfoEx * sampleinfo_ex = reinterpret_cast<dds_SampleInfoEx *>(sample_info);
-        bool res = deserialize_response_basic(
+        bool res = rmw_gurumdds_cpp::deserialize_response_basic(
           type_support->data,
           type_support->typesupport_identifier,
           ros_response,
@@ -1007,10 +1007,10 @@ rmw_take_response(
         int64_t sequence_number = 0;
         int8_t client_guid[16] = {0};
         dds_SampleInfoEx * sampleinfo_ex = reinterpret_cast<dds_SampleInfoEx *>(sample_info);
-        dds_guid_to_ros_guid(reinterpret_cast<int8_t *>(&sampleinfo_ex->src_guid), client_guid);
-        dds_sn_to_ros_sn(sampleinfo_ex->seq, &sequence_number);
+        rmw_gurumdds_cpp::dds_guid_to_ros_guid(reinterpret_cast<int8_t *>(&sampleinfo_ex->src_guid), client_guid);
+        rmw_gurumdds_cpp::dds_sn_to_ros_sn(sampleinfo_ex->seq, &sequence_number);
 
-        bool res = deserialize_response_enhanced(
+        bool res = rmw_gurumdds_cpp::deserialize_response_enhanced(
           type_support->data,
           type_support->typesupport_identifier,
           ros_response,
@@ -1066,7 +1066,7 @@ rmw_client_set_on_new_response_callback(
     rmw_client->implementation_identifier,
     RMW_GURUMDDS_ID,
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
-  auto client_info = static_cast<GurumddsClientInfo *>(rmw_client->data);
+  auto client_info = static_cast<rmw_gurumdds_cpp::ClientInfo *>(rmw_client->data);
   if (client_info == nullptr) {
     RMW_SET_ERROR_MSG("invalid client data");
     return RMW_RET_ERROR;
@@ -1093,6 +1093,6 @@ rmw_client_set_on_new_response_callback(
     dds_rc = dds_DataReader_set_listener(client_info->response_reader, &client_info->response_listener, mask);
   }
 
-  return check_dds_ret_code(dds_rc);
+  return rmw_gurumdds_cpp::check_dds_ret_code(dds_rc);
 }
 }  // extern "C"

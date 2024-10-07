@@ -1,7 +1,7 @@
 #ifndef RMW_GURUMDDS__CDR_SERIALIZATION_BUFFER_INL_
 #define RMW_GURUMDDS__CDR_SERIALIZATION_BUFFER_INL_
 
-namespace rmw_gurumdds
+namespace rmw_gurumdds_cpp
 {
 template<>
 inline CdrSerializationBuffer<true>::CdrSerializationBuffer(uint8_t * buf, size_t size)
@@ -201,6 +201,6 @@ inline void CdrSerializationBuffer<SERIALIZE>::copy_arr(const uint64_t * arr, si
   }
   advance(cnt * sizeof(uint64_t));
 }
-}
+} // namespace rmw_gurumdds_cpp
 
 #endif  // RMW_GURUMDDS__CDR_SERIALIZATION_BUFFER_INL_

@@ -36,7 +36,8 @@
 
 #define CDR_HEADER_SIZE 4
 #define CDR_HEADER_ENDIAN_IDX 1
-namespace rmw_gurumdds
+
+namespace rmw_gurumdds_cpp
 {
 class CdrBuffer {
 public:
@@ -116,7 +117,7 @@ public:
 private:
   bool swap_;
 };
-}
+} // namespace rmw_gurumdds_cpp
 
 #include "rmw_gurumdds_cpp/cdr_serialization_buffer.inl"
 

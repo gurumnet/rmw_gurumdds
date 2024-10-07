@@ -15,8 +15,10 @@
 #ifndef RMW_GURUMDDS__RMW_PUBLISHER_HPP_
 #define RMW_GURUMDDS__RMW_PUBLISHER_HPP_
 
+namespace rmw_gurumdds_cpp
+{
 rmw_publisher_t *
-__rmw_create_publisher(
+create_publisher(
   rmw_context_impl_t * const ctx,
   const rmw_node_t * node,
   dds_DomainParticipant * const participant,
@@ -27,17 +29,16 @@ __rmw_create_publisher(
   const bool internal);
 
 rmw_ret_t
-__rmw_destroy_publisher(
+destroy_publisher(
   rmw_context_impl_t * const ctx,
   rmw_publisher_t * const publisher);
 
-namespace rmw_gurumdds {
 rmw_ret_t
 publish(
   const char * identifier,
   const rmw_publisher_t * publisher,
   const void * ros_message,
   rmw_publisher_allocation_t * allocation);
-}
+} // namespace rmw_gurumdds_cpp
 
 #endif // RMW_GURUMDDS__RMW_PUBLISHER_HPP_

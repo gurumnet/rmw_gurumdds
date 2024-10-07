@@ -27,6 +27,8 @@
 #include "rmw_gurumdds_cpp/dds_include.hpp"
 #include "rmw_gurumdds_cpp/identifier.hpp"
 
+namespace rmw_gurumdds_cpp
+{
 inline
 void guid_to_gid(const dds_GUID_t & guid, rmw_gid_t & gid)
 {
@@ -46,5 +48,6 @@ void entity_get_gid(dds_Entity * const entity, rmw_gid_t & gid)
     guid_to_gid(dds_guid, gid);
   }
 }
+} // namespace rmw_gurumdds_cpp
 
 #endif // RMW_GURUMDDS__GID_HPP_

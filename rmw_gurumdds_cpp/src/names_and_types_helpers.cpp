@@ -24,8 +24,10 @@
 #include "rmw_gurumdds_cpp/demangle.hpp"
 #include "rmw_gurumdds_cpp/names_and_types_helpers.hpp"
 
-constexpr char SAMPLE_PREFIX[] = "/Sample_";
+static constexpr char SAMPLE_PREFIX[] = "/Sample_";
 
+namespace rmw_gurumdds_cpp
+{
 rmw_ret_t
 copy_topics_names_and_types(
   const std::map<std::string, std::set<std::string>> & topics,
@@ -46,8 +48,8 @@ copy_topics_names_and_types(
         }
       };
 
-    auto demangle_topic = _demangle_if_ros_topic;
-    auto demangle_type = _demangle_if_ros_type;
+    auto demangle_topic = rmw_gurumdds_cpp::demangle_if_ros_topic;
+    auto demangle_type = rmw_gurumdds_cpp::demangle_if_ros_type;
     if (no_demangle) {
       auto noop = [](const std::string & in) {
           return in;
@@ -192,3 +194,4 @@ create_topic_name(
     suffix,
     qos_policies->avoid_ros_namespace_conventions);
 }
+} // namespace rmw_gurumdds_cpp

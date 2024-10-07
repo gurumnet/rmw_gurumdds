@@ -44,7 +44,7 @@ get_publisher(rmw_publisher_t * publisher)
     return nullptr;
   }
 
-  GurumddsPublisherInfo * impl = static_cast<GurumddsPublisherInfo *>(publisher->data);
+  PublisherInfo * impl = static_cast<PublisherInfo *>(publisher->data);
   return dds_DataWriter_get_publisher(impl->topic_writer);
 }
 
@@ -59,7 +59,7 @@ get_data_writer(rmw_publisher_t * publisher)
     return nullptr;
   }
 
-  GurumddsPublisherInfo * impl = static_cast<GurumddsPublisherInfo *>(publisher->data);
+  PublisherInfo * impl = static_cast<PublisherInfo *>(publisher->data);
   return impl->topic_writer;
 }
 
@@ -74,7 +74,7 @@ get_subscriber(rmw_subscription_t * subscription)
     return nullptr;
   }
 
-  GurumddsSubscriberInfo * impl = static_cast<GurumddsSubscriberInfo *>(subscription->data);
+  SubscriberInfo * impl = static_cast<SubscriberInfo *>(subscription->data);
   return dds_DataReader_get_subscriber(impl->topic_reader);
 }
 
@@ -89,7 +89,7 @@ get_data_reader(rmw_subscription_t * subscription)
     return nullptr;
   }
 
-  GurumddsSubscriberInfo * impl = static_cast<GurumddsSubscriberInfo *>(subscription->data);
+  SubscriberInfo * impl = static_cast<SubscriberInfo *>(subscription->data);
   return impl->topic_reader;
 }
 
@@ -104,7 +104,7 @@ get_request_data_writer(rmw_client_t * client)
     return nullptr;
   }
 
-  GurumddsClientInfo * impl = static_cast<GurumddsClientInfo *>(client->data);
+  ClientInfo * impl = static_cast<ClientInfo *>(client->data);
   return impl->request_writer;
 }
 
@@ -119,7 +119,7 @@ get_response_data_reader(rmw_client_t * client)
     return nullptr;
   }
 
-  GurumddsClientInfo * impl = static_cast<GurumddsClientInfo *>(client->data);
+  ClientInfo * impl = static_cast<ClientInfo *>(client->data);
   return impl->response_reader;
 }
 
@@ -134,7 +134,7 @@ get_request_data_reader(rmw_service_t * service)
     return nullptr;
   }
 
-  GurumddsServiceInfo * impl = static_cast<GurumddsServiceInfo *>(service->data);
+  ServiceInfo * impl = static_cast<ServiceInfo *>(service->data);
   return impl->request_reader;
 }
 
@@ -149,7 +149,7 @@ get_response_data_writer(rmw_service_t * service)
     return nullptr;
   }
 
-  GurumddsServiceInfo * impl = static_cast<GurumddsServiceInfo *>(service->data);
+  ServiceInfo * impl = static_cast<ServiceInfo *>(service->data);
   return impl->response_writer;
 }
-}  // namespace rmw_gurumdds_cpp
+} // namespace rmw_gurumdds_cpp

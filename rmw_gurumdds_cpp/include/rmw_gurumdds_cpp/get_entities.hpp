@@ -22,7 +22,6 @@
 
 namespace rmw_gurumdds_cpp
 {
-
 RMW_GURUMDDS_CPP_PUBLIC
 dds_DomainParticipant *
 get_participant(rmw_node_t * node);
@@ -58,7 +57,6 @@ get_request_data_reader(rmw_service_t * service);
 RMW_GURUMDDS_CPP_PUBLIC
 dds_DataWriter *
 get_response_data_writer(rmw_service_t * service);
-
 } // namespace rmw_gurumdds_cpp
 
 #endif // RMW_GURUMDDS__GET_ENTITIES_HPP_

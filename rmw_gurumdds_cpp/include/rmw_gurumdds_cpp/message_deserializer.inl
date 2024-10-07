@@ -1,7 +1,7 @@
 #ifndef RMW_GURUMDDS__MESSAGE_DESERIALIZER_INL_
 #define RMW_GURUMDDS__MESSAGE_DESERIALIZER_INL_
 
-namespace rmw_gurumdds
+namespace rmw_gurumdds_cpp
 {
 template<typename MessageMembersT>
 inline MessageDeserializer<MessageMembersT>::MessageDeserializer(CdrDeserializationBuffer & buffer)
@@ -252,7 +252,7 @@ inline void MessageDeserializer<MessageMembersT>::read_primitive(const MessageMe
   if constexpr (LANGUAGE_KIND == LanguageKind::C) {
     if (!member->array_size_ || member->is_upper_bound_) {
       buffer_ >> size;
-      auto seq_ptr = reinterpret_cast<rmw_gurumdds::rmw_seq_t<PrimitiveT>*>(output + member->offset_);
+      auto seq_ptr = reinterpret_cast<rmw_gurumdds_cpp::rmw_seq_t<PrimitiveT>*>(output + member->offset_);
       if(nullptr != seq_ptr->data) {
         seq_ptr->fini();
       }
@@ -380,6 +380,6 @@ inline void MessageDeserializer<MessageMembersT>::read_struct_arr(const MessageM
     );
   }
 }
-}
+} // namespace rmw_gurumdds_cpp
 
 #endif  // RMW_GURUMDDS__MESSAGE_DESERIALIZER_INL_

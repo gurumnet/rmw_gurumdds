@@ -19,7 +19,7 @@
 
 #include <utility>
 
-namespace rmw_gurumdds
+namespace rmw_gurumdds_cpp
 {
 template<typename MessageMembersT>
 class MessageDeserializer {
@@ -59,8 +59,7 @@ private:
 
   CdrDeserializationBuffer & buffer_;
 };
-}
-
+} // namespace rmw_gurumdds_cpp
 
 #include "message_deserializer.inl"
 

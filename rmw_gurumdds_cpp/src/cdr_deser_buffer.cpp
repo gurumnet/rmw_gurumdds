@@ -1,8 +1,7 @@
 #include "rmw_gurumdds_cpp/cdr_buffer.hpp"
 
-namespace rmw_gurumdds
+namespace rmw_gurumdds_cpp
 {
-
 static uint16_t bswap16(uint16_t data)
 {
   return (data >> 8) | (data << 8);
@@ -253,4 +252,4 @@ void CdrDeserializationBuffer::copy_arr(uint64_t * arr, size_t cnt) {
   }
   advance(cnt * sizeof(uint64_t));
 }
-}
+} // namespace rmw_gurumdds_cpp

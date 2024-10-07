@@ -24,14 +24,13 @@
 
 #include "rmw_gurumdds_cpp/dds_include.hpp"
 
+namespace rmw_gurumdds_cpp
+{
 typedef uint8_t octet;
 
 /**
  * Structure to hold GUID information for DDS instances.
- * http://www.eprosima.com/docs/fast-rtps/1.6.0/html/_guid_8h_source.html
- *
  */
-
 struct GuidPrefix_t
 {
   static constexpr size_t kSize = 16;
@@ -125,5 +124,6 @@ inline void dds_BuiltinTopicKey_to_GUID(
   }
 #endif
 }
+} // namespace rmw_gurumdds_cpp
 
 #endif // RMW_GURUMDDS__GUID_HPP_

@@ -17,31 +17,33 @@
 
 #include <string>
 
+namespace rmw_gurumdds_cpp
+{
 std::string
-_demangle_if_ros_topic(const std::string & topic_name);
+demangle_if_ros_topic(const std::string & topic_name);
 
 std::string
-_demangle_if_ros_type(const std::string & dds_type_string);
+demangle_if_ros_type(const std::string & dds_type_string);
 
 std::string
-_demangle_ros_topic_from_topic(const std::string & topic_name);
+demangle_ros_topic_from_topic(const std::string & topic_name);
 
 std::string
-_demangle_service_from_topic(const std::string & topic_name);
+demangle_service_from_topic(const std::string & topic_name);
 
 std::string
-_demangle_service_request_from_topic(const std::string & topic_name);
+demangle_service_request_from_topic(const std::string & topic_name);
 
 std::string
-_demangle_service_reply_from_topic(const std::string & topic_name);
+demangle_service_reply_from_topic(const std::string & topic_name);
 
 std::string
-_demangle_service_type_only(const std::string & dds_type_name);
+demangle_service_type_only(const std::string & dds_type_name);
 
 // Used when ros names are not mangled.
 std::string
-_identity_demangle(const std::string & name);
-
+identity_demangle(const std::string & name);
+} // namespace rmw_gurumdds_cpp
 
 using DemangleFunction = std::string (*)(const std::string &);
 using MangleFunction = DemangleFunction;
