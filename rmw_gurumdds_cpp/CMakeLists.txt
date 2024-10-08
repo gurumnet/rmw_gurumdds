@@ -92,6 +92,7 @@ add_library(rmw_gurumdds_cpp
   src/rmw_wait.cpp
   src/serialization_format.cpp
   src/types.cpp
+  src/type_support.cpp
   src/wait.cpp
 )
 

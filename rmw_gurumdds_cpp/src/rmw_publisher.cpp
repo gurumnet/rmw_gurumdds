@@ -36,6 +36,7 @@
 #include "rmw_gurumdds_cpp/rmw_context_impl.hpp"
 #include "rmw_gurumdds_cpp/gid.hpp"
 #include "rmw_gurumdds_cpp/rmw_publisher.hpp"
+#include "rmw_gurumdds_cpp/type_support.hpp"
 #include "rmw_gurumdds_cpp/type_support_common.hpp"
 #include "rmw_gurumdds_cpp/type_support_service.hpp"
 #include "rmw_gurumdds_cpp/types.hpp"
@@ -95,15 +96,8 @@ create_publisher(
     return nullptr;
   }
 
-  dds_typesupport = dds_TypeSupport_create(metastring.c_str());
+  dds_typesupport = create_type_support_and_register(participant, type_support, type_name, metastring);
   if (dds_typesupport == nullptr) {
-    RMW_SET_ERROR_MSG("failed to create typesupport");
-    return nullptr;
-  }
-
-  ret = dds_TypeSupport_register_type(dds_typesupport, participant, type_name.c_str());
-  if (ret != dds_RETCODE_OK) {
-    RMW_SET_ERROR_MSG("failed to register type to domain participant");
     return nullptr;
   }
 
