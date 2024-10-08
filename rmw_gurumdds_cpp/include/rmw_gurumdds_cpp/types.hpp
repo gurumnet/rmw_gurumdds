@@ -51,27 +51,23 @@ void on_subscription_changed(
   const dds_SubscriptionBuiltinTopicData * data,
   dds_InstanceHandle_t handle);
 
-typedef struct _GurumddsWaitSetInfo
+struct WaitSetInfo
 {
   dds_WaitSet * wait_set;
   dds_ConditionSeq * active_conditions;
   dds_ConditionSeq * attached_conditions;
-} WaitSetInfo;
+};
 
-typedef struct
+struct event_callback_data_t
 {
   std::mutex mutex;
   rmw_event_callback_t callback {nullptr};
   const void * user_data {nullptr};
-  // TODO: Consier putting this into GurumddsEventInfo
-  // rmw_event_callback_t event_callback[RMW_EVENT_INVALID] = {nullptr};
-  // const void * event_data[RMW_EVENT_INVALID] = {nullptr};
-  // size_t event_unread_count[RMW_EVENT_INVALID] = {0};
-} event_callback_data_t;
+};
 
-typedef struct _GurumddsEventInfo
+struct EventInfo
 {
-  virtual ~_GurumddsEventInfo() = default;
+  virtual ~EventInfo() = default;
 
   virtual rmw_ret_t get_status(rmw_event_type_t event_type, void * event) = 0;
 
@@ -93,9 +89,9 @@ typedef struct _GurumddsEventInfo
     int32_t total_count_change
     ) = 0;
 
-} EventInfo;
+};
 
-typedef struct _GurumddsPublisherInfo : EventInfo
+struct PublisherInfo : EventInfo
 {
   const rosidl_message_type_support_t * rosidl_message_typesupport;
   const char * implementation_identifier;
@@ -149,14 +145,14 @@ typedef struct _GurumddsPublisherInfo : EventInfo
   void on_liveliness_lost(const dds_LivelinessLostStatus & status);
 
   void on_publication_matched(const dds_PublicationMatchedStatus & status);
-} PublisherInfo;
+};
 
-typedef struct _GurumddsPublisherGID
+struct PublisherGID
 {
   uint8_t publication_handle[16];
-} PublisherGID;
+};
 
-typedef struct _GurumddsSubscriberInfo : EventInfo
+struct SubscriberInfo : EventInfo
 {
   const rosidl_message_type_support_t * rosidl_message_typesupport;
   const char * implementation_identifier;
@@ -221,9 +217,9 @@ typedef struct _GurumddsSubscriberInfo : EventInfo
   void on_sample_lost(const dds_SampleLostStatus& status);
 
   size_t count_unread();
-} SubscriberInfo;
+};
 
-typedef struct _GurumddsClientInfo
+struct ClientInfo
 {
   const rosidl_service_type_support_t * service_typesupport;
   const char * implementation_identifier;
@@ -244,10 +240,9 @@ typedef struct _GurumddsClientInfo
   event_callback_data_t event_callback_data;
 
   size_t count_unread();
-} ClientInfo;
+};
 
-typedef struct _GurumddsServiceInfo
-{
+struct ServiceInfo {
   const rosidl_service_type_support_t * service_typesupport;
   const char * implementation_identifier;
   rmw_context_impl_t * ctx;
@@ -265,7 +260,7 @@ typedef struct _GurumddsServiceInfo
   event_callback_data_t event_callback_data;
 
   size_t count_unread();
-} ServiceInfo;
+};
 
 class TopicEventListener {
 public:
