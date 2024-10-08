@@ -49,7 +49,7 @@ struct rmw_context_impl_s
   dds_DomainId_t domain_id;
   dds_DomainParticipant * participant;
 
-  /* used for all DDS writers/readers created to support RMW Gurumdds(Publisher/Subscriber)Info. */
+  /* used for all DDS writers/readers created to support rmw_gurumdds_cpp::(Publisher/Subscriber)Info. */
   dds_Publisher * publisher;
   dds_Subscriber * subscriber;
 
