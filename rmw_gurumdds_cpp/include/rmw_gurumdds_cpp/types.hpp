@@ -214,6 +214,8 @@ struct SubscriberInfo : EventInfo
 
   void on_requested_incompatible_qos(const dds_RequestedIncompatibleQosStatus& status);
 
+  void on_data_available();
+
   void on_liveliness_changed(const dds_LivelinessChangedStatus& status);
 
   void on_subscription_matched(const dds_SubscriptionMatchedStatus& status);
