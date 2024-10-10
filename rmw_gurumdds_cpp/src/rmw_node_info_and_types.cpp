@@ -25,6 +25,8 @@
 #include "rmw/get_node_info_and_types.h"
 #include "rmw/impl/cpp/macros.hpp"
 #include "rmw/names_and_types.h"
+#include "rmw/validate_namespace.h"
+#include "rmw/validate_node_name.h"
 
 #include "rmw_dds_common/context.hpp"
 
@@ -42,26 +44,8 @@ using GetNamesAndTypesByNodeFunction = rmw_ret_t (*)(
   rcutils_allocator_t *,
   rmw_names_and_types_t *);
 
-rmw_ret_t
-validate_names_and_namespace(
-  const char * node_name,
-  const char * node_namespace)
-{
-  if (node_name == nullptr) {
-    RMW_SET_ERROR_MSG("node name is null");
-    return RMW_RET_INVALID_ARGUMENT;
-  }
-
-  if (node_namespace == nullptr) {
-    RMW_SET_ERROR_MSG("node namespace is null");
-    return RMW_RET_INVALID_ARGUMENT;
-  }
-
-  return RMW_RET_OK;
-}
-
-static rmw_ret_t
-__get_topic_names_and_types_by_node(
+static inline rmw_ret_t
+get_topic_names_and_types_by_node(
   const rmw_node_t * node,
   rcutils_allocator_t * allocator,
   const char * node_name,
@@ -80,24 +64,35 @@ __get_topic_names_and_types_by_node(
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
   RCUTILS_CHECK_ALLOCATOR_WITH_MSG(
     allocator, "allocator argument is invalid", return RMW_RET_INVALID_ARGUMENT);
-
-  rmw_ret_t ret = rmw_names_and_types_check_zero(topic_names_and_types);
-  if (ret != RMW_RET_OK) {
+  int validation_result = RMW_NODE_NAME_VALID;
+  rmw_ret_t ret = rmw_validate_node_name(node_name, &validation_result, nullptr);
+  if (RMW_RET_OK != ret) {
     return ret;
   }
-
-  ret = validate_names_and_namespace(node_name, node_namespace);
-  if (ret != RMW_RET_OK) {
+  if (RMW_NODE_NAME_VALID != validation_result) {
+    const char * reason = rmw_node_name_validation_result_string(validation_result);
+    RMW_SET_ERROR_MSG_WITH_FORMAT_STRING("node_name argument is invalid: %s", reason);
+    return RMW_RET_INVALID_ARGUMENT;
+  }
+  validation_result = RMW_NAMESPACE_VALID;
+  ret = rmw_validate_namespace(node_namespace, &validation_result, nullptr);
+  if (RMW_RET_OK != ret) {
     return ret;
   }
-
+  if (RMW_NAMESPACE_VALID != validation_result) {
+    const char * reason = rmw_namespace_validation_result_string(validation_result);
+    RMW_SET_ERROR_MSG_WITH_FORMAT_STRING("node_namespace argument is invalid: %s", reason);
+    return RMW_RET_INVALID_ARGUMENT;
+  }
+  ret = rmw_names_and_types_check_zero(topic_names_and_types);
+  if (RMW_RET_OK != ret) {
+    return ret;
+  }
   auto common_ctx = &node->context->impl->common_ctx;
-
   if (no_demangle) {
     demangle_topic = rmw_gurumdds_cpp::identity_demangle;
     demangle_type = rmw_gurumdds_cpp::identity_demangle;
   }
-
   return get_names_and_types_by_node(
     common_ctx,
     node_name,
@@ -108,8 +103,8 @@ __get_topic_names_and_types_by_node(
     topic_names_and_types);
 }
 
-static rmw_ret_t
-__get_reader_names_and_types_by_node(
+static inline rmw_ret_t
+get_reader_names_and_types_by_node(
   rmw_dds_common::Context * common_context,
   const std::string & node_name,
   const std::string & node_namespace,
@@ -127,8 +122,8 @@ __get_reader_names_and_types_by_node(
     topic_names_and_types);
 }
 
-static rmw_ret_t
-__get_writer_names_and_types_by_node(
+static inline rmw_ret_t
+get_writer_names_and_types_by_node(
   rmw_dds_common::Context * common_context,
   const std::string & node_name,
   const std::string & node_namespace,
@@ -162,7 +157,7 @@ rmw_get_subscriber_names_and_types_by_node(
     "rmw_get_subscriber_names_and_types_by_node: "
     "node=%s%s, demangle=%s",
     node_namespace, node_name, no_demangle == true ? "false" : "true");
-  return __get_topic_names_and_types_by_node(
+  return get_topic_names_and_types_by_node(
     node,
     allocator,
     node_name,
@@ -170,7 +165,7 @@ rmw_get_subscriber_names_and_types_by_node(
     rmw_gurumdds_cpp::demangle_ros_topic_from_topic,
     rmw_gurumdds_cpp::demangle_if_ros_type,
     no_demangle,
-    __get_reader_names_and_types_by_node,
+    get_reader_names_and_types_by_node,
     topic_names_and_types);
 }
 
@@ -188,7 +183,7 @@ rmw_get_publisher_names_and_types_by_node(
     "rmw_get_publisher_names_and_types_by_node: "
     "node=%s%s, demangle=%s",
     node_namespace, node_name, no_demangle == true ? "false" : "true");
-  return __get_topic_names_and_types_by_node(
+  return get_topic_names_and_types_by_node(
     node,
     allocator,
     node_name,
@@ -196,7 +191,7 @@ rmw_get_publisher_names_and_types_by_node(
     rmw_gurumdds_cpp::demangle_ros_topic_from_topic,
     rmw_gurumdds_cpp::demangle_if_ros_type,
     no_demangle,
-    __get_writer_names_and_types_by_node,
+    get_writer_names_and_types_by_node,
     topic_names_and_types);
 }
 
@@ -212,7 +207,7 @@ rmw_get_service_names_and_types_by_node(
     RMW_GURUMDDS_ID,
     "rmw_get_service_names_and_types_by_node: "
     "node=%s%s", node_namespace, node_name);
-  return __get_topic_names_and_types_by_node(
+  return get_topic_names_and_types_by_node(
     node,
     allocator,
     node_name,
@@ -220,7 +215,7 @@ rmw_get_service_names_and_types_by_node(
     rmw_gurumdds_cpp::demangle_service_request_from_topic,
     rmw_gurumdds_cpp::demangle_service_type_only,
     false,
-    __get_reader_names_and_types_by_node,
+    get_reader_names_and_types_by_node,
     service_names_and_types);
 }
 
@@ -236,7 +231,7 @@ rmw_get_client_names_and_types_by_node(
     RMW_GURUMDDS_ID,
     "rmw_get_client_names_and_types_by_node: "
     "node=%s%s", node_namespace, node_name);
-  return __get_topic_names_and_types_by_node(
+  return get_topic_names_and_types_by_node(
     node,
     allocator,
     node_name,
@@ -244,7 +239,7 @@ rmw_get_client_names_and_types_by_node(
     rmw_gurumdds_cpp::demangle_service_reply_from_topic,
     rmw_gurumdds_cpp::demangle_service_type_only,
     false,
-    __get_reader_names_and_types_by_node,
+    get_reader_names_and_types_by_node,
     service_names_and_types);
 }
 }  // extern "C"
