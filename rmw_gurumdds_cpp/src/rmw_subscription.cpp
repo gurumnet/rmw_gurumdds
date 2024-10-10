@@ -478,8 +478,8 @@ take(
         sample_info->source_timestamp.sec * static_cast<int64_t>(1000000000) +
         sample_info->source_timestamp.nanosec;
       message_info->received_timestamp =
-        sampleinfo_ex->received_timestamp.sec * static_cast<int64_t>(1000000000) +
-        sampleinfo_ex->received_timestamp.nanosec;
+        sampleinfo_ex->reception_timestamp.sec * static_cast<int64_t>(1000000000) +
+        sampleinfo_ex->reception_timestamp.nanosec;
       message_info->publication_sequence_number = sequence_number;
       message_info->reception_sequence_number = RMW_MESSAGE_INFO_SEQUENCE_NUMBER_UNSUPPORTED;
       rmw_gid_t * sender_gid = &message_info->publisher_gid;
@@ -614,8 +614,8 @@ take_serialized(
         sample_info->source_timestamp.sec * static_cast<int64_t>(1000000000) +
         sample_info->source_timestamp.nanosec;
       message_info->received_timestamp =
-        sampleinfo_ex->received_timestamp.sec * static_cast<int64_t>(1000000000) +
-        sampleinfo_ex->received_timestamp.nanosec;
+        sampleinfo_ex->reception_timestamp.sec * static_cast<int64_t>(1000000000) +
+        sampleinfo_ex->reception_timestamp.nanosec;
       message_info->publication_sequence_number = sequence_number;
       message_info->reception_sequence_number = RMW_MESSAGE_INFO_SEQUENCE_NUMBER_UNSUPPORTED;
       rmw_gid_t * sender_gid = &message_info->publisher_gid;
@@ -1050,8 +1050,8 @@ rmw_take_sequence(
           sample_info->source_timestamp.sec * static_cast<int64_t>(1000000000) +
           sample_info->source_timestamp.nanosec;
         message_info->received_timestamp =
-          sampleinfo_ex->received_timestamp.sec * static_cast<int64_t>(1000000000) +
-          sampleinfo_ex->received_timestamp.nanosec;
+          sampleinfo_ex->reception_timestamp.sec * static_cast<int64_t>(1000000000) +
+          sampleinfo_ex->reception_timestamp.nanosec;
         rmw_gid_t * sender_gid = &message_info->publisher_gid;
         sender_gid->implementation_identifier = RMW_GURUMDDS_ID;
         memset(sender_gid->data, 0, RMW_GID_STORAGE_SIZE);
