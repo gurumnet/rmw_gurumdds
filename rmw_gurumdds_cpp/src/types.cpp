@@ -112,7 +112,6 @@ rmw_ret_t PublisherInfo::set_on_new_event_callback(
   rmw_event_type_t event_type,
   const void * user_data,
   rmw_event_callback_t callback) {
-  // mask는 RMW 측에서 보관하게 만든다.
   std::lock_guard guard{mutex_event};
   dds_StatusMask event_status_type = rmw_gurumdds_cpp::get_status_kind_from_rmw(event_type);
   if(callback != nullptr) {
@@ -796,6 +795,13 @@ void SubscriberInfo::on_requested_incompatible_qos(const dds_RequestedIncompatib
   }
 
   dds_GuardCondition_set_trigger_value(event_guard_cond[RMW_EVENT_REQUESTED_QOS_INCOMPATIBLE], true);
+}
+
+void SubscriberInfo::on_data_available() {
+  std::lock_guard<std::mutex> guard(event_callback_data.mutex);
+  if(event_callback_data.callback) {
+    event_callback_data.callback(event_callback_data.user_data, count_unread());
+  }
 }
 
 void SubscriberInfo::on_liveliness_changed(const dds_LivelinessChangedStatus & status)

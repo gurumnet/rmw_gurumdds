@@ -214,10 +214,7 @@ create_subscription(
   topic_listener.on_data_available = [](const dds_DataReader * topic_reader) {
     dds_DataReader* reader = const_cast<dds_DataReader*>(topic_reader);
     SubscriberInfo* info = static_cast<SubscriberInfo*>(dds_DataReader_get_listener_context(reader));
-    std::lock_guard<std::mutex> guard(info->event_callback_data.mutex);
-    if(info->event_callback_data.callback) {
-      info->event_callback_data.callback(info->event_callback_data.user_data, info->count_unread());
-    }
+    info->on_data_available();
   };
 
   topic_listener.on_liveliness_changed = [](const dds_DataReader* topic_reader, const dds_LivelinessChangedStatus* status) {
