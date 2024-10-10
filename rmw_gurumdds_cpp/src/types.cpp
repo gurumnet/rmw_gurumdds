@@ -302,18 +302,17 @@ bool PublisherInfo::has_callback_unsafe(rmw_event_type_t event_type) const
   return ((mask | dds_INCONSISTENT_TOPIC_STATUS) & rmw_gurumdds_cpp::get_status_kind_from_rmw(event_type)) > 0;
 }
 
-static std::map<std::string, std::vector<uint8_t>>
-__parse_map(uint8_t * const data, const uint32_t data_len)
+static inline std::map<std::string, std::vector<uint8_t>>
+parse_map(uint8_t * const data, const uint32_t data_len)
 {
   std::vector<uint8_t> data_vec(data, data + data_len);
-  std::map<std::string, std::vector<uint8_t>> map =
-    rmw::impl::cpp::parse_key_value(data_vec);
-
+  std::map<std::string, std::vector<uint8_t>> map
+    = rmw::impl::cpp::parse_key_value(data_vec);
   return map;
 }
 
-static rmw_ret_t
-__get_user_data_key(
+static inline rmw_ret_t
+get_user_data_key(
   dds_ParticipantBuiltinTopicData * data,
   const std::string& key,
   std::string & value,
@@ -327,7 +326,7 @@ __get_user_data_key(
     return RMW_RET_OK;
   }
 
-  auto map = __parse_map(user_data, user_data_len);
+  auto map = parse_map(user_data, user_data_len);
   auto name_found = map.find(key);
   if (name_found != map.end()) {
     value = std::string(name_found->second.begin(), name_found->second.end());
@@ -363,7 +362,7 @@ void on_participant_changed(
     std::string enclave_str;
     bool enclave_found;
     dds_ReturnCode_t rc =
-      __get_user_data_key(
+      get_user_data_key(
       const_cast<dds_ParticipantBuiltinTopicData *>(data),
       "securitycontext", enclave_str, enclave_found);
     if (RMW_RET_OK != rc) {
