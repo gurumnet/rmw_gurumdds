@@ -91,6 +91,7 @@ add_library(rmw_gurumdds_cpp
   src/rmw_wait.cpp
   src/serialization_format.cpp
   src/types.cpp
+  src/wait.cpp
 )
 
 ament_target_dependencies(rmw_gurumdds_cpp
