@@ -19,7 +19,8 @@
 
 #include "rmw_gurumdds_cpp/dds_include.hpp"
 #include "rmw_gurumdds_cpp/identifier.hpp"
-#include "rmw_gurumdds_cpp/rmw_wait.hpp"
+#include "rmw_gurumdds_cpp/types.hpp"
+#include "rmw_gurumdds_cpp/wait.hpp"
 
 extern "C"
 {
@@ -151,7 +152,7 @@ rmw_wait(
   rmw_wait_set_t * wait_set,
   const rmw_time_t * wait_timeout)
 {
-  return rmw_gurumdds_cpp::wait<rmw_gurumdds_cpp::SubscriberInfo, rmw_gurumdds_cpp::ServiceInfo, rmw_gurumdds_cpp::ClientInfo>(
+  return rmw_gurumdds_cpp::wait(
     RMW_GURUMDDS_ID, subscriptions, guard_conditions,
     services, clients, events, wait_set, wait_timeout);
 }
