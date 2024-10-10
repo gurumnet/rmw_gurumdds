@@ -957,8 +957,8 @@ rmw_take_response(
             sample_info->source_timestamp.sec * static_cast<int64_t>(1000000000) +
             sample_info->source_timestamp.nanosec;
           request_header->received_timestamp =
-            sampleinfo_ex->received_timestamp.sec * static_cast<int64_t>(1000000000) +
-            sampleinfo_ex->received_timestamp.nanosec;
+            sampleinfo_ex->reception_timestamp.sec * static_cast<int64_t>(1000000000) +
+            sampleinfo_ex->reception_timestamp.nanosec;
           request_header->request_id.sequence_number = ((int64_t)sn_high) << 32 | sn_low;
           memcpy(request_header->request_id.writer_guid, client_guid, 16);
 
@@ -1032,8 +1032,8 @@ rmw_take_response(
             sample_info->source_timestamp.sec * static_cast<int64_t>(1000000000) +
             sample_info->source_timestamp.nanosec;
           request_header->received_timestamp =
-            sampleinfo_ex->received_timestamp.sec * static_cast<int64_t>(1000000000) +
-            sampleinfo_ex->received_timestamp.nanosec;
+            sampleinfo_ex->reception_timestamp.sec * static_cast<int64_t>(1000000000) +
+            sampleinfo_ex->reception_timestamp.nanosec;
           request_header->request_id.sequence_number = sequence_number;
           memcpy(request_header->request_id.writer_guid, client_guid, 16);
 
