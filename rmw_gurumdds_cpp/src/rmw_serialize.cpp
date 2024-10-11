@@ -16,6 +16,11 @@
 #include "rmw/rmw.h"
 #include "rmw/serialized_message.h"
 
+#include "rosidl_typesupport_introspection_c/field_types.h"
+#include "rosidl_typesupport_introspection_c/identifier.h"
+#include "rosidl_typesupport_introspection_c/message_introspection.h"
+#include "rosidl_typesupport_introspection_cpp/identifier.hpp"
+
 #include "rmw_gurumdds_cpp/type_support_common.hpp"
 
 extern "C"
