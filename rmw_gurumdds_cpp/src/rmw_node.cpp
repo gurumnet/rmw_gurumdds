@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include <array>
+#include <cstring>
 
 #include "rcutils/filesystem.h"
 #include "rcutils/logging_macros.h"
@@ -140,7 +141,7 @@ rmw_create_node(
     RMW_SET_ERROR_MSG("failed to allocate memory for node name");
     return nullptr;
   }
-  memcpy(const_cast<char *>(node_handle->name), name, strlen(name) + 1);
+  std::memcpy(const_cast<char *>(node_handle->name), name, strlen(name) + 1);
 
   node_handle->namespace_ =
     static_cast<const char *>(rmw_allocate(sizeof(char) * strlen(namespace_) + 1));
@@ -148,7 +149,7 @@ rmw_create_node(
     RMW_SET_ERROR_MSG("failed to allocate memory for node namespace");
     return nullptr;
   }
-  memcpy(const_cast<char *>(node_handle->namespace_), namespace_, strlen(namespace_) + 1);
+  std::memcpy(const_cast<char *>(node_handle->namespace_), namespace_, strlen(namespace_) + 1);
 
   node_handle->implementation_identifier = RMW_GURUMDDS_ID;
   node_handle->data = nullptr;

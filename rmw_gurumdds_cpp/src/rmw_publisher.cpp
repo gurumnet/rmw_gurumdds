@@ -28,13 +28,13 @@
 
 #include "rmw_dds_common/qos.hpp"
 
-#include "rmw_gurumdds_cpp/gid.hpp"
 #include "rmw_gurumdds_cpp/graph_cache.hpp"
 #include "rmw_gurumdds_cpp/identifier.hpp"
 #include "rmw_gurumdds_cpp/names_and_types_helpers.hpp"
 #include "rmw_gurumdds_cpp/namespace_prefix.hpp"
 #include "rmw_gurumdds_cpp/qos.hpp"
 #include "rmw_gurumdds_cpp/rmw_context_impl.hpp"
+#include "rmw_gurumdds_cpp/gid.hpp"
 #include "rmw_gurumdds_cpp/rmw_publisher.hpp"
 #include "rmw_gurumdds_cpp/type_support_common.hpp"
 #include "rmw_gurumdds_cpp/type_support_service.hpp"
@@ -238,7 +238,7 @@ create_publisher(
     RCUTILS_LOG_ERROR_NAMED(RMW_GURUMDDS_ID, "failed to allocate publisher's topic name");
     return nullptr;
   }
-  memcpy(
+  std::memcpy(
     const_cast<char *>(rmw_publisher->topic_name),
     topic_name,
     strlen(topic_name) + 1);
@@ -362,9 +362,9 @@ rmw_ret_t publish(
   }
 
   dds_SampleInfoEx sampleinfo_ex;
-  memset(&sampleinfo_ex, 0, sizeof(dds_SampleInfoEx));
+  std::memset(&sampleinfo_ex, 0, sizeof(dds_SampleInfoEx));
   ros_sn_to_dds_sn(++publisher_info->sequence_number, &sampleinfo_ex.seq);
-  ros_guid_to_dds_guid(
+  rmw_gurumdds_cpp::ros_guid_to_dds_guid(
       reinterpret_cast<const uint8_t *>(publisher_info->publisher_gid.data),
       reinterpret_cast<uint8_t *>(&sampleinfo_ex.src_guid));
 

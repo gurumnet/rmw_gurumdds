@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <cstring>
 #include <string>
 
 #include "rosidl_runtime_c/type_hash.h"
@@ -168,7 +169,7 @@ get_datawriter_qos(
     rmw_reset_error();
   }
 
-  memcpy(datawriter_qos->user_data.value, user_data_str.data(), user_data_str.size());
+  std::memcpy(datawriter_qos->user_data.value, user_data_str.data(), user_data_str.size());
 
   return true;
 }
@@ -196,7 +197,7 @@ bool get_datareader_qos(
     rmw_reset_error();
   }
 
-  memcpy(datareader_qos->user_data.value, user_data_str.data(), user_data_str.size());
+  std::memcpy(datareader_qos->user_data.value, user_data_str.data(), user_data_str.size());
 
   return true;
 }

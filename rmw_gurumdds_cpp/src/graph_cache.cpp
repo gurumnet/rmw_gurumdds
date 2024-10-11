@@ -20,15 +20,14 @@
 #include "rmw_dds_common/qos.hpp"
 
 #include "rmw_gurumdds_cpp/context_listener_thread.hpp"
-#include "rmw_gurumdds_cpp/gid.hpp"
-#include "rmw_gurumdds_cpp/qos.hpp"
 #include "rmw_gurumdds_cpp/graph_cache.hpp"
+#include "rmw_gurumdds_cpp/qos.hpp"
 #include "rmw_gurumdds_cpp/rmw_context_impl.hpp"
+#include "rmw_gurumdds_cpp/gid.hpp"
 #include "rmw_gurumdds_cpp/rmw_publisher.hpp"
 #include "rmw_gurumdds_cpp/rmw_subscription.hpp"
 
 #include "rosidl_typesupport_cpp/message_type_support.hpp"
-
 
 static rmw_ret_t add_entity(
   rmw_context_impl_t * ctx,
@@ -723,7 +722,7 @@ on_participant_info(rmw_context_impl_t * ctx)
       return RMW_RET_ERROR;
     }
     if (taken) {
-      if (memcmp(&msg.gid.data, ctx->common_ctx.gid.data, RMW_GID_STORAGE_SIZE) == 0) {
+      if (std::memcmp(&msg.gid.data, ctx->common_ctx.gid.data, RMW_GID_STORAGE_SIZE) == 0) {
         continue;
       }
 
@@ -752,7 +751,7 @@ add_participant(
   rmw_gid_t gid;
   rmw_gurumdds_cpp::guid_to_gid(*dp_guid, gid);
 
-  if (0 == memcmp(gid.data, ctx->common_ctx.gid.data, RMW_GID_STORAGE_SIZE)) {
+  if (0 == std::memcmp(gid.data, ctx->common_ctx.gid.data, RMW_GID_STORAGE_SIZE)) {
     // Ignore own announcements
     return RMW_RET_OK;
   }
@@ -775,7 +774,7 @@ remove_participant(
   rmw_gid_t gid;
   rmw_gurumdds_cpp::guid_to_gid(*dp_guid, gid);
 
-  if (0 == memcmp(gid.data, ctx->common_ctx.gid.data, RMW_GID_STORAGE_SIZE)) {
+  if (0 == std::memcmp(gid.data, ctx->common_ctx.gid.data, RMW_GID_STORAGE_SIZE)) {
     // Ignore own announcements
     return RMW_RET_OK;
   }
@@ -804,7 +803,7 @@ add_remote_entity(
   rmw_gurumdds_cpp::guid_to_gid(*endp_guid, endp_gid);
   rmw_gurumdds_cpp::guid_to_gid(*dp_guid, dp_gid);
 
-  if (0 == memcmp(dp_gid.data, ctx->common_ctx.gid.data, RMW_GID_STORAGE_SIZE)) {
+  if (0 == std::memcmp(dp_gid.data, ctx->common_ctx.gid.data, RMW_GID_STORAGE_SIZE)) {
     // Ignore own announcements
     return RMW_RET_OK;
   }
@@ -847,7 +846,7 @@ remove_entity(
   rmw_gid_t gid;
   rmw_gurumdds_cpp::guid_to_gid(*guid, gid);
 
-  if (0 == memcmp(gid.data, ctx->common_ctx.gid.data, 12)) {
+  if (0 == std::memcmp(gid.data, ctx->common_ctx.gid.data, 12)) {
     // compare entities' GUID prefixes to determine whether they belong to the same participat
     // (hence 12 instead of 16 bytes)
     // Ignore own announcements
