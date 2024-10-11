@@ -18,6 +18,20 @@
 #include <string>
 #include <utility>
 
+#include "rmw/allocators.h"
+#include "rmw/error_handling.h"
+#include "rmw/impl/cpp/macros.hpp"
+
+#include "rosidl_typesupport_introspection_c/field_types.h"
+#include "rosidl_typesupport_introspection_c/identifier.h"
+#include "rosidl_typesupport_introspection_c/message_introspection.h"
+#include "rosidl_typesupport_introspection_c/service_introspection.h"
+
+#include "rosidl_typesupport_introspection_cpp/field_types.hpp"
+#include "rosidl_typesupport_introspection_cpp/identifier.hpp"
+#include "rosidl_typesupport_introspection_cpp/message_introspection.hpp"
+#include "rosidl_typesupport_introspection_cpp/service_introspection.hpp"
+
 #include "rmw_gurumdds_cpp/type_support_common.hpp"
 
 #define GET_TYPENAME(T) \
@@ -37,10 +51,10 @@ _create_service_type_name(const void * untyped_members)
   }
 
   return {
-    _create_type_name<GET_TYPENAME(members->request_members_)>(
+    create_type_name<GET_TYPENAME(members->request_members_)>(
       static_cast<const void *>(members->request_members_)
     ),
-    _create_type_name<GET_TYPENAME(members->response_members_)>(
+    create_type_name<GET_TYPENAME(members->response_members_)>(
       static_cast<const void *>(members->response_members_)
     )
   };
@@ -72,11 +86,11 @@ _create_service_metastring(const void * untyped_members)
   }
 
   return {
-    _create_metastring<GET_TYPENAME(members->request_members_)>(
+    create_metastring<GET_TYPENAME(members->request_members_)>(
       static_cast<const void *>(members->request_members_),
       true
     ),
-    _create_metastring<GET_TYPENAME(members->response_members_)>(
+    create_metastring<GET_TYPENAME(members->response_members_)>(
       static_cast<const void *>(members->response_members_),
       true
     )
@@ -111,7 +125,7 @@ _allocate_request_basic(
     return nullptr;
   }
 
-  return _allocate_message<GET_TYPENAME(members->request_members_)>(
+  return allocate_message<GET_TYPENAME(members->request_members_)>(
     static_cast<const void *>(members->request_members_),
     static_cast<const uint8_t *>(ros_request),
     size,
@@ -157,7 +171,7 @@ _allocate_response_basic(
     return nullptr;
   }
 
-  return _allocate_message<GET_TYPENAME(members->response_members_)>(
+  return allocate_message<GET_TYPENAME(members->response_members_)>(
     static_cast<const void *>(members->response_members_),
     static_cast<const uint8_t *>(ros_response),
     size,
@@ -203,7 +217,7 @@ _allocate_request_enhanced(
     return nullptr;
   }
 
-  return _allocate_message<GET_TYPENAME(members->request_members_)>(
+  return allocate_message<GET_TYPENAME(members->request_members_)>(
     static_cast<const void *>(members->request_members_),
     static_cast<const uint8_t *>(ros_request),
     size,
@@ -249,7 +263,7 @@ _allocate_response_enhanced(
     return nullptr;
   }
 
-  return _allocate_message<GET_TYPENAME(members->response_members_)>(
+  return allocate_message<GET_TYPENAME(members->response_members_)>(
     static_cast<const void *>(members->response_members_),
     static_cast<const uint8_t *>(ros_response),
     size,
