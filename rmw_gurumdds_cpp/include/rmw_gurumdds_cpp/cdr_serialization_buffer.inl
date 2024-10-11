@@ -13,7 +13,7 @@ inline CdrSerializationBuffer<true>::CdrSerializationBuffer(uint8_t * buf, size_
   if (size < CDR_HEADER_SIZE) {
     throw std::runtime_error("Insufficient buffer size");
   }
-  memset(buf, 0, CDR_HEADER_SIZE);
+  std::memset(buf, 0, CDR_HEADER_SIZE);
   buf[CDR_HEADER_ENDIAN_IDX] = CDR_SYSTEM_ENDIAN;
   buf_ = buf + CDR_HEADER_SIZE;
   size_ = size - CDR_HEADER_SIZE;
@@ -85,7 +85,7 @@ inline void CdrSerializationBuffer<SERIALIZE>::operator<<(const std::string & sr
     if (offset_ + src.size() + 1 > size_) {
       throw std::runtime_error("Out of buffer");
     }
-    memcpy(buf_ + offset_, src.c_str(), src.size() + 1);
+    std::memcpy(buf_ + offset_, src.c_str(), src.size() + 1);
   }
   advance(src.size() + 1);
 }
@@ -100,7 +100,7 @@ inline void CdrSerializationBuffer<SERIALIZE>::operator<<(const std::u16string &
       throw std::runtime_error("Out of buffer");
     }
 
-    memcpy(buf_ + offset_, src.data(), sizeof(char16_t) * src.size());
+    std::memcpy(buf_ + offset_, src.data(), sizeof(char16_t) * src.size());
   }
   advance(src.size() * sizeof(char16_t));
 }
@@ -114,7 +114,7 @@ inline void CdrSerializationBuffer<SERIALIZE>::operator<<(const rosidl_runtime_c
     if (offset_ + src.size + 1 > size_) {
       throw std::runtime_error("Out of buffer");
     }
-    memcpy(buf_ + offset_, src.data, src.size + 1);
+    std::memcpy(buf_ + offset_, src.data, src.size + 1);
   }
   advance(src.size + 1);
 }
@@ -129,7 +129,7 @@ inline void CdrSerializationBuffer<SERIALIZE>::operator<<(const rosidl_runtime_c
       throw std::runtime_error("Out of buffer");
     }
 
-    memcpy(buf_ + offset_, src.data, sizeof(char16_t) * src.size);
+    std::memcpy(buf_ + offset_, src.data, sizeof(char16_t) * src.size);
   }
   advance(src.size * sizeof(char16_t));
 }
@@ -146,7 +146,7 @@ inline void CdrSerializationBuffer<SERIALIZE>::copy_arr(const uint8_t * arr, siz
     if (offset_ + cnt * sizeof(uint8_t) > size_) {
       throw std::runtime_error("Out of buffer");
     }
-    memcpy(buf_ + offset_, arr, cnt * sizeof(uint8_t));
+    std::memcpy(buf_ + offset_, arr, cnt * sizeof(uint8_t));
   }
   advance(cnt * sizeof(uint8_t));
 }
@@ -163,7 +163,7 @@ inline void CdrSerializationBuffer<SERIALIZE>::copy_arr(const uint16_t * arr, si
     if (offset_ + cnt * sizeof(uint16_t) > size_) {
       throw std::runtime_error("Out of buffer");
     }
-    memcpy(buf_ + offset_, arr, cnt * sizeof(uint16_t));
+    std::memcpy(buf_ + offset_, arr, cnt * sizeof(uint16_t));
   }
   advance(cnt * sizeof(uint16_t));
 }
@@ -180,7 +180,7 @@ inline void CdrSerializationBuffer<SERIALIZE>::copy_arr(const uint32_t * arr, si
     if (offset_ + cnt * sizeof(uint32_t) > size_) {
       throw std::runtime_error("Out of buffer");
     }
-    memcpy(buf_ + offset_, arr, cnt * sizeof(uint32_t));
+    std::memcpy(buf_ + offset_, arr, cnt * sizeof(uint32_t));
   }
   advance(cnt * sizeof(uint32_t));
 }
@@ -197,7 +197,7 @@ inline void CdrSerializationBuffer<SERIALIZE>::copy_arr(const uint64_t * arr, si
     if (offset_ + cnt * sizeof(uint64_t) > size_) {
       throw std::runtime_error("Out of buffer");
     }
-    memcpy(buf_ + offset_, arr, cnt * sizeof(uint64_t));
+    std::memcpy(buf_ + offset_, arr, cnt * sizeof(uint64_t));
   }
   advance(cnt * sizeof(uint64_t));
 }
