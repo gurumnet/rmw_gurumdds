@@ -28,13 +28,13 @@
 #include "rmw_dds_common/qos.hpp"
 
 #include "rmw_gurumdds_cpp/event_converter.hpp"
-#include "rmw_gurumdds_cpp/gid.hpp"
 #include "rmw_gurumdds_cpp/graph_cache.hpp"
 #include "rmw_gurumdds_cpp/identifier.hpp"
 #include "rmw_gurumdds_cpp/names_and_types_helpers.hpp"
 #include "rmw_gurumdds_cpp/namespace_prefix.hpp"
 #include "rmw_gurumdds_cpp/qos.hpp"
 #include "rmw_gurumdds_cpp/rmw_context_impl.hpp"
+#include "rmw_gurumdds_cpp/gid.hpp"
 #include "rmw_gurumdds_cpp/rmw_subscription.hpp"
 #include "rmw_gurumdds_cpp/type_support_common.hpp"
 #include "rmw_gurumdds_cpp/type_support_service.hpp"
@@ -280,7 +280,7 @@ create_subscription(
     RMW_SET_ERROR_MSG("failed to allocate memory for topic name");
     return nullptr;
   }
-  memcpy(
+  std::memcpy(
     const_cast<char *>(rmw_subscription->topic_name),
     topic_name,
     strlen(topic_name) + 1);
@@ -473,7 +473,7 @@ take(
     if (message_info != nullptr) {
       int64_t sequence_number = 0;
       dds_SampleInfoEx * sampleinfo_ex = reinterpret_cast<dds_SampleInfoEx *>(sample_info);
-      dds_sn_to_ros_sn(sampleinfo_ex->seq, &sequence_number);
+      rmw_gurumdds_cpp::dds_sn_to_ros_sn(sampleinfo_ex->seq, &sequence_number);
       message_info->source_timestamp =
         sample_info->source_timestamp.sec * static_cast<int64_t>(1000000000) +
         sample_info->source_timestamp.nanosec;
@@ -484,14 +484,14 @@ take(
       message_info->reception_sequence_number = RMW_MESSAGE_INFO_SEQUENCE_NUMBER_UNSUPPORTED;
       rmw_gid_t * sender_gid = &message_info->publisher_gid;
       sender_gid->implementation_identifier = identifier;
-      memset(sender_gid->data, 0, RMW_GID_STORAGE_SIZE);
+      std::memset(sender_gid->data, 0, RMW_GID_STORAGE_SIZE);
       dds_ReturnCode_t ret = dds_DataReader_get_guid_from_publication_handle(
         topic_reader, sample_info->publication_handle, sender_gid->data);
       if (ret != dds_RETCODE_OK) {
         if (ret == dds_RETCODE_ERROR) {
           RCUTILS_LOG_WARN_NAMED(RMW_GURUMDDS_ID, "Failed to get publication handle");
         }
-        memset(sender_gid->data, 0, RMW_GID_STORAGE_SIZE);
+        std::memset(sender_gid->data, 0, RMW_GID_STORAGE_SIZE);
       }
     }
   }
@@ -602,14 +602,14 @@ take_serialized(
       }
     }
 
-    memcpy(serialized_message->buffer, sample, sample_size);
+    std::memcpy(serialized_message->buffer, sample, sample_size);
 
     *taken = true;
 
     if (message_info != nullptr) {
       int64_t sequence_number = 0;
       dds_SampleInfoEx * sampleinfo_ex = reinterpret_cast<dds_SampleInfoEx *>(sample_info);
-      dds_sn_to_ros_sn(sampleinfo_ex->seq, &sequence_number);
+      rmw_gurumdds_cpp::dds_sn_to_ros_sn(sampleinfo_ex->seq, &sequence_number);
       message_info->source_timestamp =
         sample_info->source_timestamp.sec * static_cast<int64_t>(1000000000) +
         sample_info->source_timestamp.nanosec;
@@ -620,14 +620,14 @@ take_serialized(
       message_info->reception_sequence_number = RMW_MESSAGE_INFO_SEQUENCE_NUMBER_UNSUPPORTED;
       rmw_gid_t * sender_gid = &message_info->publisher_gid;
       sender_gid->implementation_identifier = identifier;
-      memset(sender_gid->data, 0, RMW_GID_STORAGE_SIZE);
+      std::memset(sender_gid->data, 0, RMW_GID_STORAGE_SIZE);
       dds_ReturnCode_t ret = dds_DataReader_get_guid_from_publication_handle(
         topic_reader, sample_info->publication_handle, sender_gid->data);
       if (ret != dds_RETCODE_OK) {
         if (ret == dds_RETCODE_ERROR) {
           RCUTILS_LOG_WARN_NAMED(RMW_GURUMDDS_ID, "Failed to get publication handle");
         }
-        memset(sender_gid->data, 0, RMW_GID_STORAGE_SIZE);
+        std::memset(sender_gid->data, 0, RMW_GID_STORAGE_SIZE);
       }
     }
   }
@@ -1054,7 +1054,7 @@ rmw_take_sequence(
           sampleinfo_ex->reception_timestamp.nanosec;
         rmw_gid_t * sender_gid = &message_info->publisher_gid;
         sender_gid->implementation_identifier = RMW_GURUMDDS_ID;
-        memset(sender_gid->data, 0, RMW_GID_STORAGE_SIZE);
+        std::memset(sender_gid->data, 0, RMW_GID_STORAGE_SIZE);
 
         dds_ReturnCode_t ret = dds_DataReader_get_guid_from_publication_handle(
           topic_reader, sample_info->publication_handle, sender_gid->data);
@@ -1062,7 +1062,7 @@ rmw_take_sequence(
           if (ret == dds_RETCODE_ERROR) {
             RCUTILS_LOG_WARN_NAMED(RMW_GURUMDDS_ID, "Failed to get publication handle");
           }
-          memset(sender_gid->data, 0, RMW_GID_STORAGE_SIZE);
+          std::memset(sender_gid->data, 0, RMW_GID_STORAGE_SIZE);
         }
 
         (*taken)++;

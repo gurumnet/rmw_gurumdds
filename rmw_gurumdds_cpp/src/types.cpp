@@ -18,9 +18,9 @@
 
 #include "rmw_gurumdds_cpp/event_converter.hpp"
 #include "rmw_gurumdds_cpp/graph_cache.hpp"
-#include "rmw_gurumdds_cpp/guid.hpp"
 #include "rmw_gurumdds_cpp/qos.hpp"
 #include "rmw_gurumdds_cpp/rmw_context_impl.hpp"
+#include "rmw_gurumdds_cpp/gid.hpp"
 #include "rmw_gurumdds_cpp/types.hpp"
 
 #define ENTITYID_PARTICIPANT 0x000001C1
@@ -340,21 +340,15 @@ void on_participant_changed(
   const dds_ParticipantBuiltinTopicData * data,
   dds_InstanceHandle_t handle)
 {
-  dds_DomainParticipant * participant = const_cast<dds_DomainParticipant *>(a_participant);
-  rmw_context_impl_t * ctx =
-    reinterpret_cast<rmw_context_impl_t *>(
-    dds_Entity_get_context(reinterpret_cast<dds_Entity *>(participant), 0));
-
+  auto * participant = const_cast<dds_DomainParticipant *>(a_participant);
+  auto * ctx = reinterpret_cast<rmw_context_impl_t *>(
+    dds_Entity_get_context(reinterpret_cast<dds_Entity *>(participant), 0)
+  );
   if (ctx == nullptr) {
     return;
   }
 
-  dds_GUID_t dp_guid;
-  rmw_gurumdds_cpp::GuidPrefix_t dp_guid_prefix;
-  rmw_gurumdds_cpp::dds_BuiltinTopicKey_to_GUID(&dp_guid_prefix, data->key);
-  memcpy(dp_guid.prefix, dp_guid_prefix.value, sizeof(dp_guid.prefix));
-  dp_guid.entityId = ENTITYID_PARTICIPANT;
-
+  rmw_gurumdds_cpp::Guid_t dp_guid{*data};
   if (handle == dds_HANDLE_NIL) {
     rmw_gurumdds_cpp::graph_cache::remove_participant(ctx, &dp_guid);
   } else {
@@ -384,36 +378,28 @@ void on_publication_changed(
   const dds_PublicationBuiltinTopicData * data,
   dds_InstanceHandle_t handle)
 {
-  dds_DomainParticipant * participant = const_cast<dds_DomainParticipant *>(a_participant);
-  rmw_context_impl_t * ctx =
-    reinterpret_cast<rmw_context_impl_t *>(
-    dds_Entity_get_context(reinterpret_cast<dds_Entity *>(participant), 0));
-
+  auto * participant = const_cast<dds_DomainParticipant *>(a_participant);
+  auto * ctx = reinterpret_cast<rmw_context_impl_t *>(
+    dds_Entity_get_context(reinterpret_cast<dds_Entity *>(participant), 0)
+  );
   if (ctx == nullptr) {
     return;
   }
 
-  dds_GUID_t endp_guid;
-  rmw_gurumdds_cpp::GuidPrefix_t dp_guid_prefix, endp_guid_prefix;
-  rmw_gurumdds_cpp::dds_BuiltinTopicKey_to_GUID(&dp_guid_prefix, data->participant_key);
-  memcpy(endp_guid.prefix, dp_guid_prefix.value, sizeof(endp_guid.prefix));
-  rmw_gurumdds_cpp::dds_BuiltinTopicKey_to_GUID(&endp_guid_prefix, data->key);
-  memcpy(&endp_guid.entityId, endp_guid_prefix.value, sizeof(endp_guid.entityId));
-
+  rmw_gurumdds_cpp::Guid_t dp_guid = rmw_gurumdds_cpp::Guid_t::for_participant(*data);
+  rmw_gurumdds_cpp::Guid_t endp_guid{*data};
+  const auto * dp_guid_prefix = reinterpret_cast<const uint32_t *>(dp_guid.prefix);
+  const auto * endp_guid_prefix = reinterpret_cast<const uint32_t *>(endp_guid.prefix);
   if (handle == dds_HANDLE_NIL) {
     RCUTILS_LOG_DEBUG_NAMED(
       "pub on data available",
       "[ud] endp_gid=0x%08X.0x%08X.0x%08X.0x%08X ",
-      reinterpret_cast<const uint32_t *>(endp_guid.prefix)[0],
-      reinterpret_cast<const uint32_t *>(endp_guid.prefix)[1],
-      reinterpret_cast<const uint32_t *>(endp_guid.prefix)[2],
+      endp_guid_prefix[0],
+      endp_guid_prefix[1],
+      endp_guid_prefix[2],
       endp_guid.entityId);
     rmw_gurumdds_cpp::graph_cache::remove_entity(ctx, &endp_guid, false);
   } else {
-    dds_GUID_t dp_guid;
-    memcpy(dp_guid.prefix, dp_guid_prefix.value, sizeof(dp_guid.prefix));
-    dp_guid.entityId = ENTITYID_PARTICIPANT;
-
     rmw_gurumdds_cpp::graph_cache::add_remote_entity(
       ctx,
       &endp_guid,
@@ -427,18 +413,17 @@ void on_publication_changed(
       &data->liveliness,
       &data->lifespan,
       false);
-
     RCUTILS_LOG_DEBUG_NAMED(
       "pub on data available",
       "dp_gid=0x%08X.0x%08X.0x%08X.0x%08X, "
       "gid=0x%08X.0x%08X.0x%08X.0x%08X, ",
-      reinterpret_cast<const uint32_t *>(dp_guid.prefix)[0],
-      reinterpret_cast<const uint32_t *>(dp_guid.prefix)[1],
-      reinterpret_cast<const uint32_t *>(dp_guid.prefix)[2],
+      dp_guid_prefix[0],
+      dp_guid_prefix[1],
+      dp_guid_prefix[2],
       dp_guid.entityId,
-      reinterpret_cast<const uint32_t *>(endp_guid.prefix)[0],
-      reinterpret_cast<const uint32_t *>(endp_guid.prefix)[1],
-      reinterpret_cast<const uint32_t *>(endp_guid.prefix)[2],
+      endp_guid_prefix[0],
+      endp_guid_prefix[1],
+      endp_guid_prefix[2],
       endp_guid.entityId);
   }
 }
@@ -448,36 +433,28 @@ void on_subscription_changed(
   const dds_SubscriptionBuiltinTopicData * data,
   dds_InstanceHandle_t handle)
 {
-  dds_DomainParticipant * participant = const_cast<dds_DomainParticipant *>(a_participant);
-  rmw_context_impl_t * ctx =
-    reinterpret_cast<rmw_context_impl_t *>(
-    dds_Entity_get_context(reinterpret_cast<dds_Entity *>(participant), 0));
-
+  auto * participant = const_cast<dds_DomainParticipant *>(a_participant);
+  auto * ctx = reinterpret_cast<rmw_context_impl_t *>(
+    dds_Entity_get_context(reinterpret_cast<dds_Entity *>(participant), 0)
+  );
   if (ctx == nullptr) {
     return;
   }
 
-  dds_GUID_t endp_guid;
-  rmw_gurumdds_cpp::GuidPrefix_t dp_guid_prefix, endp_guid_prefix;
-  rmw_gurumdds_cpp::dds_BuiltinTopicKey_to_GUID(&dp_guid_prefix, data->participant_key);
-  memcpy(endp_guid.prefix, dp_guid_prefix.value, sizeof(endp_guid.prefix));
-  rmw_gurumdds_cpp::dds_BuiltinTopicKey_to_GUID(&endp_guid_prefix, data->key);
-  memcpy(&endp_guid.entityId, endp_guid_prefix.value, sizeof(endp_guid.entityId));
-
+  rmw_gurumdds_cpp::Guid_t dp_guid = rmw_gurumdds_cpp::Guid_t::for_participant(*data);
+  rmw_gurumdds_cpp::Guid_t endp_guid{*data};
+  const auto * dp_guid_prefix = reinterpret_cast<const uint32_t *>(dp_guid.prefix);
+  const auto * endp_guid_prefix = reinterpret_cast<const uint32_t *>(endp_guid.prefix);
   if (handle == dds_HANDLE_NIL) {
     RCUTILS_LOG_DEBUG_NAMED(
       "sub on data available",
       "[ud] endp_gid=0x%08X.0x%08X.0x%08X.0x%08X ",
-      reinterpret_cast<const uint32_t *>(endp_guid.prefix)[0],
-      reinterpret_cast<const uint32_t *>(endp_guid.prefix)[1],
-      reinterpret_cast<const uint32_t *>(endp_guid.prefix)[2],
+      endp_guid_prefix[0],
+      endp_guid_prefix[1],
+      endp_guid_prefix[2],
       endp_guid.entityId);
     rmw_gurumdds_cpp::graph_cache::remove_entity(ctx, &endp_guid, false);
   } else {
-    dds_GUID_t dp_guid;
-    memcpy(dp_guid.prefix, dp_guid_prefix.value, sizeof(dp_guid.prefix));
-    dp_guid.entityId = ENTITYID_PARTICIPANT;
-
     rmw_gurumdds_cpp::graph_cache::add_remote_entity(
       ctx,
       &endp_guid,
@@ -491,18 +468,17 @@ void on_subscription_changed(
       &data->liveliness,
       nullptr,
       true);
-
     RCUTILS_LOG_DEBUG_NAMED(
       "sub on data available",
       "dp_gid=0x%08X.0x%08X.0x%08X.0x%08X, "
       "gid=0x%08X.0x%08X.0x%08X.0x%08X, ",
-      reinterpret_cast<const uint32_t *>(dp_guid.prefix)[0],
-      reinterpret_cast<const uint32_t *>(dp_guid.prefix)[1],
-      reinterpret_cast<const uint32_t *>(dp_guid.prefix)[2],
+      dp_guid_prefix[0],
+      dp_guid_prefix[1],
+      dp_guid_prefix[2],
       dp_guid.entityId,
-      reinterpret_cast<const uint32_t *>(endp_guid.prefix)[0],
-      reinterpret_cast<const uint32_t *>(endp_guid.prefix)[1],
-      reinterpret_cast<const uint32_t *>(endp_guid.prefix)[2],
+      endp_guid_prefix[0],
+      endp_guid_prefix[1],
+      endp_guid_prefix[2],
       endp_guid.entityId);
   }
 }

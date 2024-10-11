@@ -17,6 +17,8 @@
 #include "rmw/rmw.h"
 #include "rmw/types.h"
 
+#include "rmw_dds_common/gid_utils.hpp"
+
 #include "rmw_gurumdds_cpp/identifier.hpp"
 
 extern "C"
@@ -38,7 +40,7 @@ rmw_compare_gids_equal(const rmw_gid_t * gid1, const rmw_gid_t * gid2, bool * re
     return RMW_RET_INCORRECT_RMW_IMPLEMENTATION);
   RMW_CHECK_ARGUMENT_FOR_NULL(result, RMW_RET_INVALID_ARGUMENT);
 
-  *result = memcmp(gid1->data, gid2->data, 16) == 0;
+  *result = gid1 == gid2;
   return RMW_RET_OK;
 }
 }  // extern "C"
