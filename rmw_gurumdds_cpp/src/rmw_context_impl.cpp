@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <cstring>
+
 #include "rmw_gurumdds_cpp/rmw_context_impl.hpp"
 
 using rmw_dds_common::msg::ParticipantEntitiesInfo;
@@ -170,8 +172,8 @@ rmw_context_impl_s::initialize_participant(
   }
 
   participant_qos.user_data.size = node_user_data.size();
-  memset(participant_qos.user_data.value, 0, sizeof(participant_qos.user_data.value));
-  memcpy(participant_qos.user_data.value, node_user_data.c_str(), node_user_data.size());
+  std::memset(participant_qos.user_data.value, 0, sizeof(participant_qos.user_data.value));
+  std::memcpy(participant_qos.user_data.value, node_user_data.c_str(), node_user_data.size());
 
   std::string static_discovery_id;
   static_discovery_id += node_namespace;

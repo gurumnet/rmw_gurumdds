@@ -61,6 +61,7 @@ add_library(rmw_gurumdds_cpp
   src/demangle.cpp
   src/event_converter.cpp
   src/get_entities.cpp
+  src/gid.cpp
   src/graph_cache.cpp
   src/identifier.cpp
   src/names_and_types_helpers.cpp

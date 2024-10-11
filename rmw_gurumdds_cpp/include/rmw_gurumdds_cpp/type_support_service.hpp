@@ -1010,20 +1010,6 @@ deserialize_response_enhanced(
 }
 
 inline void
-ros_guid_to_dds_guid(const uint8_t * guid_ros, uint8_t * guid_dds)
-{
-  memcpy(guid_dds, guid_ros, 12);
-  memcpy(&guid_dds[12], &guid_ros[12], 4);
-}
-
-inline void
-dds_guid_to_ros_guid(const int8_t * guid_dds, int8_t * guid_ros)
-{
-  memcpy(guid_ros, guid_dds, 12);
-  memcpy(&guid_ros[12], &guid_dds[12], 4);
-}
-
-inline void
 ros_sn_to_dds_sn(int64_t sn_ros, uint64_t * sn_dds)
 {
   *sn_dds = ((sn_ros) & 0xFFFFFFFF00000000LL) >> 32;

@@ -26,13 +26,13 @@
 #include "rmw_dds_common/qos.hpp"
 
 #include "rmw_gurumdds_cpp/event_converter.hpp"
-#include "rmw_gurumdds_cpp/gid.hpp"
 #include "rmw_gurumdds_cpp/graph_cache.hpp"
 #include "rmw_gurumdds_cpp/identifier.hpp"
 #include "rmw_gurumdds_cpp/names_and_types_helpers.hpp"
 #include "rmw_gurumdds_cpp/namespace_prefix.hpp"
 #include "rmw_gurumdds_cpp/qos.hpp"
 #include "rmw_gurumdds_cpp/rmw_context_impl.hpp"
+#include "rmw_gurumdds_cpp/gid.hpp"
 #include "rmw_gurumdds_cpp/types.hpp"
 
 #include "rmw_gurumdds_cpp/type_support_service.hpp"
@@ -358,7 +358,7 @@ rmw_create_service(
     RMW_SET_ERROR_MSG("failed to allocate memory for service");
     goto fail;
   }
-  memset(rmw_service, 0, sizeof(rmw_service_t));
+  std::memset(rmw_service, 0, sizeof(rmw_service_t));
   rmw_service->implementation_identifier = RMW_GURUMDDS_ID;
   rmw_service->data = service_info;
   rmw_service->service_name =
@@ -367,7 +367,7 @@ rmw_create_service(
     RMW_SET_ERROR_MSG("failed to allocate memory for service name");
     goto fail;
   }
-  memcpy(const_cast<char *>(rmw_service->service_name), service_name, strlen(service_name) + 1);
+  std::memcpy(const_cast<char *>(rmw_service->service_name), service_name, strlen(service_name) + 1);
 
   if (rmw_gurumdds_cpp::graph_cache::on_service_created(ctx, node, service_info) != RMW_RET_OK) {
     RCUTILS_LOG_ERROR_NAMED(RMW_GURUMDDS_ID, "failed to update graph for service creation");
@@ -722,7 +722,7 @@ rmw_take_request(
         sampleinfo_ex->reception_timestamp.sec * static_cast<int64_t>(1000000000) +
         sampleinfo_ex->reception_timestamp.nanosec;
       request_header->request_id.sequence_number = ((int64_t)sn_high) << 32 | sn_low;
-      memcpy(request_header->request_id.writer_guid, client_guid, 16);
+      std::memcpy(request_header->request_id.writer_guid, client_guid, RMW_GID_STORAGE_SIZE);
     }
 
     dds_DataReader_raw_return_loan(request_reader, data_values, sample_infos, sample_sizes);
@@ -792,7 +792,7 @@ rmw_take_request(
         sampleinfo_ex->reception_timestamp.sec * static_cast<int64_t>(1000000000) +
         sampleinfo_ex->reception_timestamp.nanosec;
       request_header->request_id.sequence_number = sequence_number;
-      memcpy(request_header->request_id.writer_guid, client_guid, 16);
+      std::memcpy(request_header->request_id.writer_guid, client_guid, RMW_GID_STORAGE_SIZE);
     }
 
     dds_DataReader_raw_return_loan(request_reader, data_values, sample_infos, sample_sizes);
@@ -901,7 +901,7 @@ rmw_send_response(
     }
 
     dds_SampleInfoEx sampleinfo_ex;
-    memset(&sampleinfo_ex, 0, sizeof(dds_SampleInfoEx));
+    std::memset(&sampleinfo_ex, 0, sizeof(dds_SampleInfoEx));
     rmw_gurumdds_cpp::ros_sn_to_dds_sn(request_header->sequence_number, &sampleinfo_ex.seq);
     rmw_gurumdds_cpp::ros_guid_to_dds_guid(
       request_header->writer_guid,

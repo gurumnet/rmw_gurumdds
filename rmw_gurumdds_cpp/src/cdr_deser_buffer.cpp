@@ -186,7 +186,7 @@ void CdrDeserializationBuffer::copy_arr(uint8_t * arr, size_t cnt) {
   if (offset_ + cnt > size_) {
     throw std::runtime_error("Out of buffer");
   }
-  memcpy(arr, buf_ + offset_, cnt);
+  std::memcpy(arr, buf_ + offset_, cnt);
   advance(cnt);
 }
 
@@ -206,7 +206,7 @@ void CdrDeserializationBuffer::copy_arr(uint16_t * arr, size_t cnt) {
       arr[i] = bswap16(src[i]);
     }
   } else {
-    memcpy(arr, src, cnt * sizeof(uint16_t));
+    std::memcpy(arr, src, cnt * sizeof(uint16_t));
   }
   advance(cnt * sizeof(uint16_t));
 }
@@ -227,7 +227,7 @@ void CdrDeserializationBuffer::copy_arr(uint32_t * arr, size_t cnt) {
       arr[i] = bswap32(src[i]);
     }
   } else {
-    memcpy(arr, src, cnt * sizeof(uint32_t));
+    std::memcpy(arr, src, cnt * sizeof(uint32_t));
   }
   advance(cnt * sizeof(uint32_t));
 }
@@ -248,7 +248,7 @@ void CdrDeserializationBuffer::copy_arr(uint64_t * arr, size_t cnt) {
       arr[i] = bswap32(src[i]);
     }
   } else {
-    memcpy(arr, src, cnt * sizeof(uint64_t));
+    std::memcpy(arr, src, cnt * sizeof(uint64_t));
   }
   advance(cnt * sizeof(uint64_t));
 }

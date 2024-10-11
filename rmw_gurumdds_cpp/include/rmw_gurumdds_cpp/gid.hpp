@@ -15,39 +15,49 @@
 #ifndef RMW_GURUMDDS__GID_HPP_
 #define RMW_GURUMDDS__GID_HPP_
 
-#include <cstring>
-#include <iostream>
-#include <map>
-#include <set>
-#include <string>
-#include <vector>
-
 #include "rmw/types.h"
+
+#include "rmw_dds_common/gid_utils.hpp"
 
 #include "rmw_gurumdds_cpp/dds_include.hpp"
 #include "rmw_gurumdds_cpp/identifier.hpp"
 
 namespace rmw_gurumdds_cpp
 {
-inline
-void guid_to_gid(const dds_GUID_t & guid, rmw_gid_t & gid)
-{
-  static_assert(
-    RMW_GID_STORAGE_SIZE >= sizeof(guid),
-    "rmw_gid_t type too small for an dds GUID");
-  memset(&gid, 0, sizeof(gid));
-  memcpy(gid.data, reinterpret_cast<const void *>(&guid), sizeof(guid));
-  gid.implementation_identifier = RMW_GURUMDDS_ID;
-}
+void ros_guid_to_dds_guid(const uint8_t * guid_ros, uint8_t * guid_dds);
 
-inline
-void entity_get_gid(dds_Entity * const entity, rmw_gid_t & gid)
+void dds_guid_to_ros_guid(const int8_t * guid_dds, int8_t * guid_ros);
+
+void guid_to_gid(const dds_GUID_t & guid, rmw_gid_t & gid);
+
+void entity_get_gid(dds_Entity * const entity, rmw_gid_t & gid);
+/**
+ * Structure to hold GUID information for DDS instances.
+ */
+struct Guid_t: public dds_GUID_t
 {
-  dds_GUID_t dds_guid;
-  if (dds_Entity_get_guid(entity, &dds_guid) == dds_RETCODE_OK) {
-    guid_to_gid(dds_guid, gid);
-  }
-}
+  static constexpr uint32_t ENTITYID_PARTICIPANT = 0x000001C1;
+
+  Guid_t();
+
+  Guid_t(const dds_GUID_t & other);
+
+  Guid_t(const dds_ParticipantBuiltinTopicData& builtin_topic_data);
+
+  template<typename TBuiltinTopicData>
+  Guid_t(const TBuiltinTopicData& builtin_topic_data);
+
+  template<typename TBuiltinTopicData>
+  static Guid_t for_participant(const TBuiltinTopicData& builtin_topic_data);
+
+  bool operator==(const dds_GUID_t & other) const;
+
+  bool operator!=(const Guid_t & other) const;
+
+  bool operator<(const Guid_t & other) const;
+}; // struct Guid_t
 } // namespace rmw_gurumdds_cpp
+
+#include "rmw_gurumdds_cpp/gid.inl"
 
 #endif // RMW_GURUMDDS__GID_HPP_
