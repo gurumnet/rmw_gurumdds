@@ -1,0 +1,213 @@
+#ifndef RMW_GURUMDDS__TYPE_SUPPORT_COMMON_INL
+#define RMW_GURUMDDS__TYPE_SUPPORT_COMMON_INL
+
+#include <sstream>
+
+namespace rmw_gurumdds_cpp
+{
+template<typename MessageMembersT>
+std::string
+create_type_name(const void * untyped_members) {
+  auto members = static_cast<const MessageMembersT *>(untyped_members);
+  if (nullptr == members) {
+    RMW_SET_ERROR_MSG("Members handle is null");
+    return "";
+  }
+
+  std::ostringstream type_name;
+  std::string message_namespace = members->message_namespace_;
+  if (!message_namespace.empty()) {
+    size_t pos = 0;
+    while ((pos = message_namespace.find("__", pos)) != std::string::npos) {
+      message_namespace.replace(pos, 2, "::");
+    }
+    type_name << message_namespace << "::";
+  }
+  type_name << "dds_::" << members->message_name_ << "_";
+  return type_name.str();
+}
+
+template<typename MessageMembersT>
+void *
+allocate_message(
+  const void * untyped_members,
+  const uint8_t * ros_message,
+  size_t * size,
+  bool is_service) {
+  auto members =
+    static_cast<const MessageMembersT *>(untyped_members);
+  if (nullptr == members) {
+    RMW_SET_ERROR_MSG("Members handle is null");
+    return nullptr;
+  }
+
+  if (nullptr == ros_message) {
+    RMW_SET_ERROR_MSG("ros message is null");
+    return nullptr;
+  }
+
+  if (nullptr == size) {
+    RMW_SET_ERROR_MSG("size pointer is null");
+    return nullptr;
+  }
+
+  rmw_gurumdds_cpp::CdrSerializationBuffer<false> buffer{nullptr, 0};
+  rmw_gurumdds_cpp::MessageSerializer<false, MessageMembersT> serializer{buffer};
+  serializer.serialize(members, ros_message, true);
+  if (is_service) {
+    uint64_t dummy = 0;
+    buffer << dummy;  // client_guid_0
+    buffer << dummy;  // client_guid_1
+    buffer << dummy;  // sequence_number
+    buffer << dummy;  // padding
+  }
+
+  *size = buffer.get_offset() + 4;
+  void * message = calloc(1, *size);
+  if (nullptr == message) {
+    RMW_SET_ERROR_MSG("Failed to allocate memory for dds message");
+    return nullptr;
+  }
+
+  return message;
+}
+
+template<typename MessageMembersT>
+std::string
+parse_struct(const MessageMembersT * members, const char * field_name, bool is_service)
+{
+  if (nullptr == members) {
+    RMW_SET_ERROR_MSG("Members handle is null");
+    return "";
+  }
+
+  std::ostringstream metastring;
+  metastring <<
+    "{(" <<
+    (field_name ? std::string("name=") + field_name + "_," : "") <<
+    "type=" <<
+    create_type_name<MessageMembersT>(members) <<
+    ",member=" <<
+    members->member_count_ + (is_service ? 3 : 0) <<
+    ")";
+
+  for (size_t i = 0; i < members->member_count_; i++) {
+    auto member = members->members_ + i;
+    if (member->is_array_) {
+      if (member->array_size_ > 0) {
+        if (!member->is_upper_bound_) {
+          // Array
+          metastring << "[(name=" << member->name_ << "_,dimension=" << member->array_size_ << ")";
+        } else {
+          // BoundedSequence
+          metastring << "<(name=" << member->name_ << "_,maximum=" << member->array_size_ << ")";
+        }
+      } else {
+        // UnboundedSequence
+        metastring << "<(name=" << member->name_ << "_)";
+      }
+    }
+
+    if (member->type_id_ == rosidl_typesupport_introspection_c__ROS_TYPE_MESSAGE) {
+      if (member->members_ == nullptr || member->members_->data == nullptr) {
+        RMW_SET_ERROR_MSG("Members handle is null");
+        return "";
+      }
+
+      auto inner_struct = static_cast<const MessageMembersT *>(member->members_->data);
+      std::string inner_metastring = parse_struct<MessageMembersT>(
+        inner_struct, member->is_array_ ? nullptr : member->name_, false);
+      if (inner_metastring.empty()) {
+        return "";
+      }
+      metastring << inner_metastring;
+    } else {
+      switch (member->type_id_) {
+        case rosidl_typesupport_introspection_c__ROS_TYPE_FLOAT:
+          metastring << "f";
+          break;
+        case rosidl_typesupport_introspection_c__ROS_TYPE_DOUBLE:
+        case rosidl_typesupport_introspection_c__ROS_TYPE_LONG_DOUBLE:
+          metastring << "d";
+          break;
+        case rosidl_typesupport_introspection_c__ROS_TYPE_CHAR:
+        case rosidl_typesupport_introspection_c__ROS_TYPE_OCTET:
+        case rosidl_typesupport_introspection_c__ROS_TYPE_UINT8:
+        case rosidl_typesupport_introspection_c__ROS_TYPE_INT8:
+          metastring << "B";
+          break;
+        case rosidl_typesupport_introspection_c__ROS_TYPE_WCHAR:
+          metastring << "w";
+          break;
+        case rosidl_typesupport_introspection_c__ROS_TYPE_BOOLEAN:
+          metastring << "z";
+          break;
+        case rosidl_typesupport_introspection_c__ROS_TYPE_UINT16:
+          metastring << "S";
+          break;
+        case rosidl_typesupport_introspection_c__ROS_TYPE_INT16:
+          metastring << "s";
+          break;
+        case rosidl_typesupport_introspection_c__ROS_TYPE_UINT32:
+          metastring << "I";
+          break;
+        case rosidl_typesupport_introspection_c__ROS_TYPE_INT32:
+          metastring << "i";
+          break;
+        case rosidl_typesupport_introspection_c__ROS_TYPE_UINT64:
+          metastring << "L";
+          break;
+        case rosidl_typesupport_introspection_c__ROS_TYPE_INT64:
+          metastring << "l";
+          break;
+        case rosidl_typesupport_introspection_c__ROS_TYPE_STRING:
+          metastring << "'";
+          break;
+        case rosidl_typesupport_introspection_c__ROS_TYPE_WSTRING:
+          metastring << "W";
+          break;
+        case rosidl_typesupport_introspection_c__ROS_TYPE_MESSAGE:
+          break;
+        default:
+          RMW_SET_ERROR_MSG("Unknown type");
+          return "";
+      }
+
+      metastring <<
+        "(" <<
+        (member->is_array_ ? "" : std::string("name=") + member->name_ + "_") <<
+        ")";
+    }
+  }
+
+  return metastring.str();
+}
+
+template<typename MessageMembersT>
+std::string
+create_metastring(const void * untyped_members, bool is_service)
+{
+  auto members = static_cast<const MessageMembersT *>(untyped_members);
+  if (nullptr == members) {
+    RMW_SET_ERROR_MSG("Null members handle is given");
+    return "";
+  }
+
+  std::ostringstream metastring;
+  metastring <<
+    "!1" <<
+    parse_struct<MessageMembersT>(
+      static_cast<const MessageMembersT *>(members), nullptr, is_service);
+
+  if (is_service) {
+    metastring <<
+      "L(name=gurumdds__client_guid_0_)" <<
+      "L(name=gurumdds__client_guid_1_)" <<
+      "l(name=gurumdds__sequence_number_)";
+  }
+
+  return metastring.str();
+}
+} // namespace rmw_gurumdds_cpp
+
+#endif  // RMW_GURUMDDS__TYPE_SUPPORT_COMMON_INL
