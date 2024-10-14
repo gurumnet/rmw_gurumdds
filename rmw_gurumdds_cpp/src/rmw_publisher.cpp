@@ -202,6 +202,8 @@ create_publisher(
   publisher_info->event_guard_cond[RMW_EVENT_OFFERED_QOS_INCOMPATIBLE] = dds_GuardCondition_create();
   publisher_info->event_guard_cond[RMW_EVENT_PUBLISHER_INCOMPATIBLE_TYPE] = dds_GuardCondition_create();
   publisher_info->event_guard_cond[RMW_EVENT_PUBLICATION_MATCHED] = dds_GuardCondition_create();
+  dds_TypeSupport* reader_dds_type = dds_DataWriter_get_typesupport(topic_writer);
+  set_type_support_ops(reader_dds_type, type_support);
 
   TopicEventListener::add_event(topic, publisher_info);
 
