@@ -13,6 +13,11 @@ create_type_support_and_register(
   const rosidl_message_type_support_t * type_support,
   const std::string & type_name,
   const std::string & metastring);
+
+void set_type_support_ops(
+  dds_TypeSupport* dds_type_support,
+  const rosidl_message_type_support_t* type_support
+  );
 }
 
 #endif  // RMW_GURUMDDS__TYPE_SUPPORT_HPP_

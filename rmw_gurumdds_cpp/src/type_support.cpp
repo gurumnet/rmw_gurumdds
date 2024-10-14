@@ -78,4 +78,16 @@ create_type_support_and_register(
 
   return dds_type_support;
 }
+
+void set_type_support_ops(
+  dds_TypeSupport* dds_type_support,
+  const rosidl_message_type_support_t* type_support) {
+  dds_TypeSupport_ops dds_ops{};
+  dds_ops.context = const_cast<rosidl_message_type_support_t *>(type_support);
+  dds_ops.get_size = get_size;
+  dds_ops.get_serialized_size = get_serialize_size;
+  dds_ops.serialize_direct = serialize_direct;
+  dds_ops.deserialize_direct = deserialize_direct;
+  dds_TypeSupport_set_operations(dds_type_support, &dds_ops);
+}
 }
