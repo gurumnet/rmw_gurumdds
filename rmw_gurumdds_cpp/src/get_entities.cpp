@@ -15,7 +15,8 @@
 #include "rmw_gurumdds_cpp/get_entities.hpp"
 #include "rmw_gurumdds_cpp/identifier.hpp"
 #include "rmw_gurumdds_cpp/rmw_context_impl.hpp"
-#include "rmw_gurumdds_cpp/types.hpp"
+#include "rmw_gurumdds_cpp/event_info_common.hpp"
+#include "rmw_gurumdds_cpp/event_info_service.hpp"
 
 namespace rmw_gurumdds_cpp
 {

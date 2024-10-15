@@ -12,22 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef RMW_GURUMDDS__TYPES_HPP_
-#define RMW_GURUMDDS__TYPES_HPP_
+#ifndef RMW_GURUMDDS__EVENT_INFO_COMMON_HPP_
+#define RMW_GURUMDDS__EVENT_INFO_COMMON_HPP_
 
-#include <atomic>
-#include <cassert>
-#include <exception>
-#include <iostream>
-#include <limits>
-#include <list>
 #include <map>
 #include <mutex>
-#include <set>
-#include <sstream>
-#include <stdexcept>
-#include <string>
-#include <utility>
 #include <vector>
 
 #include "rmw/ret_types.h"
@@ -129,10 +118,11 @@ struct PublisherInfo : EventInfo
   void on_publication_matched(const dds_PublicationMatchedStatus & status);
 };
 
-struct PublisherGID
-{
-  uint8_t publication_handle[16];
-};
+size_t count_unread(
+  dds_DataReader * reader,
+  dds_DataSeq * data_seq,
+  dds_SampleInfoSeq * info_seq,
+  dds_UnsignedLongSeq * raw_data_sizes);
 
 struct SubscriberInfo : EventInfo
 {
@@ -203,49 +193,6 @@ struct SubscriberInfo : EventInfo
   size_t count_unread();
 };
 
-struct ClientInfo
-{
-  const rosidl_service_type_support_t * service_typesupport;
-  const char * implementation_identifier;
-  rmw_context_impl_t * ctx;
-  int64_t sequence_number;
-  uint8_t writer_guid[16];
-
-  rmw_gid_t publisher_gid;
-  rmw_gid_t subscriber_gid;
-  dds_DataWriter * request_writer;
-  dds_DataReader * response_reader;
-  dds_ReadCondition * read_condition;
-
-  dds_DataReaderListener response_listener;
-  dds_DataSeq * data_seq;
-  dds_SampleInfoSeq * info_seq;
-  dds_UnsignedLongSeq * raw_data_sizes;
-  event_callback_data_t event_callback_data;
-
-  size_t count_unread();
-};
-
-struct ServiceInfo {
-  const rosidl_service_type_support_t * service_typesupport;
-  const char * implementation_identifier;
-  rmw_context_impl_t * ctx;
-
-  rmw_gid_t publisher_gid;
-  rmw_gid_t subscriber_gid;
-  dds_DataWriter * response_writer;
-  dds_DataReader * request_reader;
-  dds_ReadCondition * read_condition;
-
-  dds_DataReaderListener request_listener;
-  dds_DataSeq * data_seq;
-  dds_SampleInfoSeq * info_seq;
-  dds_UnsignedLongSeq * raw_data_sizes;
-  event_callback_data_t event_callback_data;
-
-  size_t count_unread();
-};
-
 class TopicEventListener {
 public:
   static rmw_ret_t associate_listener(dds_Topic* topic);
@@ -270,4 +217,4 @@ private:
 };
 } // namespace rmw_gurumdds_cpp
 
-#endif // RMW_GURUMDDS__TYPES_HPP_
+#endif // RMW_GURUMDDS__EVENT_INFO_COMMON_HPP_
