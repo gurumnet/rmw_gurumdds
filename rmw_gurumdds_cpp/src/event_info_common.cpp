@@ -15,13 +15,11 @@
 #include <cstdint>
 
 #include "rmw_gurumdds_cpp/event_converter.hpp"
+#include "rmw_gurumdds_cpp/event_info_common.hpp"
+#include "rmw_gurumdds_cpp/gid.hpp"
 #include "rmw_gurumdds_cpp/graph_cache.hpp"
 #include "rmw_gurumdds_cpp/qos.hpp"
 #include "rmw_gurumdds_cpp/rmw_context_impl.hpp"
-#include "rmw_gurumdds_cpp/gid.hpp"
-#include "rmw_gurumdds_cpp/types.hpp"
-
-#define ENTITYID_PARTICIPANT 0x000001C1
 
 namespace rmw_gurumdds_cpp
 {
@@ -485,7 +483,7 @@ bool SubscriberInfo::is_status_changed(rmw_event_type_t event_type)
   std::lock_guard lock_guard{mutex_event};
   bool changed = false;
   if(has_callback_unsafe(event_type)) {
-    switch (event_type) {
+    switch(event_type) {
       case RMW_EVENT_LIVELINESS_CHANGED:
         changed = liveliness_changed;
         break;
@@ -517,7 +515,7 @@ bool SubscriberInfo::is_status_changed(rmw_event_type_t event_type)
   return changed;
 }
 
-inline size_t count_unread_(
+size_t count_unread(
   dds_DataReader * reader,
   dds_DataSeq * data_seq,
   dds_SampleInfoSeq * info_seq,
@@ -555,7 +553,7 @@ inline size_t count_unread_(
 
 size_t SubscriberInfo::count_unread()
 {
-  return count_unread_(topic_reader, data_seq, info_seq, raw_data_sizes);
+  return rmw_gurumdds_cpp::count_unread(topic_reader, data_seq, info_seq, raw_data_sizes);
 }
 
 void SubscriberInfo::on_requested_deadline_missed(const dds_RequestedDeadlineMissedStatus & status)
@@ -654,16 +652,6 @@ bool SubscriberInfo::has_callback_unsafe(rmw_event_type_t event_type) const
 {
   // RMW_EVENT_PUBLISHER_INCOMPATIBLE_TYPE is always used with a callback
   return ((mask | dds_INCONSISTENT_TOPIC_STATUS) & rmw_gurumdds_cpp::get_status_kind_from_rmw(event_type)) > 0;
-}
-
-size_t ClientInfo::count_unread()
-{
-  return count_unread_(response_reader, data_seq, info_seq, raw_data_sizes);
-}
-
-size_t ServiceInfo::count_unread()
-{
-  return count_unread_(request_reader, data_seq, info_seq, raw_data_sizes);
 }
 
 std::mutex TopicEventListener::mutex_table_;
