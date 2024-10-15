@@ -17,7 +17,8 @@
 
 #include "rmw/rmw.h"
 
-#include "rmw_gurumdds_cpp/types.hpp"
+#include "rmw_gurumdds_cpp/event_info_common.hpp"
+#include "rmw_gurumdds_cpp/event_info_service.hpp"
 
 namespace rmw_gurumdds_cpp::graph_cache {
 rmw_ret_t

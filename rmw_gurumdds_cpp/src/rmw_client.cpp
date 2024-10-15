@@ -37,7 +37,7 @@
 #include "rmw_gurumdds_cpp/rmw_context_impl.hpp"
 #include "rmw_gurumdds_cpp/gid.hpp"
 #include "rmw_gurumdds_cpp/type_support_service.hpp"
-#include "rmw_gurumdds_cpp/types.hpp"
+#include "rmw_gurumdds_cpp/event_info_common.hpp"
 
 extern "C"
 {

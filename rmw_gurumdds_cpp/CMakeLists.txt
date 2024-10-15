@@ -91,7 +91,7 @@ add_library(rmw_gurumdds_cpp
   src/rmw_topic_names_and_types.cpp
   src/rmw_wait.cpp
   src/serialization_format.cpp
-  src/types.cpp
+  src/event_info_common.cpp
   src/type_support.cpp
   src/type_support_common.cpp
   src/wait.cpp

@@ -19,7 +19,7 @@
 
 #include "rmw_gurumdds_cpp/dds_include.hpp"
 #include "rmw_gurumdds_cpp/identifier.hpp"
-#include "rmw_gurumdds_cpp/types.hpp"
+#include "rmw_gurumdds_cpp/event_info_common.hpp"
 #include "rmw_gurumdds_cpp/wait.hpp"
 
 extern "C"
