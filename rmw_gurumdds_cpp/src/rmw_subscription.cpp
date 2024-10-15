@@ -40,7 +40,7 @@
 #include "rmw_gurumdds_cpp/type_support.hpp"
 #include "rmw_gurumdds_cpp/type_support_common.hpp"
 #include "rmw_gurumdds_cpp/type_support_service.hpp"
-#include "rmw_gurumdds_cpp/types.hpp"
+#include "rmw_gurumdds_cpp/event_info_common.hpp"
 
 namespace rmw_gurumdds_cpp
 {
