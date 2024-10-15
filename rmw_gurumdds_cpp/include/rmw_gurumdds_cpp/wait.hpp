@@ -19,6 +19,13 @@
 
 namespace rmw_gurumdds_cpp
 {
+struct WaitSetInfo
+{
+  dds_WaitSet * wait_set;
+  dds_ConditionSeq * active_conditions;
+  dds_ConditionSeq * attached_conditions;
+};
+
 rmw_ret_t
 wait(
   const char * implementation_identifier,
