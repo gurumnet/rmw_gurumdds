@@ -94,6 +94,7 @@ add_library(rmw_gurumdds_cpp
   src/event_info_common.cpp
   src/type_support.cpp
   src/type_support_common.cpp
+  src/type_support_service.cpp
   src/wait.cpp
 )
 
