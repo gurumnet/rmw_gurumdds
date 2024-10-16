@@ -37,310 +37,90 @@
 #define GET_TYPENAME(T) \
   typename std::remove_pointer<typename std::remove_const<decltype(T)>::type>::type
 
-
 namespace rmw_gurumdds_cpp
 {
 template<typename ServiceMembersT>
 std::pair<std::string, std::string>
-_create_service_type_name(const void * untyped_members)
-{
-  auto members = static_cast<const ServiceMembersT *>(untyped_members);
-  if (members == nullptr) {
-    RMW_SET_ERROR_MSG("Members handle is null");
-    return {"", ""};
-  }
+create_service_type_name(const void * untyped_members);
 
-  return {
-    create_type_name<GET_TYPENAME(members->request_members_)>(
-      static_cast<const void *>(members->request_members_)
-    ),
-    create_type_name<GET_TYPENAME(members->response_members_)>(
-      static_cast<const void *>(members->response_members_)
-    )
-  };
-}
-
-inline std::pair<std::string, std::string>
-create_service_type_name(const void * untyped_members, const char * identifier)
-{
-  if (identifier == rosidl_typesupport_introspection_c__identifier) {
-    return _create_service_type_name<rosidl_typesupport_introspection_c__ServiceMembers>(
-      untyped_members);
-  } else if (identifier == rosidl_typesupport_introspection_cpp::typesupport_identifier) {
-    return _create_service_type_name<rosidl_typesupport_introspection_cpp::ServiceMembers>(
-      untyped_members);
-  }
-
-  RMW_SET_ERROR_MSG("Unknown typesupport identifier");
-  return {"", ""};
-}
+std::pair<std::string, std::string>
+create_service_type_name(const void * untyped_members, const char * identifier);
 
 template<typename ServiceMembersT>
 std::pair<std::string, std::string>
-_create_service_metastring(const void * untyped_members)
-{
-  auto members = static_cast<const ServiceMembersT *>(untyped_members);
-  if (members == nullptr) {
-    RMW_SET_ERROR_MSG("Members handle is null");
-    return {"", ""};
-  }
+create_service_metastring(const void * untyped_members);
 
-  return {
-    create_metastring<GET_TYPENAME(members->request_members_)>(
-      static_cast<const void *>(members->request_members_),
-      true
-    ),
-    create_metastring<GET_TYPENAME(members->response_members_)>(
-      static_cast<const void *>(members->response_members_),
-      true
-    )
-  };
-}
-
-inline std::pair<std::string, std::string>
-create_service_metastring(const void * untyped_members, const char * identifier)
-{
-  if (identifier == rosidl_typesupport_introspection_c__identifier) {
-    return _create_service_metastring<rosidl_typesupport_introspection_c__ServiceMembers>(
-      untyped_members);
-  } else if (identifier == rosidl_typesupport_introspection_cpp::typesupport_identifier) {
-    return _create_service_metastring<rosidl_typesupport_introspection_cpp::ServiceMembers>(
-      untyped_members);
-  }
-
-  RMW_SET_ERROR_MSG("Unknown typesupport identifier");
-  return {"", ""};
-}
+std::pair<std::string, std::string>
+create_service_metastring(const void * untyped_members, const char * identifier);
 
 template<typename ServiceMembersT>
 void *
-_allocate_request_basic(
+allocate_request_basic(
   const void * untyped_members,
   const void * ros_request,
-  size_t * size)
-{
-  auto members = static_cast<const ServiceMembersT *>(untyped_members);
-  if (members == nullptr) {
-    RMW_SET_ERROR_MSG("Members handle is null");
-    return nullptr;
-  }
+  size_t * size);
 
-  return allocate_message<GET_TYPENAME(members->request_members_)>(
-    static_cast<const void *>(members->request_members_),
-    static_cast<const uint8_t *>(ros_request),
-    size,
-    true
-  );
-}
-
-inline void *
+void *
 allocate_request_basic(
   const void * untyped_members,
   const char * identifier,
   const void * ros_request,
-  size_t * size)
-{
-  if (identifier == rosidl_typesupport_introspection_c__identifier) {
-    return _allocate_request_basic<rosidl_typesupport_introspection_c__ServiceMembers>(
-      untyped_members,
-      reinterpret_cast<const uint8_t *>(ros_request),
-      size
-    );
-  } else if (identifier == rosidl_typesupport_introspection_cpp::typesupport_identifier) {
-    return _allocate_request_basic<rosidl_typesupport_introspection_cpp::ServiceMembers>(
-      untyped_members,
-      reinterpret_cast<const uint8_t *>(ros_request),
-      size
-    );
-  }
-
-  RMW_SET_ERROR_MSG("Unknown typesupport identifier");
-  return nullptr;
-}
+  size_t * size);
 
 template<typename ServiceMembersT>
 void *
-_allocate_response_basic(
+allocate_response_basic(
   const void * untyped_members,
   const void * ros_response,
-  size_t * size)
-{
-  auto members = static_cast<const ServiceMembersT *>(untyped_members);
-  if (members == nullptr) {
-    RMW_SET_ERROR_MSG("Members handle is null");
-    return nullptr;
-  }
+  size_t * size);
 
-  return allocate_message<GET_TYPENAME(members->response_members_)>(
-    static_cast<const void *>(members->response_members_),
-    static_cast<const uint8_t *>(ros_response),
-    size,
-    true
-  );
-}
-
-inline void *
+void *
 allocate_response_basic(
   const void * untyped_members,
   const char * identifier,
   const void * ros_response,
-  size_t * size)
-{
-  if (identifier == rosidl_typesupport_introspection_c__identifier) {
-    return _allocate_response_basic<rosidl_typesupport_introspection_c__ServiceMembers>(
-      untyped_members,
-      reinterpret_cast<const uint8_t *>(ros_response),
-      size
-    );
-  } else if (identifier == rosidl_typesupport_introspection_cpp::typesupport_identifier) {
-    return _allocate_response_basic<rosidl_typesupport_introspection_cpp::ServiceMembers>(
-      untyped_members,
-      reinterpret_cast<const uint8_t *>(ros_response),
-      size
-    );
-  }
-
-  RMW_SET_ERROR_MSG("Unknown typesupport identifier");
-  return nullptr;
-}
+  size_t * size);
 
 template<typename ServiceMembersT>
 void *
-_allocate_request_enhanced(
+allocate_request_enhanced(
   const void * untyped_members,
   const void * ros_request,
-  size_t * size)
-{
-  auto members = static_cast<const ServiceMembersT *>(untyped_members);
-  if (members == nullptr) {
-    RMW_SET_ERROR_MSG("Members handle is null");
-    return nullptr;
-  }
+  size_t * size);
 
-  return allocate_message<GET_TYPENAME(members->request_members_)>(
-    static_cast<const void *>(members->request_members_),
-    static_cast<const uint8_t *>(ros_request),
-    size,
-    false
-  );
-}
-
-inline void *
+void *
 allocate_request_enhanced(
   const void * untyped_members,
   const char * identifier,
   const void * ros_request,
-  size_t * size)
-{
-  if (identifier == rosidl_typesupport_introspection_c__identifier) {
-    return _allocate_request_enhanced<rosidl_typesupport_introspection_c__ServiceMembers>(
-      untyped_members,
-      reinterpret_cast<const uint8_t *>(ros_request),
-      size
-    );
-  } else if (identifier == rosidl_typesupport_introspection_cpp::typesupport_identifier) {
-    return _allocate_request_enhanced<rosidl_typesupport_introspection_cpp::ServiceMembers>(
-      untyped_members,
-      reinterpret_cast<const uint8_t *>(ros_request),
-      size
-    );
-  }
-
-  RMW_SET_ERROR_MSG("Unknown typesupport identifier");
-  return nullptr;
-}
+  size_t * size);
 
 template<typename ServiceMembersT>
 void *
-_allocate_response_enhanced(
+allocate_response_enhanced(
   const void * untyped_members,
   const void * ros_response,
-  size_t * size)
-{
-  auto members = static_cast<const ServiceMembersT *>(untyped_members);
-  if (members == nullptr) {
-    RMW_SET_ERROR_MSG("Members handle is null");
-    return nullptr;
-  }
+  size_t * size);
 
-  return allocate_message<GET_TYPENAME(members->response_members_)>(
-    static_cast<const void *>(members->response_members_),
-    static_cast<const uint8_t *>(ros_response),
-    size,
-    false
-  );
-}
-
-inline void *
+void *
 allocate_response_enhanced(
   const void * untyped_members,
   const char * identifier,
   const void * ros_response,
-  size_t * size)
-{
-  if (identifier == rosidl_typesupport_introspection_c__identifier) {
-    return _allocate_response_enhanced<rosidl_typesupport_introspection_c__ServiceMembers>(
-      untyped_members,
-      reinterpret_cast<const uint8_t *>(ros_response),
-      size
-    );
-  } else if (identifier == rosidl_typesupport_introspection_cpp::typesupport_identifier) {
-    return _allocate_response_enhanced<rosidl_typesupport_introspection_cpp::ServiceMembers>(
-      untyped_members,
-      reinterpret_cast<const uint8_t *>(ros_response),
-      size
-    );
-  }
-
-  RMW_SET_ERROR_MSG("Unknown typesupport identifier");
-  return nullptr;
-}
+  size_t * size);
 
 template<typename MessageMembersT>
 bool
-_serialize_service_basic(
+serialize_service_basic(
   const void * untyped_members,
   const uint8_t * ros_service,
   uint8_t * dds_service,
   size_t size,
   int64_t sequence_number,
   const uint8_t * client_guid,
-  bool is_request)
-{
-  auto members =
-    static_cast<const MessageMembersT *>(untyped_members);
-  if (members == nullptr) {
-    RMW_SET_ERROR_MSG("Members handle is null");
-    return false;
-  }
+  bool is_request);
 
-  int32_t sn_high = static_cast<int32_t>((sequence_number & 0xFFFFFFFF00000000LL) >> 8);
-  uint32_t sn_low = static_cast<uint32_t>(sequence_number & 0x00000000FFFFFFFFLL);
-
-  try {
-    rmw_gurumdds_cpp::CdrSerializationBuffer<true> buffer{dds_service, size};
-    rmw_gurumdds_cpp::MessageSerializer<true, MessageMembersT> serializer{buffer};
-    buffer << *(reinterpret_cast<const uint64_t *>(client_guid));
-    buffer << *(reinterpret_cast<const uint64_t *>(client_guid + 8));
-    buffer << *(reinterpret_cast<uint32_t *>(&sn_high));
-    buffer << *(reinterpret_cast<uint32_t *>(&sn_low));
-    if (is_request) {
-      std::string instance_name = "";
-      buffer << instance_name;
-    } else {
-      int32_t remoteEx = 0;
-      buffer << *(reinterpret_cast<uint32_t *>(&remoteEx));
-    }
-    serializer.serialize(members, ros_service, true);
-  } catch (std::runtime_error & e) {
-    RMW_SET_ERROR_MSG_WITH_FORMAT_STRING("Failed to serialize ros message: %s", e.what());
-    return false;
-  }
-
-  return true;
-}
-
-inline bool
+bool
 serialize_service_basic(
   const void * untyped_members,
   const char * identifier,
@@ -349,62 +129,19 @@ serialize_service_basic(
   size_t size,
   int64_t sequence_number,
   const uint8_t * client_guid,
-  bool is_request)
-{
-  if (identifier == rosidl_typesupport_introspection_c__identifier) {
-    return _serialize_service_basic<rosidl_typesupport_introspection_c__MessageMembers>(
-      untyped_members,
-      reinterpret_cast<const uint8_t *>(ros_service),
-      reinterpret_cast<uint8_t *>(dds_service),
-      size,
-      sequence_number,
-      client_guid,
-      is_request
-    );
-  } else if (identifier == rosidl_typesupport_introspection_cpp::typesupport_identifier) {
-    return _serialize_service_basic<rosidl_typesupport_introspection_cpp::MessageMembers>(
-      untyped_members,
-      reinterpret_cast<const uint8_t *>(ros_service),
-      reinterpret_cast<uint8_t *>(dds_service),
-      size,
-      sequence_number,
-      client_guid,
-      is_request
-    );
-  }
-
-  RMW_SET_ERROR_MSG("Unknown typesupport identifier");
-  return false;
-}
+  bool is_request);
 
 template<typename ServiceMembersT>
 bool
-_serialize_request_basic(
+serialize_request_basic(
   const void * untyped_members,
   const uint8_t * ros_request,
   uint8_t * dds_request,
   size_t size,
   int64_t sequence_number,
-  const uint8_t * client_guid)
-{
-  auto members = static_cast<const ServiceMembersT *>(untyped_members);
-  if (members == nullptr) {
-    RMW_SET_ERROR_MSG("Members handle is null");
-    return false;
-  }
+  const uint8_t * client_guid);
 
-  return _serialize_service_basic<GET_TYPENAME(members->request_members_)>(
-    static_cast<const void *>(members->request_members_),
-    ros_request,
-    dds_request,
-    size,
-    sequence_number,
-    client_guid,
-    true
-  );
-}
-
-inline bool
+bool
 serialize_request_basic(
   const void * untyped_members,
   const char * identifier,
@@ -412,60 +149,19 @@ serialize_request_basic(
   void * dds_request,
   size_t size,
   int64_t sequence_number,
-  const uint8_t * client_guid)
-{
-  if (identifier == rosidl_typesupport_introspection_c__identifier) {
-    return _serialize_request_basic<rosidl_typesupport_introspection_c__ServiceMembers>(
-      untyped_members,
-      reinterpret_cast<const uint8_t *>(ros_request),
-      reinterpret_cast<uint8_t *>(dds_request),
-      size,
-      sequence_number,
-      client_guid
-    );
-  } else if (identifier == rosidl_typesupport_introspection_cpp::typesupport_identifier) {
-    return _serialize_request_basic<rosidl_typesupport_introspection_cpp::ServiceMembers>(
-      untyped_members,
-      reinterpret_cast<const uint8_t *>(ros_request),
-      reinterpret_cast<uint8_t *>(dds_request),
-      size,
-      sequence_number,
-      client_guid
-    );
-  }
-
-  RMW_SET_ERROR_MSG("Unknown typesupport identifier");
-  return false;
-}
+  const uint8_t * client_guid);
 
 template<typename ServiceMembersT>
 bool
-_serialize_response_basic(
+serialize_response_basic(
   const void * untyped_members,
   const uint8_t * ros_response,
   uint8_t * dds_response,
   size_t size,
   int64_t sequence_number,
-  const uint8_t * client_guid)
-{
-  auto members = static_cast<const ServiceMembersT *>(untyped_members);
-  if (members == nullptr) {
-    RMW_SET_ERROR_MSG("Members handle is null");
-    return false;
-  }
+  const uint8_t * client_guid);
 
-  return _serialize_service_basic<GET_TYPENAME(members->response_members_)>(
-    static_cast<const void *>(members->response_members_),
-    ros_response,
-    dds_response,
-    size,
-    sequence_number,
-    client_guid,
-    false
-  );
-}
-
-inline bool
+bool
 serialize_response_basic(
   const void * untyped_members,
   const char * identifier,
@@ -473,190 +169,59 @@ serialize_response_basic(
   void * dds_response,
   size_t size,
   int64_t sequence_number,
-  const uint8_t * client_guid)
-{
-  if (identifier == rosidl_typesupport_introspection_c__identifier) {
-    return _serialize_response_basic<rosidl_typesupport_introspection_c__ServiceMembers>(
-      untyped_members,
-      reinterpret_cast<const uint8_t *>(ros_response),
-      reinterpret_cast<uint8_t *>(dds_response),
-      size,
-      sequence_number,
-      client_guid
-    );
-  } else if (identifier == rosidl_typesupport_introspection_cpp::typesupport_identifier) {
-    return _serialize_response_basic<rosidl_typesupport_introspection_cpp::ServiceMembers>(
-      untyped_members,
-      reinterpret_cast<const uint8_t *>(ros_response),
-      reinterpret_cast<uint8_t *>(dds_response),
-      size,
-      sequence_number,
-      client_guid
-    );
-  }
-
-  RMW_SET_ERROR_MSG("Unknown typesupport identifier");
-  return false;
-}
+  const uint8_t * client_guid);
 
 template<typename MessageMembersT>
 bool
-_serialize_service_enhanced(
+serialize_service_enhanced(
   const void * untyped_members,
   const uint8_t * ros_service,
   uint8_t * dds_service,
-  size_t size)
-{
-  auto members =
-    static_cast<const MessageMembersT *>(untyped_members);
-  if (members == nullptr) {
-    RMW_SET_ERROR_MSG("Members handle is null");
-    return false;
-  }
+  size_t size);
 
-  try {
-    rmw_gurumdds_cpp::CdrSerializationBuffer<true> buffer{dds_service, size};
-    rmw_gurumdds_cpp::MessageSerializer<true, MessageMembersT> serializer{buffer};
-    serializer.serialize(members, ros_service, true);
-  } catch (std::runtime_error & e) {
-    RMW_SET_ERROR_MSG_WITH_FORMAT_STRING("Failed to serialize ros message: %s", e.what());
-    return false;
-  }
-
-  return true;
-}
-
-inline bool
+bool
 serialize_service_enhanced(
   const void * untyped_members,
   const char * identifier,
   const void * ros_service,
   void * dds_service,
-  size_t size)
-{
-  if (identifier == rosidl_typesupport_introspection_c__identifier) {
-    return _serialize_service_enhanced<rosidl_typesupport_introspection_c__MessageMembers>(
-      untyped_members,
-      reinterpret_cast<const uint8_t *>(ros_service),
-      reinterpret_cast<uint8_t *>(dds_service),
-      size
-    );
-  } else if (identifier == rosidl_typesupport_introspection_cpp::typesupport_identifier) {
-    return _serialize_service_enhanced<rosidl_typesupport_introspection_cpp::MessageMembers>(
-      untyped_members,
-      reinterpret_cast<const uint8_t *>(ros_service),
-      reinterpret_cast<uint8_t *>(dds_service),
-      size
-    );
-  }
-
-  RMW_SET_ERROR_MSG("Unknown typesupport identifier");
-  return false;
-}
+  size_t size);
 
 template<typename ServiceMembersT>
 bool
-_serialize_request_enhanced(
+serialize_request_enhanced(
   const void * untyped_members,
   const uint8_t * ros_request,
   uint8_t * dds_request,
-  size_t size)
-{
-  auto members = static_cast<const ServiceMembersT *>(untyped_members);
-  if (members == nullptr) {
-    RMW_SET_ERROR_MSG("Members handle is null");
-    return false;
-  }
+  size_t size);
 
-  return _serialize_service_enhanced<GET_TYPENAME(members->request_members_)>(
-    static_cast<const void *>(members->request_members_),
-    ros_request,
-    dds_request,
-    size
-  );
-}
-
-inline bool
+bool
 serialize_request_enhanced(
   const void * untyped_members,
   const char * identifier,
   const void * ros_request,
   void * dds_request,
-  size_t size)
-{
-  if (identifier == rosidl_typesupport_introspection_c__identifier) {
-    return _serialize_request_enhanced<rosidl_typesupport_introspection_c__ServiceMembers>(
-      untyped_members,
-      reinterpret_cast<const uint8_t *>(ros_request),
-      reinterpret_cast<uint8_t *>(dds_request),
-      size
-    );
-  } else if (identifier == rosidl_typesupport_introspection_cpp::typesupport_identifier) {
-    return _serialize_request_enhanced<rosidl_typesupport_introspection_cpp::ServiceMembers>(
-      untyped_members,
-      reinterpret_cast<const uint8_t *>(ros_request),
-      reinterpret_cast<uint8_t *>(dds_request),
-      size
-    );
-  }
-
-  RMW_SET_ERROR_MSG("Unknown typesupport identifier");
-  return false;
-}
+  size_t size);
 
 template<typename ServiceMembersT>
 bool
-_serialize_response_enhanced(
+serialize_response_enhanced(
   const void * untyped_members,
   const uint8_t * ros_response,
   uint8_t * dds_response,
-  size_t size)
-{
-  auto members = static_cast<const ServiceMembersT *>(untyped_members);
-  if (members == nullptr) {
-    RMW_SET_ERROR_MSG("Members handle is null");
-    return false;
-  }
+  size_t size);
 
-  return _serialize_service_enhanced<GET_TYPENAME(members->response_members_)>(
-    static_cast<const void *>(members->response_members_),
-    ros_response,
-    dds_response,
-    size
-  );
-}
-
-inline bool
+bool
 serialize_response_enhanced(
   const void * untyped_members,
   const char * identifier,
   const void * ros_response,
   void * dds_response,
-  size_t size)
-{
-  if (identifier == rosidl_typesupport_introspection_c__identifier) {
-    return _serialize_response_enhanced<rosidl_typesupport_introspection_c__ServiceMembers>(
-      untyped_members,
-      reinterpret_cast<const uint8_t *>(ros_response),
-      reinterpret_cast<uint8_t *>(dds_response),
-      size
-    );
-  } else if (identifier == rosidl_typesupport_introspection_cpp::typesupport_identifier) {
-    return _serialize_response_enhanced<rosidl_typesupport_introspection_cpp::ServiceMembers>(
-      untyped_members,
-      reinterpret_cast<const uint8_t *>(ros_response),
-      reinterpret_cast<uint8_t *>(dds_response),
-      size
-    );
-  }
-
-  RMW_SET_ERROR_MSG("Unknown typesupport identifier");
-  return false;
-}
+  size_t size);
 
 template<typename MessageMembersT>
 bool
-_deserialize_service_basic(
+deserialize_service_basic(
   const void * untyped_members,
   uint8_t * ros_service,
   uint8_t * dds_service,
@@ -664,39 +229,9 @@ _deserialize_service_basic(
   int32_t * sn_high,
   uint32_t * sn_low,
   int8_t * client_guid,
-  bool is_request)
-{
-  auto members =
-    static_cast<const MessageMembersT *>(untyped_members);
-  if (members == nullptr) {
-    RMW_SET_ERROR_MSG("Members handle is null");
-    return false;
-  }
+  bool is_request);
 
-  try {
-    auto buffer = rmw_gurumdds_cpp::CdrDeserializationBuffer(dds_service, size);
-    auto deserializer = rmw_gurumdds_cpp::MessageDeserializer<MessageMembersT>(buffer);
-    buffer >> *(reinterpret_cast<uint64_t *>(client_guid));
-    buffer >> *(reinterpret_cast<uint64_t *>(client_guid + 8));
-    buffer >> *(reinterpret_cast<uint32_t *>(sn_high));
-    buffer >> *(reinterpret_cast<uint32_t *>(sn_low));
-    if (is_request) {
-      std::string instance_name;
-      buffer >> instance_name;
-    } else {
-      int32_t remoteEx;
-      buffer >> *(reinterpret_cast<uint32_t *>(&remoteEx));
-    }
-    deserializer.deserialize(members, ros_service);
-  } catch (std::runtime_error & e) {
-    RMW_SET_ERROR_MSG_WITH_FORMAT_STRING("Failed to deserialize dds message: %s", e.what());
-    return false;
-  }
-
-  return true;
-}
-
-inline bool
+bool
 deserialize_service_basic(
   const void * untyped_members,
   const char * identifier,
@@ -706,66 +241,20 @@ deserialize_service_basic(
   int32_t * sn_high,
   uint32_t * sn_low,
   int8_t * client_guid,
-  bool is_request)
-{
-  if (identifier == rosidl_typesupport_introspection_c__identifier) {
-    return _deserialize_service_basic<rosidl_typesupport_introspection_c__MessageMembers>(
-      untyped_members,
-      reinterpret_cast<uint8_t *>(ros_service),
-      reinterpret_cast<uint8_t *>(dds_service),
-      size,
-      sn_high,
-      sn_low,
-      client_guid,
-      is_request
-    );
-  } else if (identifier == rosidl_typesupport_introspection_cpp::typesupport_identifier) {
-    return _deserialize_service_basic<rosidl_typesupport_introspection_cpp::MessageMembers>(
-      untyped_members,
-      reinterpret_cast<uint8_t *>(ros_service),
-      reinterpret_cast<uint8_t *>(dds_service),
-      size,
-      sn_high,
-      sn_low,
-      client_guid,
-      is_request
-    );
-  }
-
-  RMW_SET_ERROR_MSG("Unknown typesupport identifier");
-  return false;
-}
+  bool is_request);
 
 template<typename ServiceMembersT>
 bool
-_deserialize_request_basic(
+deserialize_request_basic(
   const void * untyped_members,
   uint8_t * ros_request,
   uint8_t * dds_request,
   size_t size,
   int32_t * sn_high,
   uint32_t * sn_low,
-  int8_t * client_guid)
-{
-  auto members = static_cast<const ServiceMembersT *>(untyped_members);
-  if (members == nullptr) {
-    RMW_SET_ERROR_MSG("Members handle is null");
-    return false;
-  }
+  int8_t * client_guid);
 
-  return _deserialize_service_basic<GET_TYPENAME(members->request_members_)>(
-    static_cast<const void *>(members->request_members_),
-    ros_request,
-    dds_request,
-    size,
-    sn_high,
-    sn_low,
-    client_guid,
-    true
-  );
-}
-
-inline bool
+bool
 deserialize_request_basic(
   const void * untyped_members,
   const char * identifier,
@@ -774,267 +263,85 @@ deserialize_request_basic(
   size_t size,
   int32_t * sn_high,
   uint32_t * sn_low,
-  int8_t * client_guid)
-{
-  if (identifier == rosidl_typesupport_introspection_c__identifier) {
-    return _deserialize_request_basic<rosidl_typesupport_introspection_c__ServiceMembers>(
-      untyped_members,
-      reinterpret_cast<uint8_t *>(ros_request),
-      reinterpret_cast<uint8_t *>(dds_request),
-      size,
-      sn_high,
-      sn_low,
-      client_guid
-    );
-  } else if (identifier == rosidl_typesupport_introspection_cpp::typesupport_identifier) {
-    return _deserialize_request_basic<rosidl_typesupport_introspection_cpp::ServiceMembers>(
-      untyped_members,
-      reinterpret_cast<uint8_t *>(ros_request),
-      reinterpret_cast<uint8_t *>(dds_request),
-      size,
-      sn_high,
-      sn_low,
-      client_guid
-    );
-  }
-
-  RMW_SET_ERROR_MSG("Unknown typesupport identifier");
-  return false;
-}
+  int8_t * client_guid);
 
 template<typename ServiceMembersT>
 bool
-_deserialize_response_basic(
+deserialize_response_basic(
   const void * untyped_members,
   uint8_t * ros_response,
   uint8_t * dds_response,
   size_t size,
   int32_t * sn_high,
   uint32_t * sn_low,
-  int8_t * client_guid)
-{
-  auto members = static_cast<const ServiceMembersT *>(untyped_members);
-  if (members == nullptr) {
-    RMW_SET_ERROR_MSG("Members handle is null");
-    return false;
-  }
+  int8_t * client_guid);
 
-  return _deserialize_service_basic<GET_TYPENAME(members->response_members_)>(
-    static_cast<const void *>(members->response_members_),
-    ros_response,
-    dds_response,
-    size,
-    sn_high,
-    sn_low,
-    client_guid,
-    false
-  );
-}
-
-inline bool
+bool
 deserialize_response_basic(
   const void * untyped_members,
   const char * identifier,
-  void * ros_reponse,
-  void * dds_reponse,
+  void * ros_response,
+  void * dds_response,
   size_t size,
   int32_t * sn_high,
   uint32_t * sn_low,
-  int8_t * client_guid)
-{
-  if (identifier == rosidl_typesupport_introspection_c__identifier) {
-    return _deserialize_response_basic<rosidl_typesupport_introspection_c__ServiceMembers>(
-      untyped_members,
-      reinterpret_cast<uint8_t *>(ros_reponse),
-      reinterpret_cast<uint8_t *>(dds_reponse),
-      size,
-      sn_high,
-      sn_low,
-      client_guid
-    );
-  } else if (identifier == rosidl_typesupport_introspection_cpp::typesupport_identifier) {
-    return _deserialize_response_basic<rosidl_typesupport_introspection_cpp::ServiceMembers>(
-      untyped_members,
-      reinterpret_cast<uint8_t *>(ros_reponse),
-      reinterpret_cast<uint8_t *>(dds_reponse),
-      size,
-      sn_high,
-      sn_low,
-      client_guid
-    );
-  }
-
-  RMW_SET_ERROR_MSG("Unknown typesupport identifier");
-  return false;
-}
+  int8_t * client_guid);
 
 template<typename MessageMembersT>
 bool
-_deserialize_service_enhanced(
+deserialize_service_enhanced(
   const void * untyped_members,
   uint8_t * ros_service,
   uint8_t * dds_service,
-  size_t size)
-{
-  auto members =
-    static_cast<const MessageMembersT *>(untyped_members);
-  if (members == nullptr) {
-    RMW_SET_ERROR_MSG("Members handle is null");
-    return false;
-  }
+  size_t size);
 
-  try {
-    auto buffer = rmw_gurumdds_cpp::CdrDeserializationBuffer(dds_service, size);
-    auto deserializer = rmw_gurumdds_cpp::MessageDeserializer<MessageMembersT>(buffer);
-    deserializer.deserialize(members, ros_service);
-  } catch (std::runtime_error & e) {
-    RMW_SET_ERROR_MSG_WITH_FORMAT_STRING("Failed to deserialize dds message: %s", e.what());
-    return false;
-  }
-
-  return true;
-}
-
-inline bool
+bool
 deserialize_service_enhanced(
   const void * untyped_members,
   const char * identifier,
   void * ros_service,
   void * dds_service,
-  size_t size)
-{
-  if (identifier == rosidl_typesupport_introspection_c__identifier) {
-    return _deserialize_service_enhanced<rosidl_typesupport_introspection_c__MessageMembers>(
-      untyped_members,
-      reinterpret_cast<uint8_t *>(ros_service),
-      reinterpret_cast<uint8_t *>(dds_service),
-      size
-    );
-  } else if (identifier == rosidl_typesupport_introspection_cpp::typesupport_identifier) {
-    return _deserialize_service_enhanced<rosidl_typesupport_introspection_cpp::MessageMembers>(
-      untyped_members,
-      reinterpret_cast<uint8_t *>(ros_service),
-      reinterpret_cast<uint8_t *>(dds_service),
-      size
-    );
-  }
-
-  RMW_SET_ERROR_MSG("Unknown typesupport identifier");
-  return false;
-}
+  size_t size);
 
 template<typename ServiceMembersT>
 bool
-_deserialize_request_enhanced(
+deserialize_request_enhanced(
   const void * untyped_members,
   uint8_t * ros_request,
   uint8_t * dds_request,
-  size_t size)
-{
-  auto members = static_cast<const ServiceMembersT *>(untyped_members);
-  if (members == nullptr) {
-    RMW_SET_ERROR_MSG("Members handle is null");
-    return false;
-  }
+  size_t size);
 
-  return _deserialize_service_enhanced<GET_TYPENAME(members->request_members_)>(
-    static_cast<const void *>(members->request_members_),
-    ros_request,
-    dds_request,
-    size
-  );
-}
-
-inline bool
+bool
 deserialize_request_enhanced(
   const void * untyped_members,
   const char * identifier,
   void * ros_request,
   void * dds_request,
-  size_t size)
-{
-  if (identifier == rosidl_typesupport_introspection_c__identifier) {
-    return _deserialize_request_enhanced<rosidl_typesupport_introspection_c__ServiceMembers>(
-      untyped_members,
-      reinterpret_cast<uint8_t *>(ros_request),
-      reinterpret_cast<uint8_t *>(dds_request),
-      size
-    );
-  } else if (identifier == rosidl_typesupport_introspection_cpp::typesupport_identifier) {
-    return _deserialize_request_enhanced<rosidl_typesupport_introspection_cpp::ServiceMembers>(
-      untyped_members,
-      reinterpret_cast<uint8_t *>(ros_request),
-      reinterpret_cast<uint8_t *>(dds_request),
-      size
-    );
-  }
-
-  RMW_SET_ERROR_MSG("Unknown typesupport identifier");
-  return false;
-}
+  size_t size);
 
 template<typename ServiceMembersT>
 bool
-_deserialize_response_enhanced(
+deserialize_response_enhanced(
   const void * untyped_members,
   uint8_t * ros_response,
   uint8_t * dds_response,
-  size_t size)
-{
-  auto members = static_cast<const ServiceMembersT *>(untyped_members);
-  if (members == nullptr) {
-    RMW_SET_ERROR_MSG("Members handle is null");
-    return false;
-  }
+  size_t size);
 
-  return _deserialize_service_enhanced<GET_TYPENAME(members->response_members_)>(
-    static_cast<const void *>(members->response_members_),
-    ros_response,
-    dds_response,
-    size
-  );
-}
-
-inline bool
+bool
 deserialize_response_enhanced(
   const void * untyped_members,
   const char * identifier,
-  void * ros_reponse,
-  void * dds_reponse,
-  size_t size)
-{
-  if (identifier == rosidl_typesupport_introspection_c__identifier) {
-    return _deserialize_response_enhanced<rosidl_typesupport_introspection_c__ServiceMembers>(
-      untyped_members,
-      reinterpret_cast<uint8_t *>(ros_reponse),
-      reinterpret_cast<uint8_t *>(dds_reponse),
-      size
-    );
-  } else if (identifier == rosidl_typesupport_introspection_cpp::typesupport_identifier) {
-    return _deserialize_response_enhanced<rosidl_typesupport_introspection_cpp::ServiceMembers>(
-      untyped_members,
-      reinterpret_cast<uint8_t *>(ros_reponse),
-      reinterpret_cast<uint8_t *>(dds_reponse),
-      size
-    );
-  }
-
-  RMW_SET_ERROR_MSG("Unknown typesupport identifier");
-  return false;
-}
+  void * ros_response,
+  void * dds_response,
+  size_t size);
 
 inline void
-ros_sn_to_dds_sn(int64_t sn_ros, uint64_t * sn_dds)
-{
-  *sn_dds = ((sn_ros) & 0xFFFFFFFF00000000LL) >> 32;
-  *sn_dds = *sn_dds | ((sn_ros & 0x00000000FFFFFFFFLL) << 32);
-}
+ros_sn_to_dds_sn(int64_t sn_ros, uint64_t * sn_dds);
 
 inline void
-dds_sn_to_ros_sn(uint64_t sn_dds, int64_t * sn_ros)
-{
-  *sn_ros = ((sn_dds & 0x00000000FFFFFFFF) << 32) | ((sn_dds & 0xFFFFFFFF00000000) >> 32);
-}
+dds_sn_to_ros_sn(uint64_t sn_dds, int64_t * sn_ros);
 } // namespace rmw_gurumdds_cpp
+
+#include "rmw_gurumdds_cpp/type_support_service.inl"
 
 #endif // RMW_GURUMDDS__TYPE_SUPPORT_SERVICE_HPP_
