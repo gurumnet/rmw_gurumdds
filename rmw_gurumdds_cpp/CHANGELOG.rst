@@ -2,6 +2,71 @@
 Changelog for package rmw_gurumdds_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+5.0.0 (2024-10-17)
+------------------
+* Refactor type_support_service
+* Place copyright notice
+* Refactor event info types
+* Fix failure when receiving a message
+* Refactor type_support_common
+* Update feature support
+* Refactor rmw_take
+  Use dds_DataReader_take_next_sample_w_info_ex instead of dds_DataReader_raw_take for reduce allocation and free
+* Refactor GID/GUID
+* Change SampleInfo's received_timestamp
+* Change Subscription
+  Add SubscriberInfo::on_data_available
+* Refactor rmw_wait
+  * move rmw_gurumdds_cpp::wait to a source file
+  * make check once that the use_polling env var in rmw_gurumdds_cpp::wait
+* Remove unnecessary underscores
+* Remove unnecessary typedef
+* refactor: use namespace rmw_gurumdds_cpp
+* Remove unused header files
+* Use RCUTILS_UNUSED macro instead of `static_cast<void>`
+* Use RCUTILS_UNUSED macro instead of `(void)`
+* Refactor include guard
+* docs: update README.md and maintainers
+* refactor: clean up files
+* Refactor CDR
+  * Refactor MessageSerializer class
+  * Refactor CdrSerializationBuffer class
+  * Refactor MessageDeserializer class
+  * Refactor CdrDeserializationBuffer class
+* Fix failure of serialization
+* Reduce calling dds_ConditionSeq_length in __rmw_wait function
+* Implement set_on_new_event_callback
+  * new GurumddsEventInfo::get_guard_condition method for waiting when a callback is set
+  * new GurumddsTopicEventListener class for managing of the topic's listener
+  * change signature and behavior of __gather_event_conditions for use guard condition
+  * replace GurumddsEventInfo::get_status_changes method to GurumddsEventInfo::is_status_changed
+  * new GurumddsEventInfo::has_callback for checking callback is set
+  * change signature and behavior of GurumddsEventInfo::get_status for use callback listener
+* Add received_timestamp
+* Implement set_on_new\_[message/request/response]_callback
+* Fix graph_on_node/publisher/subscriber/service/client_created/deleted
+* Add setup publish_callback in common context
+  * Add rmw_gurumdds::publish function
+* Add event type added in rmw 7.1.0
+* Fix typo
+  * Replace 'NULL' to nullptr
+  * Remove unnecessary cast
+  * Remove unnecessary condition
+* Refactor check_dds_ret_code
+  Make it use switch-cast instead if-else
+* Handle 'best available' QoS policies
+* Support minimal functionalities for Jazzy
+  - Add `rmw_count_clients` and `rmw_count_services`
+  - Add `rmw_get_gid_for_client`
+  - Put unimplemented error in `rmw_take_dynamic_message`, `rmw_take_dynamic_message_with_info`, and `rmw_serialization_support_init`
+  - Include <cstdint> in types.cpp
+  - Ignore PRECONDITION_NOT_MET when checking WaitSet detach condition
+* Add type hash
+* Fix failure of build
+* Fix deserialization wstring
+* Fix initialize_node
+* Contributors: gurum, kumazuma
+
 3.6.1 (2024-04-19)
 ------------------
 * Increase `ros_discovery_info` history depth
