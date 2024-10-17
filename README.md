@@ -6,12 +6,13 @@ Installation guide is available [here](https://docs.ros.org/en/humble/Installati
 Required version of GurumDDS depends on the version of this project.
 | rmw_gurumdds             | GurumDDS                    |
 |--------------------------|-----------------------------|
-| 3.6.0  or higher         | higher than 3.1.0           |
-| 3.4.2  or higher         | higher than 3.0.0           |
-| 3.3.0  or higher         | higher than 2.8.3165        |
-| 3.2.0  or higher         | 2.8.3140 or higher          |
-| 3.1.2  or higher         | 2.8.x                       |
-| 3.1.1  or lower          | 2.7.x                       |
+| >= 5.0.0                 | >= 3.2.0                    |
+| >= 3.6.0, < 5.0.0        | 3.1.x                       |
+| >= 3.4.2, < 3.6.0        | 3.0.x                       |
+| >= 3.3.0, < 3.4.2        | >= 2.8.3165, < 3.0.0        |
+| 3.2.x                    | >= 2.8.3140, < 2.8.3165     |
+| >= 3.1.2, < 3.2.0        | >= 2.8.0, < 2.8.3140        |
+| <= 3.1.1                 | 2.7.x                       |
 
 ## Packages
 ### gurumdds_cmake_module
@@ -61,5 +62,5 @@ There are three active branches in this project: `rolling`, `jazzy`, and `humble
 New changes made in [ROS2 repository](https://github.com/ros2) will be applied to the `rolling` branch.
 
 ## Implementation Status
-Currently some features are not fully implemented.
+Following features are not fully implemented yet.
 - DDS Security

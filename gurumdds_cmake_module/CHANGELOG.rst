@@ -2,6 +2,11 @@
 Changelog for package gurumdds_cmake_module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+5.0.0 (2024-10-17)
+------------------
+* docs: update README.md and maintainers
+* Contributors: gurum
+
 3.6.1 (2024-04-19)
 ------------------
 
