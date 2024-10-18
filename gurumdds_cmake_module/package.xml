@@ -2,15 +2,16 @@
 <?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="2">
   <name>gurumdds_cmake_module</name>
-  <version>4.2.0</version>
+  <version>3.6.1</version>
   <description>Provide CMake module to find GurumNetworks GurumDDS.</description>
-  <maintainer email="youngjin@gurum.cc">Youngjin Yun</maintainer>
   <maintainer email="donghee@gurum.cc">Donghee Lee</maintainer>
+  <maintainer email="jaemin@gurum.cc">Jaemin Jo</maintainer>
+  <maintainer email="hongsup@gurum.cc">Hongsup Shim</maintainer>
   <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
-  <build_depend>gurumdds-2.8</build_depend>
+  <build_depend>gurumdds-3.1</build_depend>
 
   <buildtool_export_depend>ament_cmake</buildtool_export_depend>
 

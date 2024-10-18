@@ -42,8 +42,7 @@ rmw_context_impl_t::initialize_node(
   (void)node_namespace;
 
   if (this->node_count != 0u) {
-    if ((this->localhost_only && !localhost_only) ||
-      (!this->localhost_only && localhost_only))
+    if ((this->base->options.localhost_only == RMW_LOCALHOST_ONLY_ENABLED) != localhost_only)
     {
       RCUTILS_LOG_ERROR_NAMED(
         RMW_GURUMDDS_ID,
@@ -68,6 +67,8 @@ rmw_context_impl_t::initialize_node(
   }
 
   if (graph_enable(this->base) != RMW_RET_OK) {
+    dds_Entity_set_context(
+      reinterpret_cast<dds_Entity *>(this->participant), 0, nullptr);
     RCUTILS_LOG_ERROR_NAMED(RMW_GURUMDDS_ID, "failed to enable graph cache");
     return RMW_RET_ERROR;
   }
@@ -250,15 +251,14 @@ rmw_context_impl_t::initialize_participant(
     return RMW_RET_ERROR;
   }
 
-  dds_Entity_set_context(
-    reinterpret_cast<dds_Entity *>(this->participant), 0, reinterpret_cast<void *>(this));
-
   // Initialize graph_cache
   if (graph_cache_initialize(this) != RMW_RET_OK) {
     RMW_SET_ERROR_MSG("failed to initialize graph cache");
     return RMW_RET_ERROR;
   }
 
+  dds_Entity_set_context(
+    reinterpret_cast<dds_Entity *>(this->participant), 0, reinterpret_cast<void *>(this));
   scope_exit_dp_finalize.cancel();
 
   RCUTILS_LOG_DEBUG_NAMED(

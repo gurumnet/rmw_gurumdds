@@ -291,7 +291,7 @@ graph_cache_initialize(rmw_context_impl_t * const ctx)
   rmw_qos_profile_t qos = rmw_qos_profile_default;
   qos.avoid_ros_namespace_conventions = true;
   qos.history = RMW_QOS_POLICY_HISTORY_KEEP_LAST;
-  qos.depth = 1;
+  qos.depth = 100;
   qos.durability = RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL;
   qos.reliability = RMW_QOS_POLICY_RELIABILITY_RELIABLE;
 
