@@ -1,5 +1,5 @@
-name: build-rmw
-run-name: build GurumDDS RMW package
+name: rmw-workflow
+run-name: RMW GurumDDS Workflow; Build & Performance Test
 
 on:
   push:
