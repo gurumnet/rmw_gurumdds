@@ -1,0 +1,57 @@
+name: build-rmw
+run-name: build GurumDDS RMW package
+
+on:
+  push:
+    branches: [jazzy]
+  pull_request:
+    branches: [jazzy]
+
+jobs:
+  build-rmw-jazzy:
+    name: build-jazzy 
+    runs-on: [self-hosted, Linux, x64, rmw]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build RMW GurumDDS in ROS Jazzy
+        run: |
+          colcon build --symlink-install
+          export GURUMDDS_HOME=/usr/lib
+          source /opt/ros/jazzy/setup.bash
+          source ./install/setup.bash 
+          
+  deploy:
+    needs: [build-rmw-jazzy]
+    name: deploy
+    runs-on: [self-hosted, Linux, x64, rmw]
+    steps:
+      - name: Deploy to Another PC
+        run: |
+          rm -rf ~/rmw_gurumdds/*
+          cp -r * ~/rmw_gurumdds/
+          scp -r * lin-06:rmw_gurumdds/
+
+  performance_test:
+    needs: [deploy]
+    name: perf test
+    runs-on: [self-hosted, Linux, x64, rmw]
+    steps:
+      - name: Run Performance tests from Apex.AI perf tests
+        run: |
+          cd ~/Downloads/gurumdds_apexai
+          rm -rf log/temp/*
+          rm -rf result/*
+          python3 scripts/execute/execute_test.py scripts/execute/scenario.ini
+
+  report:
+    needs: [performance_test]
+    name: report
+    runs-on: [self-hosted, Linux, x64, rmw]
+    steps:
+      - uses: actions/upload-artifact@v4
+        with:
+          path: ~/Downloads/gurumdds_apexai/result.pdf
+      - name: Create performance test report 
+        run: |
+          cd ~/Downloads/gurumdds_apexai
+          python3 scripts/report.py
