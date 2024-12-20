@@ -3,9 +3,9 @@ run-name: RMW GurumDDS Workflow; Build & Performance Test
 
 on:
   push:
-    branches: [jazzy]
+    branches: [ci/jazzy]
   pull_request:
-    branches: [jazzy]
+    branches: [ci/jazzy]
 
 jobs:
   build-rmw-jazzy:
