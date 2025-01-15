@@ -69,14 +69,8 @@ _create_service_metastring(const void * untyped_members)
   }
 
   return {
-    _create_metastring<GET_TYPENAME(members->request_members_)>(
-      static_cast<const void *>(members->request_members_),
-      true
-    ),
-    _create_metastring<GET_TYPENAME(members->response_members_)>(
-      static_cast<const void *>(members->response_members_),
-      true
-    )
+    _create_metastring<GET_TYPENAME(members->request_members_)>(static_cast<const void *>(members->request_members_)),
+    _create_metastring<GET_TYPENAME(members->response_members_)>(static_cast<const void *>(members->response_members_))
   };
 }
 
@@ -111,8 +105,7 @@ _allocate_request_basic(
   return _allocate_message<GET_TYPENAME(members->request_members_)>(
     static_cast<const void *>(members->request_members_),
     static_cast<const uint8_t *>(ros_request),
-    size,
-    true
+    size
   );
 }
 
@@ -157,8 +150,7 @@ _allocate_response_basic(
   return _allocate_message<GET_TYPENAME(members->response_members_)>(
     static_cast<const void *>(members->response_members_),
     static_cast<const uint8_t *>(ros_response),
-    size,
-    true
+    size
   );
 }
 
@@ -203,8 +195,7 @@ _allocate_request_enhanced(
   return _allocate_message<GET_TYPENAME(members->request_members_)>(
     static_cast<const void *>(members->request_members_),
     static_cast<const uint8_t *>(ros_request),
-    size,
-    false
+    size
   );
 }
 
@@ -249,8 +240,7 @@ _allocate_response_enhanced(
   return _allocate_message<GET_TYPENAME(members->response_members_)>(
     static_cast<const void *>(members->response_members_),
     static_cast<const uint8_t *>(ros_response),
-    size,
-    false
+    size
   );
 }
 

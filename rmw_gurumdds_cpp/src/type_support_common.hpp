@@ -77,7 +77,7 @@ create_type_name(const void * untyped_members, const char * identifier)
 
 template<typename MessageMembersT>
 std::string
-_parse_struct(const MessageMembersT * members, const char * field_name, bool is_service)
+_parse_struct(const MessageMembersT * members, const char * field_name)
 {
   if (members == nullptr) {
     RMW_SET_ERROR_MSG("Members handle is null");
@@ -91,7 +91,7 @@ _parse_struct(const MessageMembersT * members, const char * field_name, bool is_
     "type=" <<
     _create_type_name<MessageMembersT>(members) <<
     ",member=" <<
-    members->member_count_ + (is_service ? 3 : 0) <<
+    members->member_count_ <<
     ")";
 
   for (size_t i = 0; i < members->member_count_; i++) {
@@ -119,7 +119,7 @@ _parse_struct(const MessageMembersT * members, const char * field_name, bool is_
 
       auto inner_struct = static_cast<const MessageMembersT *>(member->members_->data);
       std::string inner_metastring = _parse_struct<MessageMembersT>(
-        inner_struct, member->is_array_ ? nullptr : member->name_, false);
+        inner_struct, member->is_array_ ? nullptr : member->name_);
       if (inner_metastring.empty()) {
         return "";
       }
@@ -188,7 +188,7 @@ _parse_struct(const MessageMembersT * members, const char * field_name, bool is_
 
 template<typename MessageMembersT>
 std::string
-_create_metastring(const void * untyped_members, bool is_service)
+_create_metastring(const void * untyped_members)
 {
   auto members = static_cast<const MessageMembersT *>(untyped_members);
   if (members == nullptr) {
@@ -200,14 +200,7 @@ _create_metastring(const void * untyped_members, bool is_service)
   metastring <<
     "!1" <<
     _parse_struct<MessageMembersT>(
-    static_cast<const MessageMembersT *>(members), nullptr, is_service);
-
-  if (is_service) {
-    metastring <<
-      "L(name=gurumdds__client_guid_0_)" <<
-      "L(name=gurumdds__client_guid_1_)" <<
-      "l(name=gurumdds__sequence_number_)";
-  }
+    static_cast<const MessageMembersT *>(members), nullptr);
 
   return metastring.str();
 }
@@ -216,15 +209,9 @@ inline std::string
 create_metastring(const void * untyped_members, const char * identifier)
 {
   if (identifier == rosidl_typesupport_introspection_c__identifier) {
-    return _create_metastring<rosidl_typesupport_introspection_c__MessageMembers>(
-      untyped_members,
-      false
-    );
+    return _create_metastring<rosidl_typesupport_introspection_c__MessageMembers>(untyped_members);
   } else if (identifier == rosidl_typesupport_introspection_cpp::typesupport_identifier) {
-    return _create_metastring<rosidl_typesupport_introspection_cpp::MessageMembers>(
-      untyped_members,
-      false
-    );
+    return _create_metastring<rosidl_typesupport_introspection_cpp::MessageMembers>(untyped_members);
   }
 
   RMW_SET_ERROR_MSG("Unknown typesupport identifier");
@@ -236,8 +223,7 @@ void *
 _allocate_message(
   const void * untyped_members,
   const uint8_t * ros_message,
-  size_t * size,
-  bool is_service)
+  size_t * size)
 {
   auto members =
     static_cast<const MessageMembersT *>(untyped_members);
@@ -259,13 +245,6 @@ _allocate_message(
   auto buffer = CDRSerializationBuffer(nullptr, 0);
   auto serializer = MessageSerializer(buffer);
   serializer.serialize(members, ros_message, true);
-  if (is_service) {
-    uint64_t dummy = 0;
-    buffer << dummy;  // client_guid_0
-    buffer << dummy;  // client_guid_1
-    buffer << dummy;  // sequence_number
-    buffer << dummy;  // padding
-  }
 
   *size = buffer.get_offset() + 4;
   void * message = calloc(1, *size);
@@ -282,22 +261,19 @@ allocate_message(
   const void * untyped_members,
   const char * identifier,
   const void * ros_message,
-  size_t * size,
-  bool is_service)
+  size_t * size)
 {
   if (identifier == rosidl_typesupport_introspection_c__identifier) {
     return _allocate_message<rosidl_typesupport_introspection_c__MessageMembers>(
       untyped_members,
       reinterpret_cast<const uint8_t *>(ros_message),
-      size,
-      is_service
+      size
     );
   } else if (identifier == rosidl_typesupport_introspection_cpp::typesupport_identifier) {
     return _allocate_message<rosidl_typesupport_introspection_cpp::MessageMembers>(
       untyped_members,
       reinterpret_cast<const uint8_t *>(ros_message),
-      size,
-      is_service
+      size
     );
   }
 
