@@ -1,6 +1,11 @@
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Changelog for package gurumdds_cmake_module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+3.6.3 (2025-01-15)
+------------------
+* Remove additional member fields for unused basic service support
+* Contributors: kumazuma
+
 3.6.2 (2025-01-09)
 ------------------
 * Use gurumdds-3.2

@@ -1,9 +1,15 @@
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Changelog for package rmw_gurumdds_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+3.6.3 (2025-01-15)
+------------------
+* Remove additional member fields for unused basic service support
+* Contributors: kumazuma
+
 3.6.2 (2025-01-09)
 ------------------
 * Use gurumdds-3.9
+* Contributors: kumazuma
 
 3.6.1 (2024-04-19)
 ------------------
