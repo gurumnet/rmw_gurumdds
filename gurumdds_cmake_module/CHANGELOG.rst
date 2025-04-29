@@ -1,6 +1,12 @@
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Changelog for package gurumdds_cmake_module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+3.6.5 (2025-04-29)
+------------------
+* Fix a segfault on the dpf's initialization is failed
+* Improve performance of `rmw_wait`
+* Contributors: kumazuma
+
 3.6.4 (2025-03-13)
 ------------------
 * Support dds qos profile
