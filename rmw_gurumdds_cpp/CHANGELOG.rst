@@ -2,6 +2,11 @@
 Changelog for package rmw_gurumdds_cpp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.5.1 (2025-11-18)
+------------------
+* Fix desrialization of rclc
+* Contributors: seontai kim
+
 1.5.0 (2024-07-24)
 ------------------
 * Use gurumdds-3.1
